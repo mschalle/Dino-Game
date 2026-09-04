@@ -1,0 +1,15 @@
+# Godot editor-generated files
+.godot/
+
+# Exported builds
+builds/
+exports/
+
+# Local logs and temporary files
+*.log
+*.tmp
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
