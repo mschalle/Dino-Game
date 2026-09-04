@@ -39,6 +39,7 @@ var sounds
 var environment_time := 0.0
 var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
+var fireflies: Array[MeshInstance3D] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -49,6 +50,7 @@ func _ready() -> void:
 	_create_world()
 	sounds = SOUND_FEEDBACK.new()
 	add_child(sounds)
+	sounds.set_effects_volume(float((save_system.data["settings"] as Dictionary).get("effects_volume", 0.7)))
 	_show_selection()
 
 func _process(delta: float) -> void:
@@ -56,6 +58,12 @@ func _process(delta: float) -> void:
 	_animate_environment(delta)
 	if Input.is_action_just_pressed("ui_cancel") and game_active:
 		_set_paused(not get_tree().paused)
+	if Input.is_action_just_pressed("help") and game_active and hud != null:
+		hud.toggle_help()
+	if game_active and Input.is_action_just_pressed("volume_down"):
+		_adjust_effects_volume(-0.1)
+	if game_active and Input.is_action_just_pressed("volume_up"):
+		_adjust_effects_volume(0.1)
 	if not game_active or get_tree().paused:
 		return
 	_tick_cooldowns(delta)
@@ -106,6 +114,7 @@ func _create_world() -> void:
 	for index in 30:
 		_create_scenery_piece(index)
 	_create_waterfall()
+	_create_fireflies()
 
 func _create_scenery_piece(index: int) -> void:
 	var piece := MeshInstance3D.new()
@@ -150,6 +159,19 @@ func _create_waterfall() -> void:
 		add_child(waterfall)
 		waterfall_layers.append(waterfall)
 
+func _create_fireflies() -> void:
+	for index in 12:
+		var firefly := MeshInstance3D.new()
+		var mesh := SphereMesh.new()
+		mesh.radius = 0.045
+		mesh.height = 0.09
+		firefly.mesh = mesh
+		firefly.material_override = _glow_material(Color("#fff3a6"))
+		firefly.position = Vector3(randf_range(-24, 24), randf_range(1.0, 3.5), randf_range(-24, 24))
+		firefly.set_meta("orbit", randf() * TAU)
+		add_child(firefly)
+		fireflies.append(firefly)
+
 func _animate_environment(delta: float) -> void:
 	for tree in animated_trees:
 		if is_instance_valid(tree):
@@ -162,6 +184,12 @@ func _animate_environment(delta: float) -> void:
 			var material := waterfall.material_override as StandardMaterial3D
 			if material != null:
 				material.emission_energy_multiplier = 1.55 + (flow + 1.0) * 0.25
+	for firefly in fireflies:
+		if is_instance_valid(firefly):
+			var orbit := float(firefly.get_meta("orbit", 0.0))
+			firefly.position.y += sin(environment_time * 1.5 + orbit) * 0.002
+			var glow := 0.7 + (sin(environment_time * 3.0 + orbit) + 1.0) * 0.45
+			firefly.scale = Vector3.ONE * glow
 	if active_marker != null and is_instance_valid(active_marker):
 		active_marker.rotation.y += 0.9 * delta
 		var ring := active_marker.get_child(0) as MeshInstance3D
@@ -195,7 +223,7 @@ func _show_selection() -> void:
 		var species_profile: DinosaurProfile = profiles[index]
 		_create_species_card(panel, species_profile, index)
 	var footer := Label.new()
-	footer.text = "Adventure unlocks Endless Survival for each dinosaur."
+	footer.text = "Adventure unlocks Endless Survival for each dinosaur.   |   F1: How to Play\n%s" % _collection_summary()
 	footer.position = Vector2(290, 625)
 	footer.size = Vector2(700, 40)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -208,6 +236,13 @@ func _show_selection() -> void:
 	controls_button.pressed.connect(_show_controls_overlay)
 	panel.add_child(controls_button)
 
+func _collection_summary() -> String:
+	var unlocked := 0
+	var badges := (save_system.data["badges"] as Array).size()
+	var cosmetics := save_system.data["cosmetics"] as Dictionary
+	for species_id in cosmetics:
+		unlocked += (cosmetics[species_id] as Array).size()
+	return "Collection: %d color%s unlocked  |  %d badge%s earned" % [unlocked, "" if unlocked == 1 else "s", badges, "" if badges == 1 else "s"]
 func _input(event: InputEvent) -> void:
 	if waiting_rebind.is_empty():
 		return
@@ -348,6 +383,20 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	description.add_theme_font_size_override("font_size", 16)
 	card.add_child(description)
+	var swatch := ColorRect.new()
+	swatch.color = _cosmetic_color(species_profile, save_system.selected_cosmetic(species_profile.id))
+	swatch.position = Vector2(305, 178)
+	swatch.size = Vector2(14, 20)
+	card.add_child(swatch)
+	var cosmetic_button := Button.new()
+	cosmetic_button.text = "Color: %s" % save_system.selected_cosmetic(species_profile.id).capitalize()
+	cosmetic_button.position = Vector2(30, 174)
+	cosmetic_button.size = Vector2(270, 28)
+	cosmetic_button.add_theme_font_size_override("font_size", 14)
+	cosmetic_button.pressed.connect(func() -> void:
+		_cycle_cosmetic(species_profile.id, cosmetic_button, swatch)
+	)
+	card.add_child(cosmetic_button)
 	var adventure_button := Button.new()
 	adventure_button.text = "Play Adventure"
 	adventure_button.position = Vector2(30, 205)
@@ -365,10 +414,38 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	endless_button.pressed.connect(func() -> void: _start_run(species_profile, "endless"))
 	card.add_child(endless_button)
 
+func _cycle_cosmetic(species_id: String, button: Button, swatch: ColorRect) -> void:
+	var owned: Array = (save_system.data["cosmetics"] as Dictionary).get(species_id, ["default"])
+	if owned.is_empty():
+		return
+	var current := save_system.selected_cosmetic(species_id)
+	var next_index := (owned.find(current) + 1) % owned.size()
+	save_system.select_cosmetic(species_id, str(owned[next_index]))
+	button.text = "Color: %s" % str(owned[next_index]).capitalize()
+	var profile_preview := PROFILES.by_id(species_id)
+	swatch.color = _cosmetic_color(profile_preview, str(owned[next_index]))
+
+func _cosmetic_color(species_profile: DinosaurProfile, cosmetic: String) -> Color:
+	if cosmetic == "sunset":
+		return species_profile.body_color.lerp(Color("#f28b61"), 0.55)
+	if cosmetic == "mint":
+		return species_profile.body_color.lerp(Color("#72e0b0"), 0.5)
+	return species_profile.body_color
+
+func _apply_selected_cosmetic() -> void:
+	var cosmetic := save_system.selected_cosmetic(profile.id)
+	if cosmetic == "sunset":
+		profile.body_color = profile.body_color.lerp(Color("#f28b61"), 0.55)
+		profile.accent_color = profile.accent_color.lerp(Color("#fff0c2"), 0.35)
+	elif cosmetic == "mint":
+		profile.body_color = profile.body_color.lerp(Color("#72e0b0"), 0.5)
+		profile.accent_color = profile.accent_color.lerp(Color("#d8fff0"), 0.4)
+
 func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	if new_mode == "endless" and not save_system.is_endless_unlocked(new_profile.id):
 		return
 	profile = new_profile
+	_apply_selected_cosmetic()
 	mode = new_mode
 	if selection_screen != null and is_instance_valid(selection_screen):
 		selection_screen.queue_free()
@@ -603,6 +680,7 @@ func _update_objectives(delta: float) -> void:
 		optional_completed = true
 		session.growth.add_points(2)
 		save_system.award_badge("%s_valley_explorer" % profile.id)
+		save_system.unlock_cosmetic(profile.id, "sunset")
 		save_system.save_data()
 		hud.show_message("Optional quest complete: Valley Explorer! New badge earned.")
 
@@ -645,6 +723,7 @@ func _complete_adventure() -> void:
 		return
 	game_active = false
 	save_system.unlock_endless(profile.id)
+	save_system.unlock_cosmetic(profile.id, "mint")
 	save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, session.summary())
 	hud.show_completion("ADVENTURE COMPLETE!", "%s reached Adult and completed the finale.\n%s\nEndless Survival is now unlocked for this dinosaur." % [profile.display_name, _run_summary_text()])
 
@@ -835,6 +914,8 @@ func _cleanup_run() -> void:
 
 func _ensure_default_inputs() -> void:
 	_ensure_key_action("special_ability", KEY_R)
+	_ensure_key_action("volume_down", KEY_F2)
+	_ensure_key_action("volume_up", KEY_F3)
 	_add_joy_button("sprint", JOY_BUTTON_LEFT_STICK)
 	_add_joy_button("eat", JOY_BUTTON_X)
 	_add_joy_button("power_bite", JOY_BUTTON_B)
@@ -842,10 +923,18 @@ func _ensure_default_inputs() -> void:
 	_add_joy_button("dash", JOY_BUTTON_A)
 	_add_joy_button("special_ability", JOY_BUTTON_Y)
 	_add_joy_button("ui_cancel", JOY_BUTTON_START)
+	_ensure_key_action("help", KEY_F1)
 	_add_joy_axis("move_left", JOY_AXIS_LEFT_X, -1.0)
 	_add_joy_axis("move_right", JOY_AXIS_LEFT_X, 1.0)
 	_add_joy_axis("move_forward", JOY_AXIS_LEFT_Y, -1.0)
 	_add_joy_axis("move_back", JOY_AXIS_LEFT_Y, 1.0)
+
+func _adjust_effects_volume(amount: float) -> void:
+	var next_volume := clampf(sounds.get_effects_volume() + amount, 0.0, 1.0)
+	sounds.set_effects_volume(next_volume)
+	(save_system.data["settings"] as Dictionary)["effects_volume"] = next_volume
+	save_system.save_data()
+	hud.show_message("Effects volume: %d%% (F2/F3)" % roundi(next_volume * 100.0))
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):
