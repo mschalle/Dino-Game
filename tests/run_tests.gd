@@ -11,6 +11,8 @@ func _run_tests() -> void:
 	_test_quests()
 	_test_survival()
 	_test_ai_states()
+	_test_low_level_food_supply()
+	_test_hud_contrast()
 	_test_gameplay_integration()
 	_test_save_recovery()
 	if failures == 0:
@@ -26,6 +28,10 @@ func _check(condition: bool, message: String) -> void:
 		push_error(message)
 
 func _test_profiles() -> void:
+	var sound_feedback := preload("res://sound_feedback.gd").new()
+	sound_feedback.play_food()
+	_check(sound_feedback.tone_queue.size() == 2, "Food feedback should queue a friendly two-note sound")
+	sound_feedback.free()
 	var profiles := DinosaurProfiles.all()
 	_check(profiles.size() == 3, "Expected three playable profiles")
 	var ids: Dictionary = {}
@@ -37,6 +43,12 @@ func _test_profiles() -> void:
 		_check(not profile.abilities.is_empty(), "%s needs abilities" % profile.id)
 	_check(DinosaurProfiles.triceratops().diet == "herbivore", "Triceratops must eat plants")
 	_check(DinosaurProfiles.t_rex().diet == "carnivore", "T. rex must eat prey")
+	for profile in profiles:
+		var dino := PlayerDino.new()
+		dino.configure(profile)
+		root.add_child(dino)
+		_check(dino.tail_mesh != null and dino.leg_meshes.size() >= 4, "%s needs a complete animated dinosaur silhouette" % profile.id)
+		dino.free()
 
 func _test_growth() -> void:
 	var growth := GrowthSystem.new()
@@ -70,6 +82,9 @@ func _test_survival() -> void:
 	session.respawn_at_stage_floor()
 	_check(session.health == profile.max_health and session.hunger == 100.0, "Respawn must restore survival stats")
 	_check(session.growth.points == 12, "Respawn must preserve reached stage")
+	var summary := session.summary()
+	_check(int(summary["defeat_count"]) == 1, "Run summary must track defeats")
+	_check(float(summary["starvation_seconds"]) > 0.0, "Run summary must track starvation time")
 
 func _test_ai_states() -> void:
 	var player := PlayerDino.new()
@@ -92,13 +107,68 @@ func _test_ai_states() -> void:
 	root.add_child(predator)
 	predator._process(0.1)
 	_check(predator.state == "warn", "Stronger nearby predator should warn before chasing")
+	player.position = Vector3(25.5, 0, 0)
+	prey.position = Vector3(26.9, 0, 0)
+	prey.base_position = prey.position
+	prey.state = "flee"
+	prey._process(1.0)
+	_check(absf(prey.global_position.x) <= PreyDino.VALLEY_LIMIT, "Fleeing prey must stay inside the valley")
+	predator.position = Vector3(26.9, 0, 0)
+	predator.home = Vector3(35, 0, 0)
+	predator.state = "recover"
+	predator._process(1.0)
+	_check(absf(predator.global_position.x) <= ValleyPredator.VALLEY_LIMIT, "Predators must stay inside the valley")
+	_check(absf(predator.home.x) <= ValleyPredator.VALLEY_LIMIT, "Predator recovery targets must stay inside the valley")
 	player.free()
 	prey.free()
 	predator.free()
 
+func _test_low_level_food_supply() -> void:
+	var spawner := FoodSpawner.new()
+	root.add_child(spawner)
+	spawner.configure(false)
+	var low_level_count := 0
+	var medium_level_count := 0
+	var high_level_count := 0
+	for prey_node in get_nodes_in_group("prey"):
+		var nutrition := int(prey_node.get("nutrition"))
+		if nutrition == 1:
+			low_level_count += 1
+		elif nutrition == 2:
+			medium_level_count += 1
+		elif nutrition == 3:
+			high_level_count += 1
+	_check(low_level_count >= 5, "Adventure must always begin with at least five Hatchling-edible dinosaurs")
+	_check(medium_level_count >= 3, "Adventure must supply Juvenile growth food")
+	_check(high_level_count >= 2, "Adventure must supply Adult growth food")
+	var low_prey: Array[Node] = []
+	for prey_node in get_nodes_in_group("prey"):
+		if int(prey_node.get("nutrition")) == 1:
+			low_prey.append(prey_node)
+	for index in mini(3, low_prey.size()):
+		low_prey[index].free()
+	spawner.maintain(4.0, 0.0)
+	low_level_count = 0
+	for prey_node in get_nodes_in_group("prey"):
+		if int(prey_node.get("nutrition")) == 1:
+			low_level_count += 1
+	_check(low_level_count >= 5, "Consumed low-level dinosaurs must be replenished")
+	spawner.free()
+
+func _test_hud_contrast() -> void:
+	var test_hud := GameHUD.new()
+	root.add_child(test_hud)
+	_check(test_hud.quest_label.get_parent() is ColorRect, "Quest text needs a contrast backdrop")
+	_check(test_hud.message_label.get_parent() is ColorRect, "Message text needs a contrast backdrop")
+	_check(test_hud.quest_label.get_theme_constant("outline_size") >= 4, "Quest text needs a strong outline")
+	_check(test_hud.message_label.get_theme_constant("outline_size") >= 4, "Message text needs a strong outline")
+	test_hud.free()
+
 func _test_gameplay_integration() -> void:
 	var main_scene: Variant = load("res://Main.tscn").instantiate()
 	root.add_child(main_scene)
+	_check(main_scene.animated_trees.size() == 10, "The valley should include animated trees")
+	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
 	var trike := DinosaurProfiles.triceratops()
 	main_scene._start_run(trike, "adventure")
 	var plant := PlantFood.new()
@@ -130,7 +200,10 @@ func _test_save_recovery() -> void:
 	_check(int(save.data.get("version", 0)) == SaveSystem.SAVE_VERSION, "Old save must migrate")
 	_check((save.data["badges"] as Array).has("old_badge"), "Migration must preserve rewards")
 	save.unlock_endless("t_rex")
+	save.record_run("t_rex", 90.0, 12, 2, {"food_eaten": 7, "defeat_count": 1})
 	var reloaded := SaveSystem.new(path)
 	reloaded.load_data()
 	_check(reloaded.is_endless_unlocked("t_rex"), "Valid save must preserve Endless unlocks")
+	var record := reloaded.data["records"].get("t_rex", {}) as Dictionary
+	_check(int((record.get("last_run", {}) as Dictionary).get("food_eaten", 0)) == 7, "Valid save must preserve the latest run summary")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

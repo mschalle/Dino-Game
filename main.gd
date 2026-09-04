@@ -5,6 +5,7 @@ const FOOD_SPAWNER = preload("res://food_spawner.gd")
 const PREDATOR = preload("res://predator.gd")
 const HUD_SCENE = preload("res://game_hud.gd")
 const PROFILES = preload("res://dinosaur_profiles.gd")
+const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
 const VALLEY_LIMIT := 28.0
@@ -34,6 +35,10 @@ var game_active := false
 var controls_overlay: ColorRect
 var waiting_rebind := ""
 var rebind_buttons: Dictionary = {}
+var sounds
+var environment_time := 0.0
+var animated_trees: Array[MeshInstance3D] = []
+var waterfall_layers: Array[MeshInstance3D] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -42,9 +47,13 @@ func _ready() -> void:
 	save_system.load_data()
 	_apply_saved_bindings()
 	_create_world()
+	sounds = SOUND_FEEDBACK.new()
+	add_child(sounds)
 	_show_selection()
 
 func _process(delta: float) -> void:
+	environment_time += delta
+	_animate_environment(delta)
 	if Input.is_action_just_pressed("ui_cancel") and game_active:
 		_set_paused(not get_tree().paused)
 	if not game_active or get_tree().paused:
@@ -108,6 +117,16 @@ func _create_scenery_piece(index: int) -> void:
 		piece.mesh = tree_mesh
 		piece.material_override = _material(Color("#8a6748"))
 		piece.position.y = 1.2
+		var crown := MeshInstance3D.new()
+		var crown_mesh := SphereMesh.new()
+		crown_mesh.radius = 0.72
+		crown_mesh.height = 1.35
+		crown.mesh = crown_mesh
+		crown.material_override = _material(Color("#5da86a"))
+		crown.position.y = 1.35
+		piece.add_child(crown)
+		piece.set_meta("sway_offset", randf() * TAU)
+		animated_trees.append(piece)
 	else:
 		var rock_mesh := SphereMesh.new()
 		rock_mesh.radius = 0.3 + randf() * 0.55
@@ -120,13 +139,41 @@ func _create_scenery_piece(index: int) -> void:
 	add_child(piece)
 
 func _create_waterfall() -> void:
-	var waterfall := MeshInstance3D.new()
-	var mesh := BoxMesh.new()
-	mesh.size = Vector3(2.5, 4.0, 0.3)
-	waterfall.mesh = mesh
-	waterfall.material_override = _glow_material(Color("#72d8f2"))
-	waterfall.position = Vector3(19, 2.0, -4)
-	add_child(waterfall)
+	for index in 3:
+		var waterfall := MeshInstance3D.new()
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(0.68, 4.0 - index * 0.25, 0.18)
+		waterfall.mesh = mesh
+		waterfall.material_override = _glow_material(Color("#72d8f2").lightened(index * 0.04))
+		waterfall.position = Vector3(18.3 + index * 0.72, 2.0 - index * 0.12, -4)
+		waterfall.set_meta("flow_offset", float(index) * 1.7)
+		add_child(waterfall)
+		waterfall_layers.append(waterfall)
+
+func _animate_environment(delta: float) -> void:
+	for tree in animated_trees:
+		if is_instance_valid(tree):
+			tree.rotation.z = sin(environment_time * 0.8 + float(tree.get_meta("sway_offset", 0.0))) * 0.045
+	for waterfall in waterfall_layers:
+		if is_instance_valid(waterfall):
+			var flow := sin(environment_time * 3.0 + float(waterfall.get_meta("flow_offset", 0.0)))
+			waterfall.position.y = 2.0 + flow * 0.1
+			waterfall.scale.y = 1.0 + flow * 0.035
+			var material := waterfall.material_override as StandardMaterial3D
+			if material != null:
+				material.emission_energy_multiplier = 1.55 + (flow + 1.0) * 0.25
+	if active_marker != null and is_instance_valid(active_marker):
+		active_marker.rotation.y += 0.9 * delta
+		var ring := active_marker.get_child(0) as MeshInstance3D
+		var beacon := active_marker.get_child(1) as MeshInstance3D
+		if ring != null:
+			ring.position.y = 0.2 + sin(environment_time * 2.0) * 0.06
+		if beacon != null:
+			beacon.position.y = 2.5 + sin(environment_time * 2.0) * 0.2
+	for dot in scent_dots:
+		if is_instance_valid(dot) and dot.visible:
+			var pulse := 0.85 + sin(environment_time * 5.0 + dot.global_position.length()) * 0.15
+			dot.scale = Vector3.ONE * pulse
 
 func _show_selection() -> void:
 	selection_screen = CanvasLayer.new()
@@ -409,6 +456,7 @@ func _try_consume(power_bite: bool) -> bool:
 		return false
 	player.celebrate_bite()
 	session.consume(food_group, nutrition)
+	sounds.play_food()
 	closest.queue_free()
 	return true
 
@@ -435,6 +483,7 @@ func _use_primary_ability() -> void:
 			hud.show_message("Horn Push clears the path!")
 		_record_ability_objective(ability)
 	_start_cooldown(ability)
+	sounds.play_ability()
 
 func _use_dash() -> void:
 	var ability := profile.ability_by_action("dash", session.growth.stage_index)
@@ -444,6 +493,7 @@ func _use_dash() -> void:
 		return
 	if player.try_dash(true):
 		_start_cooldown(ability)
+		sounds.play_ability()
 		hud.show_message("Dash!")
 
 func _use_special_ability() -> void:
@@ -468,6 +518,7 @@ func _use_special_ability() -> void:
 	if quest != null and quest.objective_type == "finale" and quest.target_id == "valley_rival" and session.growth.is_adult() and _near_active_marker():
 		quest_system.record("finale", "valley_rival")
 	_start_cooldown(ability)
+	sounds.play_ability()
 
 func _use_scent_trail() -> void:
 	var ability := profile.ability_by_action("scent_trail", session.growth.stage_index)
@@ -488,6 +539,7 @@ func _use_scent_trail() -> void:
 	_set_scent_visible(true)
 	_start_cooldown(ability)
 	hud.show_message("Scent Trail is showing the way!")
+	sounds.play_ability()
 
 func _record_ability_objective(ability: AbilityDefinition) -> void:
 	var quest := quest_system.current()
@@ -507,6 +559,7 @@ func _on_stage_changed(stage_index: int, stage_name: String) -> void:
 	player.strength = profile.base_strength + stage_index
 	var scales: Array[float] = [1.0, 1.2, 1.45, 1.75]
 	player.grow_to(scales[stage_index])
+	sounds.play_growth()
 	for ability in profile.abilities:
 		if ability.unlock_stage == stage_index:
 			save_system.unlock_ability(profile.id, ability.id)
@@ -523,6 +576,7 @@ func _on_quest_completed(quest: QuestDefinition) -> void:
 	session.quests_completed += 1
 	session.growth.add_points(quest.reward_growth)
 	hud.show_message("%s complete! +%d Growth Points" % [quest.title, quest.reward_growth])
+	sounds.play_quest_reward()
 
 func _on_quest_chain_completed() -> void:
 	if mode == "adventure":
@@ -591,13 +645,14 @@ func _complete_adventure() -> void:
 		return
 	game_active = false
 	save_system.unlock_endless(profile.id)
-	save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed)
-	hud.show_completion("ADVENTURE COMPLETE!", "%s reached Adult and completed the finale.\nEndless Survival is now unlocked for this dinosaur." % profile.display_name)
+	save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, session.summary())
+	hud.show_completion("ADVENTURE COMPLETE!", "%s reached Adult and completed the finale.\n%s\nEndless Survival is now unlocked for this dinosaur." % [profile.display_name, _run_summary_text()])
 
 func _on_predator_attack(damage: float) -> void:
 	var final_damage := damage * 0.3 if shield_timer > 0.0 else damage
 	session.take_damage(final_damage)
 	hud.show_message("A larger dinosaur bumped you! Find space to recover.")
+	sounds.play_warning()
 
 func _on_player_defeated() -> void:
 	_show_dust_transition()
@@ -605,6 +660,7 @@ func _on_player_defeated() -> void:
 	player.velocity = Vector3.ZERO
 	session.respawn_at_stage_floor()
 	hud.show_message("Back at the safe nest. Current-stage growth was reset.")
+	sounds.play_warning()
 
 func _show_dust_transition() -> void:
 	var dust := ColorRect.new()
@@ -755,7 +811,11 @@ func _return_to_selection() -> void:
 
 func _record_current_run() -> void:
 	if session != null and profile != null:
-		save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed)
+		save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, session.summary())
+
+func _run_summary_text() -> String:
+	var defeat_word := "defeat" if session.defeat_count == 1 else "defeats"
+	return "Run summary: %.1f min | %d food | %d %s" % [session.survival_time / 60.0, session.food_eaten, session.defeat_count, defeat_word]
 
 func _cleanup_run() -> void:
 	game_active = false

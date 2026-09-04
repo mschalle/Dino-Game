@@ -17,6 +17,11 @@ var dash_timer := 0.0
 var body_mesh: MeshInstance3D
 var head_mesh: MeshInstance3D
 var tail_mesh: MeshInstance3D
+var leg_meshes: Array[MeshInstance3D] = []
+var visual_time := 0.0
+var body_rest_y := 0.0
+var head_rest_y := 0.0
+var tail_rest_rotation := Vector3.ZERO
 
 func configure(new_profile: DinosaurProfile) -> void:
 	profile = new_profile
@@ -30,9 +35,9 @@ func _ready() -> void:
 	name = profile.display_name if profile != null else "Young T. rex"
 	_create_visuals()
 
-func _physics_process(_delta: float) -> void:
-	dash_cooldown = maxf(0.0, dash_cooldown - _delta)
-	dash_timer = maxf(0.0, dash_timer - _delta)
+func _physics_process(delta: float) -> void:
+	dash_cooldown = maxf(0.0, dash_cooldown - delta)
+	dash_timer = maxf(0.0, dash_timer - delta)
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := Vector3(input_vector.x, 0.0, input_vector.y)
 	if dash_timer > 0.0:
@@ -40,19 +45,20 @@ func _physics_process(_delta: float) -> void:
 	var sprinting := Input.is_action_pressed("sprint") and energy > 0.0 and direction.length() > 0.0
 	var speed := 18.0 if dash_timer > 0.0 else (sprint_speed if sprinting else move_speed)
 	if sprinting:
-		energy = maxf(0.0, energy - 26.0 * _delta)
+		energy = maxf(0.0, energy - 26.0 * delta)
 	else:
-		energy = minf(max_energy, energy + 16.0 * _delta)
+		energy = minf(max_energy, energy + 16.0 * delta)
 	energy_changed.emit(energy)
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
 	if direction.length() > 0.0:
 		facing = direction.normalized()
-		rotation.y = lerp_angle(rotation.y, atan2(-facing.x, -facing.z), 10.0 * _delta)
+		rotation.y = lerp_angle(rotation.y, atan2(-facing.x, -facing.z), 10.0 * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, speed)
 		velocity.z = move_toward(velocity.z, 0.0, speed)
 	move_and_slide()
+	_animate_visuals(delta, Vector2(velocity.x, velocity.z).length() / maxf(move_speed, 0.01))
 
 func try_dash(unlocked: bool) -> bool:
 	if profile == null or not unlocked or dash_cooldown > 0.0 or energy < 20.0:
@@ -119,14 +125,10 @@ func _create_visuals() -> void:
 	tail_mesh.position = Vector3(0.0, 0.9, 1.4)
 	add_child(tail_mesh)
 	for x in [-0.34, 0.34]:
-		var leg := MeshInstance3D.new()
-		var leg_mesh := CapsuleMesh.new()
-		leg_mesh.radius = 0.16
-		leg_mesh.height = 0.8
-		leg.mesh = leg_mesh
-		leg.material_override = cream
-		leg.position = Vector3(x, 0.4, 0.38)
-		add_child(leg)
+		_add_leg(Vector3(x, 0.4, 0.38), cream, 0.16, 0.8)
+	for x in [-0.34, 0.34]:
+		_add_leg(Vector3(x, 0.4, -0.18), green, 0.13, 0.62)
+	_finish_visual_setup()
 
 func _create_raptor_visuals() -> void:
 	var blue := _material(profile.body_color)
@@ -159,14 +161,10 @@ func _create_raptor_visuals() -> void:
 	tail_mesh.position = Vector3(0.0, 0.72, 1.7)
 	add_child(tail_mesh)
 	for x in [-0.23, 0.23]:
-		var leg := MeshInstance3D.new()
-		var leg_mesh := CapsuleMesh.new()
-		leg_mesh.radius = 0.11
-		leg_mesh.height = 0.9
-		leg.mesh = leg_mesh
-		leg.material_override = cream
-		leg.position = Vector3(x, 0.42, 0.25)
-		add_child(leg)
+		_add_leg(Vector3(x, 0.42, 0.25), cream, 0.11, 0.9)
+	for x in [-0.23, 0.23]:
+		_add_leg(Vector3(x, 0.38, -0.28), blue, 0.09, 0.66)
+	_finish_visual_setup()
 
 func _create_triceratops_visuals() -> void:
 	var coral := _material(profile.body_color)
@@ -200,14 +198,49 @@ func _create_triceratops_visuals() -> void:
 		horn_mesh.position = Vector3(x, 1.1, -1.22)
 		add_child(horn_mesh)
 	for x in [-0.48, 0.48]:
-		var leg := MeshInstance3D.new()
-		var leg_mesh := CapsuleMesh.new()
-		leg_mesh.radius = 0.18
-		leg_mesh.height = 0.75
-		leg.mesh = leg_mesh
-		leg.material_override = coral
-		leg.position = Vector3(x, 0.38, 0.35)
-		add_child(leg)
+		_add_leg(Vector3(x, 0.38, 0.35), coral, 0.18, 0.75)
+	for x in [-0.48, 0.48]:
+		_add_leg(Vector3(x, 0.38, -0.36), coral, 0.18, 0.75)
+	tail_mesh = MeshInstance3D.new()
+	var tail := CylinderMesh.new()
+	tail.top_radius = 0.04
+	tail.bottom_radius = 0.22
+	tail.height = 1.35
+	tail_mesh.mesh = tail
+	tail_mesh.material_override = coral
+	tail_mesh.rotation_degrees.x = 90.0
+	tail_mesh.position = Vector3(0.0, 0.82, 1.3)
+	add_child(tail_mesh)
+	_finish_visual_setup()
+
+func _add_leg(leg_position: Vector3, material: Material, radius: float, height: float) -> void:
+	var leg := MeshInstance3D.new()
+	var leg_mesh := CapsuleMesh.new()
+	leg_mesh.radius = radius
+	leg_mesh.height = height
+	leg.mesh = leg_mesh
+	leg.material_override = material
+	leg.position = leg_position
+	add_child(leg)
+	leg_meshes.append(leg)
+
+func _finish_visual_setup() -> void:
+	body_rest_y = body_mesh.position.y
+	head_rest_y = head_mesh.position.y
+	tail_rest_rotation = tail_mesh.rotation
+
+func _animate_visuals(delta: float, speed_ratio: float) -> void:
+	if body_mesh == null or head_mesh == null or tail_mesh == null:
+		return
+	visual_time += delta * lerpf(2.0, 12.0, clampf(speed_ratio, 0.0, 1.0))
+	var moving := speed_ratio > 0.08
+	var bob := sin(visual_time) * (0.045 if moving else 0.012)
+	body_mesh.position.y = body_rest_y + bob
+	head_mesh.position.y = head_rest_y + bob * 0.65
+	tail_mesh.rotation = tail_rest_rotation + Vector3(0.0, sin(visual_time * 0.7) * (0.22 if moving else 0.06), 0.0)
+	for index in leg_meshes.size():
+		var swing := sin(visual_time + PI * float(index % 2)) * (0.38 if moving else 0.05)
+		leg_meshes[index].rotation.x = swing
 
 func _material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()

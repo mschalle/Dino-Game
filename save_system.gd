@@ -59,12 +59,14 @@ func unlock_ability(species_id: String, ability_id: String) -> void:
 	all_unlocks[species_id] = species_unlocks
 	save_data()
 
-func record_run(species_id: String, survival_time: float, growth_points: int, quests_completed: int) -> void:
+func record_run(species_id: String, survival_time: float, growth_points: int, quests_completed: int, run_summary: Dictionary = {}) -> void:
 	var records := data["records"] as Dictionary
 	var current: Dictionary = records.get(species_id, {})
 	current["best_survival_seconds"] = maxf(float(current.get("best_survival_seconds", 0.0)), survival_time)
 	current["best_growth_points"] = maxi(int(current.get("best_growth_points", 0)), growth_points)
 	current["best_quests"] = maxi(int(current.get("best_quests", 0)), quests_completed)
+	if not run_summary.is_empty():
+		current["last_run"] = run_summary.duplicate(true)
 	records[species_id] = current
 	save_data()
 

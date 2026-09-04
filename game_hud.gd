@@ -55,6 +55,7 @@ func _create_status_panel() -> void:
 	title_label.position = Vector2(18, 12)
 	title_label.size = Vector2(490, 28)
 	title_label.add_theme_font_size_override("font_size", 20)
+	_style_text(title_label)
 	backdrop.add_child(title_label)
 	health_bar = _make_bar(backdrop, "Health", Vector2(18, 50), Color("#ef6b6b"))
 	hunger_bar = _make_bar(backdrop, "Hunger", Vector2(18, 85), Color("#f4c95d"))
@@ -64,33 +65,52 @@ func _create_status_panel() -> void:
 	abilities_label.position = Vector2(18, 192)
 	abilities_label.size = Vector2(495, 42)
 	abilities_label.add_theme_font_size_override("font_size", 14)
+	_style_text(abilities_label, Color("#eaf6ff"), 3)
 	backdrop.add_child(abilities_label)
+	var quest_backdrop := ColorRect.new()
+	quest_backdrop.color = Color(0.04, 0.1, 0.16, 0.88)
+	quest_backdrop.position = Vector2(738, 12)
+	quest_backdrop.size = Vector2(524, 100)
+	add_child(quest_backdrop)
 	quest_label = Label.new()
-	quest_label.position = Vector2(760, 18)
-	quest_label.size = Vector2(495, 85)
+	quest_label.position = Vector2(12, 8)
+	quest_label.size = Vector2(500, 84)
 	quest_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	quest_label.add_theme_font_size_override("font_size", 20)
-	add_child(quest_label)
+	_style_text(quest_label, Color("#ffffff"), 4)
+	quest_backdrop.add_child(quest_label)
+	var message_backdrop := ColorRect.new()
+	message_backdrop.color = Color(0.04, 0.1, 0.16, 0.86)
+	message_backdrop.position = Vector2(95, 610)
+	message_backdrop.size = Vector2(1090, 62)
+	add_child(message_backdrop)
 	message_label = Label.new()
-	message_label.position = Vector2(110, 620)
-	message_label.size = Vector2(1060, 48)
+	message_label.position = Vector2(10, 8)
+	message_label.size = Vector2(1070, 46)
 	message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	message_label.add_theme_font_size_override("font_size", 22)
-	message_label.add_theme_color_override("font_color", Color("#fff3a6"))
-	add_child(message_label)
+	_style_text(message_label, Color("#fff3a6"), 5)
+	message_backdrop.add_child(message_label)
+	var controls_backdrop := ColorRect.new()
+	controls_backdrop.color = Color(0.02, 0.06, 0.1, 0.92)
+	controls_backdrop.position = Vector2(30, 674)
+	controls_backdrop.size = Vector2(1220, 38)
+	add_child(controls_backdrop)
 	var controls := Label.new()
 	controls.text = "WASD / Stick: Move    Shift: Sprint    Left Click: Eat    Right Click: Ability    Q: Scent    Space: Dash    R: Special    Esc: Pause"
-	controls.position = Vector2(50, 680)
-	controls.size = Vector2(1180, 30)
+	controls.position = Vector2(10, 5)
+	controls.size = Vector2(1200, 28)
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	controls.add_theme_font_size_override("font_size", 15)
-	add_child(controls)
+	_style_text(controls, Color("#ffffff"), 3)
+	controls_backdrop.add_child(controls)
 
 func _make_bar(parent: Control, label_text: String, position_value: Vector2, tint: Color) -> ProgressBar:
 	var label := Label.new()
 	label.text = label_text
 	label.position = position_value
 	label.size = Vector2(75, 25)
+	_style_text(label, Color("#ffffff"), 3)
 	parent.add_child(label)
 	var bar := ProgressBar.new()
 	bar.position = position_value + Vector2(78, 1)
@@ -98,6 +118,9 @@ func _make_bar(parent: Control, label_text: String, position_value: Vector2, tin
 	bar.max_value = 100.0
 	bar.value = 100.0
 	bar.show_percentage = true
+	bar.add_theme_color_override("font_color", Color("#101820"))
+	bar.add_theme_color_override("font_outline_color", Color("#ffffff"))
+	bar.add_theme_constant_override("outline_size", 2)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = tint
 	fill.corner_radius_top_left = 7
@@ -121,6 +144,7 @@ func _create_pause_panel() -> void:
 	heading.size = Vector2(300, 60)
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	heading.add_theme_font_size_override("font_size", 38)
+	_style_text(heading, Color("#ffffff"), 5)
 	pause_panel.add_child(heading)
 	_add_menu_button(pause_panel, "Resume", Vector2(490, 260), func() -> void: resume_requested.emit())
 	_add_menu_button(pause_panel, "Restart Run", Vector2(490, 330), func() -> void: restart_requested.emit())
@@ -138,6 +162,7 @@ func _create_completion_panel() -> void:
 	heading.size = Vector2(700, 70)
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	heading.add_theme_font_size_override("font_size", 38)
+	_style_text(heading, Color("#ffffff"), 5)
 	completion_panel.add_child(heading)
 	var body := Label.new()
 	body.name = "Body"
@@ -145,6 +170,7 @@ func _create_completion_panel() -> void:
 	body.size = Vector2(700, 130)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.add_theme_font_size_override("font_size", 21)
+	_style_text(body, Color("#ffffff"), 4)
 	completion_panel.add_child(body)
 	_add_menu_button(completion_panel, "Return to Selection", Vector2(490, 430), func() -> void: selection_requested.emit())
 
@@ -156,3 +182,8 @@ func _add_menu_button(parent: Control, text_value: String, position_value: Vecto
 	button.add_theme_font_size_override("font_size", 20)
 	button.pressed.connect(callback)
 	parent.add_child(button)
+
+func _style_text(label: Label, color: Color = Color.WHITE, outline_size: int = 4) -> void:
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_outline_color", Color("#101820"))
+	label.add_theme_constant_override("outline_size", outline_size)
