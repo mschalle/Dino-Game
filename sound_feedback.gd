@@ -7,7 +7,16 @@ var tone_queue: Array[Dictionary] = []
 var active_tone: Dictionary = {}
 var phase := 0.0
 var elapsed := 0.0
+var effects_volume := 0.7
 const MIX_RATE := 22050.0
+
+func set_effects_volume(value: float) -> void:
+	effects_volume = clampf(value, 0.0, 1.0)
+	if audio_player != null:
+		audio_player.volume_db = linear_to_db(effects_volume)
+
+func get_effects_volume() -> float:
+	return effects_volume
 
 func _ready() -> void:
 	audio_player = AudioStreamPlayer.new()

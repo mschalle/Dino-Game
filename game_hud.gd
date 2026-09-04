@@ -15,11 +15,13 @@ var energy_bar: ProgressBar
 var growth_bar: ProgressBar
 var pause_panel: ColorRect
 var completion_panel: ColorRect
+var help_panel: ColorRect
 
 func _ready() -> void:
 	_create_status_panel()
 	_create_pause_panel()
 	_create_completion_panel()
+	_create_help_panel()
 
 func update_view(session: GameSession, player: PlayerDino, quest_system: QuestSystem, cooldown_text: String) -> void:
 	title_label.text = "%s  •  %s  •  %s" % [session.profile.display_name, session.growth.stage_name(), session.mode.capitalize()]
@@ -37,6 +39,34 @@ func show_message(text: String) -> void:
 
 func set_paused(visible: bool) -> void:
 	pause_panel.visible = visible
+
+func toggle_help() -> void:
+	if help_panel != null:
+		help_panel.visible = not help_panel.visible
+
+func _create_help_panel() -> void:
+	help_panel = ColorRect.new()
+	help_panel.color = Color(0.03, 0.1, 0.16, 0.97)
+	help_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	help_panel.visible = false
+	add_child(help_panel)
+	var heading := Label.new()
+	heading.text = "HOW TO PLAY"
+	heading.position = Vector2(390, 105)
+	heading.size = Vector2(500, 60)
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 36)
+	_style_text(heading, Color("#fff3a6"), 5)
+	help_panel.add_child(heading)
+	var body := Label.new()
+	body.text = "Explore the bright valley and follow the MAIN QUEST marker.\n\nEat the food your dinosaur likes to restore Hunger and earn Growth Points.\nGrow from Hatchling to Adult to unlock stronger abilities.\n\nSmall dinosaurs flee, larger dinosaurs may bump you, and the safe nest restores you after a defeat.\nThere is no graphic violence.\n\nWASD / Left Stick: Move    Shift: Sprint\nLeft Click / X: Eat    Right Click / B: Primary Ability\nQ / LB: Scent Trail    Space / A: Dash    R / Y: Special Ability\nF2/F3: Effects volume    Esc / Start: Pause    F1: Close this guide"
+	body.position = Vector2(340, 190)
+	body.size = Vector2(600, 390)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override("font_size", 20)
+	_style_text(body, Color("#ffffff"), 4)
+	help_panel.add_child(body)
 
 func show_completion(title: String, details: String) -> void:
 	completion_panel.visible = true

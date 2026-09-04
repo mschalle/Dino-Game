@@ -59,6 +59,23 @@ func unlock_ability(species_id: String, ability_id: String) -> void:
 	all_unlocks[species_id] = species_unlocks
 	save_data()
 
+func unlock_cosmetic(species_id: String, cosmetic_id: String) -> void:
+	var cosmetics := data["cosmetics"] as Dictionary
+	var owned: Array = cosmetics.get(species_id, ["default"])
+	if not owned.has(cosmetic_id):
+		owned.append(cosmetic_id)
+	cosmetics[species_id] = owned
+	save_data()
+
+func selected_cosmetic(species_id: String) -> String:
+	return str((data["selected_cosmetics"] as Dictionary).get(species_id, "default"))
+
+func select_cosmetic(species_id: String, cosmetic_id: String) -> void:
+	if not (data["cosmetics"] as Dictionary).get(species_id, []).has(cosmetic_id):
+		return
+	(data["selected_cosmetics"] as Dictionary)[species_id] = cosmetic_id
+	save_data()
+
 func record_run(species_id: String, survival_time: float, growth_points: int, quests_completed: int, run_summary: Dictionary = {}) -> void:
 	var records := data["records"] as Dictionary
 	var current: Dictionary = records.get(species_id, {})
@@ -79,10 +96,11 @@ func _defaults() -> Dictionary:
 			"velociraptor": ["default"],
 			"triceratops": ["default"]
 		},
+		"selected_cosmetics": {},
 		"badges": [],
 		"ability_unlocks": {},
 		"records": {},
-		"settings": {"large_text": true, "reduced_flashes": true}
+		"settings": {"large_text": true, "reduced_flashes": true, "effects_volume": 0.7}
 	}
 
 func _merge_defaults(loaded: Dictionary) -> Dictionary:
