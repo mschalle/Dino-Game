@@ -389,6 +389,7 @@ The player and spawned food now follow the authored elevation function with grav
 215. Added runtime input-bootstrap coverage so gamepad ability bindings are validated alongside keyboard and mouse controls.
 216. Added idempotence validation for repeated runtime input initialization to prevent duplicate bindings.
 217. Added quest-value validation for positive objective amounts and nonnegative Growth Point rewards.
+218. Added finite-coordinate validation for main and optional quest markers used by scent trails and navigation.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
