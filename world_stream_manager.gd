@@ -1,6 +1,8 @@
 class_name WorldStreamManager
 extends RefCounted
 
+const HABITAT_RULES = preload("res://habitat_spawn_rules.gd")
+
 signal chunk_activated(chunk_id: String)
 signal chunk_deactivated(chunk_id: String)
 
@@ -43,6 +45,18 @@ func active_chunk_ids() -> Array[String]:
 	for chunk_id in active_ids:
 		result.append(str(chunk_id))
 	return result
+
+func active_spawn_plan() -> Array[Dictionary]:
+	var plan: Array[Dictionary] = []
+	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
+		var rules := HABITAT_RULES.for_biome(chunk.biome)
+		for tier in rules.get("prey_tiers", []):
+			plan.append({"chunk_id": chunk.chunk_id, "biome": chunk.biome, "role": "prey", "tier": int(tier)})
+		for tier in rules.get("predator_tiers", []):
+			plan.append({"chunk_id": chunk.chunk_id, "biome": chunk.biome, "role": "predator", "tier": int(tier)})
+	return plan
 
 func chunk_id_at_world_position(world_position: Vector3) -> String:
 	var grid := Vector2i(roundi(world_position.x / chunk_world_size), roundi(world_position.z / chunk_world_size))

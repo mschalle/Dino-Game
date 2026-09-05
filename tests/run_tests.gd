@@ -131,6 +131,11 @@ func _test_world_streaming() -> void:
 	manager.update_player_chunk(Vector2i(2, 1))
 	_check(manager.is_active("redstone_badlands"), "New player neighborhood should activate")
 	_check(not manager.is_active("nest_basin"), "Distant previous chunk should deactivate")
+	var spawn_plan := manager.active_spawn_plan()
+	_check(not spawn_plan.is_empty(), "Active chunks should provide a spawn plan")
+	for spawn in spawn_plan:
+		_check(spawn.get("role", "") == "prey" or spawn.get("role", "") == "predator", "Spawn plan roles must be valid")
+		_check(int(spawn.get("tier", 0)) > 0, "Spawn plan tiers must be positive")
 	_check(manager.is_world_position_navigable(Vector3(120.0, 0.0, 60.0)), "Active chunk positions should be navigable")
 	_check(not manager.is_world_position_navigable(Vector3(500.0, 0.0, 500.0)), "Distant positions should not be navigable")
 	var actor := Node3D.new()

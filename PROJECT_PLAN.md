@@ -257,6 +257,7 @@ The player and spawned food now follow the authored elevation function with grav
 83. Added shared active-chunk world-position checks for navigation and actor recovery logic.
 84. Connected active-chunk confinement to the world actor grounding pass for safe NPC recovery.
 85. Added reusable habitat spawn rules and applied them to predator spawning and tier validation.
+86. Added an active-chunk spawn plan combining biome rules with valid prey and predator tiers.
 
 ## Release Readiness
 
