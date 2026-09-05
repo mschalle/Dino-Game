@@ -20,6 +20,7 @@ func _ready() -> void:
 	_create_water(biome)
 	_create_ambient_particles(biome)
 	_create_navigation()
+	_create_landmark_silhouette(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -186,3 +187,30 @@ func _create_navigation() -> void:
 	nav_mesh.agent_height = 1.8
 	region.navigation_mesh = nav_mesh
 	add_child(region)
+
+func _create_landmark_silhouette(biome: String) -> void:
+	var silhouette := MeshInstance3D.new()
+	silhouette.name = "LandmarkSilhouette"
+	var mesh: PrimitiveMesh = CylinderMesh.new()
+	var silhouette_height := 2.8
+	if biome == "Sunstone Ridge" or biome == "Redstone Badlands":
+		var spire := PrismMesh.new()
+		spire.size = Vector3(3.0, 7.0, 3.0)
+		mesh = spire
+		silhouette_height = 7.0
+	elif biome == "River Wetlands":
+		var beacon := CylinderMesh.new()
+		beacon.top_radius = 0.2
+		beacon.bottom_radius = 1.0
+		beacon.height = 5.0
+		mesh = beacon
+	else:
+		var stone := CylinderMesh.new()
+		stone.top_radius = 0.8
+		stone.bottom_radius = 1.4
+		stone.height = 2.8
+		mesh = stone
+	silhouette.mesh = mesh
+	silhouette.position = Vector3(-10.0, silhouette_height * 0.5, -10.0)
+	silhouette.material_override = _biome_material(biome)
+	add_child(silhouette)

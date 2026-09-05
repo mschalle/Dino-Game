@@ -216,6 +216,7 @@ func _test_world_chunks() -> void:
 		_check(visual_root.get_child_count() >= 1, "%s should create a visible landmark mesh" % chunk.chunk_id)
 		_check(visual_root.get_node_or_null("Ground") != null, "%s should create a ground mesh" % chunk.chunk_id)
 		_check(visual_root.get_node_or_null("GroundCollision") != null, "%s should create ground collision" % chunk.chunk_id)
+		_check(visual_root.get_node_or_null("LandmarkSilhouette") != null, "%s should create a landmark silhouette" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		var water := visual_root.get_node_or_null("WaterSurface")
