@@ -212,6 +212,7 @@ func _create_world() -> void:
 	_create_habitat_landmarks()
 	_create_waterfall()
 	_create_fireflies()
+	_apply_authored_environment_quality()
 	_create_distant_mountains()
 
 func _create_distant_mountains() -> void:
