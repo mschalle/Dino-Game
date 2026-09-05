@@ -258,6 +258,16 @@ func _test_controller_bindings() -> void:
 		_check(InputMap.has_action(action), "%s should be available for keyboard/gamepad input" % action)
 	for action in ["eat", "power_bite", "scent_trail", "dash"]:
 		_check(InputMap.has_action(action), "%s should be available for dinosaur abilities" % action)
+	var eat_mouse_ok := false
+	for event in InputMap.action_get_events("eat"):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			eat_mouse_ok = true
+	var bite_mouse_ok := false
+	for event in InputMap.action_get_events("power_bite"):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+			bite_mouse_ok = true
+	_check(eat_mouse_ok, "Eat should remain bound to left click")
+	_check(bite_mouse_ok, "Power Bite should remain bound to right click")
 	var accept := InputEventJoypadButton.new()
 	accept.button_index = JOY_BUTTON_A
 	_check(accept.button_index == JOY_BUTTON_A, "Controller activation event should be constructible")

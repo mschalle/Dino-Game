@@ -381,6 +381,7 @@ The player and spawned food now follow the authored elevation function with grav
 207. Added case-mismatch detection to the Windows export smoke test to protect packaged resource paths.
 208. Added release viewport and HUD-scaling validation for the documented 1280×720 Windows baseline.
 209. Added input-map validation for eat, Power Bite, scent, dash, and special dinosaur abilities.
+210. Added direct mouse-binding validation for left-click Eat and right-click Power Bite controls.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
