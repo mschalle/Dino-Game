@@ -304,6 +304,8 @@ func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
 	for chunk in chunks:
 		_check(not chunk.chunk_id.is_empty() and not chunk.biome.is_empty() and not chunk.landmark_name.is_empty(), "Chunk metadata should be readable")
+		_check(FileAccess.file_exists(chunk.scene_path), "%s should reference an authored chunk scene" % chunk.chunk_id)
+		_check(ResourceLoader.exists(chunk.scene_path) and load(chunk.scene_path) != null, "%s chunk scene should be loadable" % chunk.chunk_id)
 		_check(chunk.max_slope_degrees <= 35.0, "%s required routes must stay within the navigation slope limit" % chunk.chunk_id)
 		_check(chunk.max_climb <= 0.5, "%s required routes must stay within the navigation climb limit" % chunk.chunk_id)
 	var stream := WORLD_STREAM_MANAGER.new()
