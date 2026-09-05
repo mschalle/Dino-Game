@@ -7,6 +7,12 @@ param(
 $ErrorActionPreference = "Stop"
 if (-not (Test-Path -LiteralPath $Godot)) { throw "Godot executable was not found: $Godot" }
 if (-not (Test-Path -LiteralPath (Join-Path $ProjectPath "export_presets.cfg"))) { throw "Windows export preset is missing" }
+$templateRoot = Join-Path $env:APPDATA "Godot\export_templates\4.7.2.stable"
+$debugTemplate = Join-Path $templateRoot "windows_debug_x86_64.exe"
+$releaseTemplate = Join-Path $templateRoot "windows_release_x86_64.exe"
+if (-not (Test-Path -LiteralPath $debugTemplate) -or -not (Test-Path -LiteralPath $releaseTemplate)) {
+    throw "Windows export requires matching Godot export templates (4.7.2). Install them in Editor Settings and retry."
+}
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $outputPath = Join-Path $OutputDirectory "RoarAndRise.exe"
 
