@@ -657,6 +657,7 @@ The player and spawned food now follow the authored elevation function with grav
 376. Added quality-scaled global and biome fog density updates for Low/Medium/High runtime rendering modes.
 377. Added live decorative-shadow scaling: Low disables asset-pack and debris shadows while Medium/High restore them in loaded chunks.
 378. Extended live decorative-shadow scaling to central valley tree scenery for consistent Low/Medium/High behavior.
+379. Tuned the gameplay camera for the expanded reserve with a 68-degree field of view, near clipping, and a 340-meter far horizon for distant landmarks and mountains.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

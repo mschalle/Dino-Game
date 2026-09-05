@@ -750,6 +750,9 @@ func _create_player() -> void:
 	run_root.add_child(player)
 	camera = Camera3D.new()
 	camera.current = true
+	camera.fov = 68.0
+	camera.near = 0.08
+	camera.far = 340.0
 	camera.position = SAFE_SPAWN + Vector3(0, 5.8, 9.5)
 	run_root.add_child(camera)
 
