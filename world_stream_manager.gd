@@ -43,6 +43,15 @@ func is_active(chunk_id: String) -> bool:
 func profile_for_chunk(chunk_id: String) -> RefCounted:
 	return _find_chunk(chunk_id)
 
+func active_biome_names() -> Array[String]:
+	var names: Array[String] = []
+	for chunk_id in active_chunk_ids():
+		var profile := profile_for_chunk(str(chunk_id))
+		if profile != null:
+			names.append(profile.biome)
+	names.sort()
+	return names
+
 func active_chunk_ids() -> Array[String]:
 	var result: Array[String] = []
 	for chunk_id in active_ids:
