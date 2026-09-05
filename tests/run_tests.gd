@@ -424,6 +424,8 @@ func _test_world_chunks() -> void:
 		_check(ground.material_override.albedo_color.is_equal_approx(chunk.ground_color), "%s ground palette should be applied to the terrain mesh" % chunk.chunk_id)
 		_check(ground.visibility_range_end > ground.visibility_range_begin, "%s ground mesh should define a bounded visibility range" % chunk.chunk_id)
 		_check(ground.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s ground mesh should cast shadows" % chunk.chunk_id)
+		var ground_shape := visual_root.get_node_or_null("GroundCollision/GroundShape") as CollisionShape3D
+		_check(ground_shape != null and ground_shape.shape is BoxShape3D and (ground_shape.shape as BoxShape3D).size.x >= 60.0 and (ground_shape.shape as BoxShape3D).size.z >= 60.0, "%s ground collision should cover its visible pad" % chunk.chunk_id)
 		_check(is_equal_approx(float(visual_root.get_meta("fog_density", 0.0)), chunk.fog_density), "%s fog density should be exposed on the visual root" % chunk.chunk_id)
 		var biome_environment := visual_root.get_node_or_null("BiomeEnvironment") as WorldEnvironment
 		_check(biome_environment != null and biome_environment.environment != null and biome_environment.environment.fog_enabled, "%s should create biome fog" % chunk.chunk_id)

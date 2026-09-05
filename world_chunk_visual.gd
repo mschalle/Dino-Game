@@ -161,6 +161,7 @@ func _create_ground(biome: String) -> void:
 	var body := StaticBody3D.new()
 	body.name = "GroundCollision"
 	var collider := CollisionShape3D.new()
+	collider.name = "GroundShape"
 	var shape := BoxShape3D.new()
 	shape.size = Vector3(60.0, 0.25, 60.0)
 	collider.shape = shape
