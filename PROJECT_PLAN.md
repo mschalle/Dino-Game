@@ -244,6 +244,7 @@ The player and spawned food now follow the authored elevation function with grav
 70. Added playable-model asset coverage for Ankylosaurus, Parasaurolophus, and Carnotaurus.
 71. Added data-driven visual landmark generation to every loaded biome chunk scene.
 72. Added regression coverage proving every biome scene instantiates a visible landmark mesh and readable label.
+73. Positioned streamed chunk scenes from their authored grid coordinates to prevent biome overlap.
 
 ## Release Readiness
 

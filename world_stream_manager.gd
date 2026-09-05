@@ -9,6 +9,7 @@ var active_ids: Dictionary = {}
 var scene_instances: Dictionary = {}
 var chunk_states: Dictionary = {}
 var active_radius := 1
+var chunk_world_size := 60.0
 
 func configure(chunk_profiles: Array, radius: int = 1) -> void:
 	chunks = chunk_profiles.duplicate()
@@ -53,6 +54,7 @@ func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 		var instance := scene.instantiate() as Node3D
 		if instance == null:
 			return null
+		instance.position = Vector3(chunk.grid_position.x * chunk_world_size, 0.0, chunk.grid_position.y * chunk_world_size)
 		parent.add_child(instance)
 		scene_instances[chunk_id] = instance
 		return instance

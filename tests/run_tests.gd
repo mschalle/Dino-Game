@@ -112,6 +112,7 @@ func _test_world_streaming() -> void:
 	root.add_child(holder)
 	var loaded := manager.instantiate_chunk("fernwood", holder)
 	_check(loaded != null, "Chunk scene should instantiate")
+	_check(loaded.position == Vector3(60.0, 0.0, 0.0), "Chunk scene should be positioned from its grid coordinate")
 	_check(manager.instantiate_chunk("fernwood", holder) == loaded, "Chunk should not duplicate instances")
 	manager.release_chunk("fernwood")
 	manager.set_chunk_state("fernwood", {"food_claimed": 3, "quest_marker": "trail"})
