@@ -12,6 +12,7 @@ func _init() -> void:
 func _run_tests() -> void:
 	_test_profiles()
 	_test_all_playable_species()
+	_test_species_asset_and_save_isolation()
 	_test_world_chunks()
 	_test_habitat_rules()
 	_test_world_streaming()
@@ -92,6 +93,18 @@ func _test_all_playable_species() -> void:
 	var records: Dictionary = save.data.get("records", {})
 	for profile in DinosaurProfiles.all():
 		_check(records.has(profile.id), "%s should persist an independent record" % profile.id)
+	save.free()
+
+func _test_species_asset_and_save_isolation() -> void:
+	var save := preload("res://save_system.gd").new()
+	for species_id in ["t_rex", "velociraptor", "triceratops", "ankylosaurus", "parasaurolophus", "carnotaurus"]:
+		var profile = DinosaurProfiles.by_id(species_id)
+		_check(profile != null, "%s should resolve from the selection roster" % species_id)
+		_check(FileAccess.file_exists("res://assets/models/dinosaurs/%s.glb" % species_id), "%s should have an authored GLB or fallback asset" % species_id)
+		save.record_run(species_id, 10.0, 2, 1, {"species": species_id})
+	var records: Dictionary = save.data.get("records", {})
+	_check(records.get("t_rex", {}).get("best_growth_points", 0) == 2, "T. rex record should remain isolated")
+	_check(records.get("carnotaurus", {}).get("best_growth_points", 0) == 2, "Carnotaurus record should remain isolated")
 	save.free()
 
 func _test_world_chunks() -> void:

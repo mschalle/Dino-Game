@@ -280,6 +280,7 @@ The player and spawned food now follow the authored elevation function with grav
 106. Added rolling frame-time sampling and a sustained-performance warning to the diagnostics HUD.
 107. Added headless performance-budget validation for repeated streaming and cooldown simulation.
 108. Added automated six-species Adventure startup, ability/quest coverage, and persistence validation.
+109. Added cross-species authored-asset and save-isolation validation for the expanded roster.
 
 ## Release Readiness
 
