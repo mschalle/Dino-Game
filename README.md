@@ -32,7 +32,7 @@ Open `project.godot` in Godot 4 and press **F6** or **F5**. The game uses import
 
 Run the project headlessly to verify startup, then run `res://tests/run_tests.gd` with Godot's `--script` option for profile, growth, quest, survival, AI, food, and save coverage.
 
-For the complete roadmap gate, run `.\tools\roadmap_validation.ps1`. It runs gameplay tests, headless startup, and `git diff --check` in sequence; it does not stage, commit, or push changes.
+For the complete roadmap gate, run `.\tools\roadmap_validation.ps1`. It runs gameplay tests, headless startup, and `git diff --check` in sequence; it does not stage, commit, or push changes. Use `.\tools\roadmap_status.ps1` to report the latest checkpoint, or add `-RunValidation` to report it and run the full gate together.
 
 ## Next milestones
 
