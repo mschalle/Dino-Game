@@ -259,6 +259,7 @@ The player and spawned food now follow the authored elevation function with grav
 85. Added reusable habitat spawn rules and applied them to predator spawning and tier validation.
 86. Added an active-chunk spawn plan combining biome rules with valid prey and predator tiers.
 87. Connected active habitat prey tiers to renewable food spawning.
+88. Added per-tier population caps derived from the active habitat spawn plan.
 
 ## Release Readiness
 

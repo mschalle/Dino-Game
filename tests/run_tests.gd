@@ -126,6 +126,7 @@ func _test_habitat_food_filter() -> void:
 	var spawner := preload("res://food_spawner.gd").new()
 	spawner.set_spawn_plan([{"role": "prey", "tier": 1}])
 	_check(spawner.allowed_prey_tiers == [1], "Food spawner should accept active habitat prey tiers")
+	_check(spawner.population_caps[1] == 4, "Food spawner should derive a tier population cap")
 	spawner.free()
 
 func _test_world_streaming() -> void:
