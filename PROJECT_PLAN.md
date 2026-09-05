@@ -359,6 +359,7 @@ The player and spawned food now follow the authored elevation function with grav
 189. Added NPC catalog validation for supported roles and tier bounds across all seven creature profiles.
 190. Added `tools/roadmap_status.ps1` to report the latest checkpoint and optionally run the complete validation gate in one command.
 191. Added duplicate-checkpoint rejection to the roadmap status runner before milestone validation runs.
+192. Added roadmap checkpoint integrity as the fourth gate in the main validation script.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.

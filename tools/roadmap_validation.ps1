@@ -14,7 +14,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectPath "project.godot"))) {
 
 Push-Location $ProjectPath
 try {
-    Write-Host "[1/3] Running automated gameplay tests..."
+    Write-Host "[1/4] Running automated gameplay tests..."
     $test_output = (& $Godot --headless --path "." --script "res://tests/run_tests.gd" 2>&1 | Out-String)
     Write-Host $test_output
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
@@ -23,17 +23,22 @@ try {
         throw "Godot gameplay tests did not report a clean PASS marker"
     }
 
-    Write-Host "[2/3] Checking headless project startup..."
+    Write-Host "[2/4] Checking headless project startup..."
     $startup_output = (& $Godot --headless --path "." --quit-after 5 2>&1 | Out-String)
     Write-Host $startup_output
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "Godot startup check failed ($exit_code)" }
     if ($startup_output -match "SCRIPT ERROR|Parse Error") { throw "Godot startup reported a script or parse error" }
 
-    Write-Host "[3/3] Checking Git whitespace..."
+    Write-Host "[3/4] Checking Git whitespace..."
     git diff --check
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "git diff --check failed ($exit_code)" }
+
+    Write-Host "[4/4] Checking roadmap checkpoint integrity..."
+    & (Join-Path $ProjectPath "tools\roadmap_status.ps1") -ProjectPath $ProjectPath
+    $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
+    if ($exit_code -ne 0) { throw "Roadmap checkpoint integrity check failed ($exit_code)" }
 
     Write-Host "Roadmap validation: PASS"
 }
