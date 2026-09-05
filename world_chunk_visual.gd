@@ -132,6 +132,10 @@ func _create_environment(biome: String) -> void:
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = environment.background_color.lightened(0.15)
 	environment.ambient_light_energy = 0.55 if biome != "Moonlit Grove" and biome != "Glacier Valley" else 0.42
+	environment.ssao_enabled = true
+	environment.ssao_radius = 1.6
+	environment.ssao_intensity = 0.9
+	environment.ssao_power = 1.2
 	environment.fog_enabled = true
 	environment.fog_light_color = biome_color.lightened(0.12)
 	environment.fog_density = float(get_meta("fog_density", 0.006)) * 1.15

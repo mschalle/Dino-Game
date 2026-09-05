@@ -168,6 +168,10 @@ func _create_world() -> void:
 	env.ambient_light_energy = 0.62
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_exposure = 1.12
+	env.ssao_enabled = true
+	env.ssao_radius = 2.2
+	env.ssao_intensity = 1.25
+	env.ssao_power = 1.35
 	env.fog_enabled = true
 	env.fog_light_color = Color("#a9a18e")
 	env.fog_density = 0.0045
