@@ -413,6 +413,7 @@ The player and spawned food now follow the authored elevation function with grav
 239. Added authored palette tinting for streamed wetland water surfaces and validated water color coherence per biome.
 240. Added authored palette tinting for streamed ambient particle materials and validated atmospheric color coherence per biome.
 241. Added authored palette tinting for streamed batched vegetation materials and validated foliage color coherence per biome.
+242. Added authored palette propagation to streamed fog light colors and validated complete biome environment color coherence.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
