@@ -484,6 +484,7 @@ func _create_ambient_particles(biome: String) -> void:
 	elif biome == "Glacier Valley" or biome == "Highland Plateau":
 		particle_count = maxi(2, int(4.0 * effects_scale))
 	particles.amount = particle_count
+	particles.set_meta("base_particle_count", particle_count)
 	particles.lifetime = 5.0
 	particles.visibility_aabb = AABB(Vector3(-30.0, -1.0, -30.0), Vector3(60.0, 12.0, 60.0))
 	var particle_material := StandardMaterial3D.new()
@@ -524,6 +525,7 @@ func _create_weather_particles(biome: String, effects_scale: float) -> void:
 	var particles := GPUParticles3D.new()
 	particles.name = "BiomeWeather_%s" % weather_kind
 	particles.amount = maxi(4, int(18.0 * effects_scale))
+	particles.set_meta("base_particle_count", 18)
 	particles.lifetime = 4.0 if weather_kind == "mist" else 2.5
 	particles.visibility_aabb = AABB(Vector3(-30.0, -2.0, -30.0), Vector3(60.0, 14.0, 60.0))
 	var material := StandardMaterial3D.new()

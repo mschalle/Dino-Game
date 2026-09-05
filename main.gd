@@ -1605,9 +1605,12 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 		var ambient := chunk.get_node_or_null("AmbientParticles") as GPUParticles3D
 		if ambient != null:
 			ambient.emitting = ENVIRONMENT_QUALITY.weather_enabled
+			ambient.amount = maxi(2, int(float(ambient.get_meta("base_particle_count", 7)) * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))))
 		for child in chunk.get_children():
 			if child is GPUParticles3D and str(child.name).begins_with("BiomeWeather_"):
-				(child as GPUParticles3D).emitting = ENVIRONMENT_QUALITY.weather_enabled
+				var weather_particles := child as GPUParticles3D
+				weather_particles.emitting = ENVIRONMENT_QUALITY.weather_enabled
+				weather_particles.amount = maxi(4, int(float(weather_particles.get_meta("base_particle_count", 18)) * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))))
 		var dressing: Node = chunk.get_node_or_null("AssetPackDressing")
 		if dressing != null:
 			var prop_distance := 95.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
