@@ -302,8 +302,11 @@ func _test_controller_bindings() -> void:
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
+	var grid_positions := {}
 	for chunk in chunks:
 		_check(not chunk.chunk_id.is_empty() and not chunk.biome.is_empty() and not chunk.landmark_name.is_empty(), "Chunk metadata should be readable")
+		_check(not grid_positions.has(chunk.grid_position), "%s should not overlap another chunk grid position" % chunk.chunk_id)
+		grid_positions[chunk.grid_position] = true
 		_check(abs(chunk.grid_position.x) <= 4 and abs(chunk.grid_position.y) <= 4, "%s grid position should remain inside the authored reserve" % chunk.chunk_id)
 		_check(chunk.scene_path.ends_with(".tscn"), "%s should reference a Godot scene path" % chunk.chunk_id)
 		_check(FileAccess.file_exists(chunk.scene_path), "%s should reference an authored chunk scene" % chunk.chunk_id)

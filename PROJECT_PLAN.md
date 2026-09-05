@@ -399,6 +399,7 @@ The player and spawned food now follow the authored elevation function with grav
 225. Added chunk-neighbor validation for nonempty, non-self string IDs to protect streamed border connectivity.
 226. Added scene-extension validation so streamed chunk profiles reference Godot `.tscn` scenes.
 227. Added authored-reserve bounds validation for streamed chunk grid coordinates.
+228. Added grid-position uniqueness validation to prevent overlapping streamed chunks.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
