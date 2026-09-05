@@ -603,6 +603,7 @@ The player and spawned food now follow the authored elevation function with grav
 322. Added herd counts to runtime metrics for population observability and budget diagnostics.
 323. Added a four-member herd-size cap so excess compatible prey seed separate herd anchors.
 324. Added spawn-maintenance coverage confirming tiered prey herds remain capped at four members during replenishment.
+325. Added chunk unload, snapshot, and scene-reactivation coverage for persisted herd records.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
