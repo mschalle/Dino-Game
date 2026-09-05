@@ -639,6 +639,7 @@ The player and spawned food now follow the authored elevation function with grav
 358. Extended developer telemetry with environment quality, weather state, and daylight-cycle state alongside chunk, NPC, and frame metrics.
 359. Added predator warning and attack audio signals with readable retreat messaging and stronger naturalistic threat feedback.
 360. Reconciled active roadmap language with the naturalistic adventure direction while retaining bounded combat, readability, accessibility, and performance gates.
+361. Added crossfaded biome ambience transitions so streamed chunk changes no longer cut environmental audio abruptly.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
