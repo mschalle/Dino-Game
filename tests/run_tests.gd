@@ -878,6 +878,7 @@ func _test_gameplay_integration() -> void:
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
 	for firefly in main_scene.fireflies:
 		_check(firefly.visibility_range_end > firefly.visibility_range_begin, "Ambient fireflies should define a bounded visibility range")
+		_check(firefly.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Ambient fireflies should avoid unnecessary shadows")
 	for child in main_scene.get_children():
 		if child is MeshInstance3D and child.get_child_count() > 0 and child.get_child(0) is Label3D:
 			_check(child.visibility_range_end > child.visibility_range_begin, "Habitat landmark markers should define a bounded visibility range")

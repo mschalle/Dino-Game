@@ -275,6 +275,7 @@ func _create_fireflies() -> void:
 		mesh.radius = 0.045
 		mesh.height = 0.09
 		firefly.mesh = mesh
+		firefly.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		firefly.visibility_range_begin = 0.0
 		firefly.visibility_range_end = 70.0
 		firefly.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED

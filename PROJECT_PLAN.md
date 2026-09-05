@@ -441,6 +441,7 @@ The player and spawned food now follow the authored elevation function with grav
 267. Added explicit shadow-casting settings to streamed ground, elevation, and landmark meshes with runtime validation.
 268. Added explicit legacy-scene shadow policy for trees, crowns, habitat markers, and non-shadowing waterfall layers.
 269. Added explicit streamed shadow policy for batched vegetation and non-shadowing water surfaces with runtime validation.
+270. Added non-shadowing configuration for legacy fireflies with integration validation to reduce ambient-effect cost.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
