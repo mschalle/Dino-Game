@@ -69,6 +69,9 @@ func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
 	_check(chunks.size() == 6, "Reserve should define six initial biome chunks")
 	_check(WORLD_CHUNK_PROFILES.connections_are_symmetric(chunks), "Biome connections must be bidirectional")
+	var route := WORLD_CHUNK_PROFILES.find_route(chunks, "nest_basin", "redstone_badlands")
+	_check(route.size() >= 2, "Reserve must provide a route between distant biomes")
+	_check(route.front() == "nest_basin" and route.back() == "redstone_badlands", "Biome route endpoints must be correct")
 	var ids: Dictionary = {}
 	for chunk in chunks:
 		_check(not ids.has(chunk.chunk_id), "Chunk IDs must be unique")

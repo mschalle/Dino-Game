@@ -30,7 +30,32 @@ static func connections_are_symmetric(chunk_profiles: Array) -> bool:
 		for neighbor_id in chunk.neighbor_ids:
 			if not by_id.has(neighbor_id):
 				return false
-			var neighbor = by_id[neighbor_id]
+			var neighbor: Variant = by_id[neighbor_id]
 			if not neighbor.neighbor_ids.has(chunk.chunk_id):
 				return false
 	return true
+
+static func find_route(chunk_profiles: Array, start_id: String, destination_id: String) -> Array[String]:
+	var by_id: Dictionary = {}
+	for chunk in chunk_profiles:
+		by_id[chunk.chunk_id] = chunk
+	if not by_id.has(start_id) or not by_id.has(destination_id):
+		return []
+	var queue: Array[String] = [start_id]
+	var previous: Dictionary = {start_id: ""}
+	while not queue.is_empty():
+		var current: String = queue.pop_front()
+		if current == destination_id:
+			break
+		for neighbor_id in by_id[current].neighbor_ids:
+			if not previous.has(neighbor_id):
+				previous[neighbor_id] = current
+				queue.append(neighbor_id)
+	if not previous.has(destination_id):
+		return []
+	var route: Array[String] = []
+	var cursor := destination_id
+	while cursor != "":
+		route.push_front(cursor)
+		cursor = str(previous[cursor])
+	return route
