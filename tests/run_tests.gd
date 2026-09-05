@@ -490,6 +490,7 @@ func _test_world_chunks() -> void:
 			_check(elevation.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s elevated terrain should cast shadows" % chunk.chunk_id)
 			_check(elevation.mesh is BoxMesh and (elevation.mesh as BoxMesh).size.x > 0.0 and (elevation.mesh as BoxMesh).size.y > 0.0 and (elevation.mesh as BoxMesh).size.z > 0.0, "%s elevated terrain should have positive visual dimensions" % chunk.chunk_id)
 			_check(elevation.material_override is StandardMaterial3D and elevation.material_override.albedo_color.is_equal_approx(chunk.ground_color), "%s elevated terrain palette should match its ground profile" % chunk.chunk_id)
+			_check(elevation.material_override.roughness >= 0.0 and elevation.material_override.roughness <= 1.0, "%s elevated terrain roughness should remain bounded" % chunk.chunk_id)
 			_check(visual_root.get_node_or_null("ElevationCollision") != null, "%s should create elevated terrain collision" % chunk.chunk_id)
 		var has_labelled_landmark := false
 		var landmark_label_matches := false
