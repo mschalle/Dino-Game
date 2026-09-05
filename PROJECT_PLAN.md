@@ -293,6 +293,7 @@ The player and spawned food now follow the authored elevation function with grav
 119. Added Endless difficulty-scaling validation for predator awareness and bounded resource scarcity.
 120. Added consolidated release-readiness validation for startup artifacts, roster, save schema, and test coverage.
 121. Added distinct low-poly landmark silhouettes for each biome destination.
+122. Added biome identity metadata to landmark silhouettes for runtime presentation and future navigation cues.
 
 ## Release Readiness
 
