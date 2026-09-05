@@ -372,6 +372,7 @@ The player and spawned food now follow the authored elevation function with grav
 198. Added NPC presentation validation for non-empty display names and visible body colors.
 199. Added reward-scaling validation for positive hunger rewards and nondecreasing Growth Point rewards by NPC tier.
 200. Added a checked-in Windows Desktop export preset and automated coverage for its platform and runnable settings.
+201. Added the Windows export-template prerequisite to release documentation after a headless export smoke test reached the preset but found no installed 4.7.2 templates.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
