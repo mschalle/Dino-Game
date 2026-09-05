@@ -285,6 +285,7 @@ The player and spawned food now follow the authored elevation function with grav
 111. Added reusable row-wrapping selection navigation rules with keyboard/gamepad regression tests.
 112. Wired explicit focus neighbors into the six Adventure selection buttons and auto-focused the first card.
 113. Added controller-binding regression coverage for selection activation and gameplay movement actions.
+114. Added accessibility validation for large text, high contrast, and focusable HUD controls.
 
 ## Release Readiness
 
