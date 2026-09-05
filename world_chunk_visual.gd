@@ -54,6 +54,26 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 		color = Color("#c97862")
 	elif biome == "Ancient Meadow":
 		color = Color("#91c85a")
+	elif biome == "Cloudforest Rise":
+		color = Color("#568b78")
+	elif biome == "Coastal Marsh":
+		color = Color("#6caa8d")
+	elif biome == "Volcanic Foothills":
+		color = Color("#9c6257")
+	elif biome == "Fossil Flats":
+		color = Color("#b49b68")
+	elif biome == "Redwood Canyon":
+		color = Color("#536f4d")
+	elif biome == "Highland Plateau":
+		color = Color("#8a8370")
+	elif biome == "Moonlit Grove":
+		color = Color("#536c78")
+	elif biome == "Saltwind Dunes":
+		color = Color("#c4a36c")
+	elif biome == "Glacier Valley":
+		color = Color("#8bb4c2")
+	elif biome == "Cypress Basin":
+		color = Color("#587b62")
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.emission_enabled = true
@@ -98,6 +118,36 @@ func _create_elevation(biome: String) -> void:
 	elif biome == "Fernwood":
 		size = Vector3(14.0, 1.0, 20.0)
 		position = Vector3(-6.0, 0.5, 6.0)
+	elif biome == "Cloudforest Rise":
+		size = Vector3(20.0, 2.6, 16.0)
+		position = Vector3(-8.0, 1.3, -3.0)
+	elif biome == "Coastal Marsh":
+		size = Vector3(18.0, 0.6, 20.0)
+		position = Vector3(6.0, 0.3, 7.0)
+	elif biome == "Volcanic Foothills":
+		size = Vector3(24.0, 5.0, 18.0)
+		position = Vector3(7.0, 2.5, 5.0)
+	elif biome == "Fossil Flats":
+		size = Vector3(20.0, 1.0, 22.0)
+		position = Vector3(-8.0, 0.5, 6.0)
+	elif biome == "Redwood Canyon":
+		size = Vector3(18.0, 3.4, 24.0)
+		position = Vector3(-6.0, 1.7, -6.0)
+	elif biome == "Highland Plateau":
+		size = Vector3(26.0, 6.0, 16.0)
+		position = Vector3(8.0, 3.0, -4.0)
+	elif biome == "Moonlit Grove":
+		size = Vector3(16.0, 1.4, 20.0)
+		position = Vector3(-5.0, 0.7, 7.0)
+	elif biome == "Saltwind Dunes":
+		size = Vector3(24.0, 2.2, 14.0)
+		position = Vector3(6.0, 1.1, -7.0)
+	elif biome == "Glacier Valley":
+		size = Vector3(22.0, 4.4, 20.0)
+		position = Vector3(7.0, 2.2, 6.0)
+	elif biome == "Cypress Basin":
+		size = Vector3(20.0, 1.0, 18.0)
+		position = Vector3(-7.0, 0.5, 5.0)
 	var mound := MeshInstance3D.new()
 	mound.name = "Elevation"
 	var mesh := BoxMesh.new()

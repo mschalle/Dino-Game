@@ -311,6 +311,7 @@ The player and spawned food now follow the authored elevation function with grav
 137. Expanded the authored reserve with Redwood Canyon and Highland Plateau tiered habitats.
 138. Expanded the authored reserve with Moonlit Grove and Saltwind Dunes tiered habitats.
 139. Completed the planned sixteen-chunk reserve with Glacier Valley and Cypress Basin.
+140. Added distinct materials and elevation forms for all ten newly authored biomes.
 
 ## Release Readiness
 
