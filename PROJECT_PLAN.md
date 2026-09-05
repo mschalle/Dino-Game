@@ -418,6 +418,7 @@ The player and spawned food now follow the authored elevation function with grav
 244. Added explicit visibility ranges to streamed landmark silhouettes and validated bounded landmark distance culling.
 245. Added explicit visibility ranges to streamed ambient particles and validated bounded atmospheric distance culling.
 246. Added explicit visibility ranges to streamed water surfaces and validated bounded wetland distance culling.
+247. Added landmark-label visibility-range validation to preserve readable but bounded destination signage.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

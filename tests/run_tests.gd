@@ -475,6 +475,7 @@ func _test_world_chunks() -> void:
 					if nested is Label3D:
 						has_labelled_landmark = true
 						landmark_label_matches = nested.text == chunk.landmark_name
+						_check(nested.visibility_range_end > nested.visibility_range_begin, "%s landmark label should define a bounded visibility range" % chunk.chunk_id)
 		_check(has_labelled_landmark, "%s landmark should include a readable label" % chunk.chunk_id)
 		_check(landmark_label_matches, "%s landmark label should match its profile" % chunk.chunk_id)
 		visual_root.free()
