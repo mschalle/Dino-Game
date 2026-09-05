@@ -472,6 +472,7 @@ The player and spawned food now follow the authored elevation function with grav
 298. Added checkpoint-integrity preflight so the loop rejects duplicate or out-of-order roadmap entries before gameplay validation.
 299. Added sequential-advance enforcement so the roadmap loop cannot skip a milestone between validation passes.
 300. Added a hard 100-iteration safety cap to prevent unbounded roadmap automation.
+301. Added `ROADMAP_AUTOMATION.md` documenting the milestone loop contract, gates, stop conditions, and packaging prerequisite.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
