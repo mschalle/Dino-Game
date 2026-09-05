@@ -2,11 +2,19 @@ class_name ValleyPredator
 extends Node3D
 
 signal bump_attack(damage: float)
+signal creature_defeated(creature: Node3D, profile: RefCounted)
+
+const CREATURE_PROFILES = preload("res://creature_profiles.gd")
+const COMBAT_COMPONENT = preload("res://combat_component.gd")
 
 const VALLEY_LIMIT := 27.0
 
 var player: PlayerDino
 var strength := 2
+var creature_profile
+var combat = COMBAT_COMPONENT.new()
+var defeat_timer := 0.0
+var navigation_agent: NavigationAgent3D
 var state := "wander"
 var home := Vector3.ZERO
 var phase := 0.0
@@ -20,9 +28,12 @@ var leg_meshes: Array[MeshInstance3D] = []
 var body_rest_y := 0.0
 var head_rest_y := 0.0
 var tail_rest_rotation := Vector3.ZERO
+var imported_model: Node3D
+var imported_animation_player: AnimationPlayer
 
 func setup(new_strength: int, new_position: Vector3) -> void:
 	strength = new_strength
+	creature_profile = CREATURE_PROFILES.predator_for_tier(new_strength)
 	position = new_position
 	home = new_position
 
@@ -31,9 +42,26 @@ func set_player(new_player: PlayerDino) -> void:
 
 func _ready() -> void:
 	add_to_group("predator")
+	if creature_profile == null:
+		creature_profile = CREATURE_PROFILES.predator_for_tier(strength)
+	combat.configure(creature_profile.max_health)
+	navigation_agent = NavigationAgent3D.new()
+	navigation_agent.path_desired_distance = 1.5
+	navigation_agent.target_desired_distance = 1.5
+	navigation_agent.radius = 0.65
+	add_child(navigation_agent)
 	_create_visuals()
 
 func _process(delta: float) -> void:
+	combat.tick(delta)
+	if combat.is_defeated():
+		defeat_timer -= delta
+		if defeat_timer <= 0.0 and creature_profile.respawn_delay > 0.0:
+			combat.reset()
+			visible = true
+			global_position = home
+			state = "wander"
+		return
 	phase += delta
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	if player == null:
@@ -53,19 +81,18 @@ func _process(delta: float) -> void:
 		if warning_timer <= 0.0:
 			state = "chase" if can_challenge else "recover"
 	elif state == "chase":
-		var direction := (player.global_position - global_position).normalized()
-		direction.y = 0.0
+		var direction := _navigation_direction(player.global_position)
 		global_position += direction * 4.0 * delta
 		look_at(global_position + direction, Vector3.UP)
 		if distance < 1.7 and attack_cooldown <= 0.0:
 			attack_cooldown = 1.5
-			bump_attack.emit(15.0)
+			bump_attack.emit(creature_profile.attack_damage)
 		if distance > 20.0 or not can_challenge:
 			state = "recover"
 	elif state == "recover":
-		var direction_home := (home - global_position)
+		var direction_home := _navigation_direction(home)
 		if direction_home.length() > 1.0:
-			global_position += direction_home.normalized() * 2.2 * delta
+			global_position += direction_home * 2.2 * delta
 		else:
 			state = "wander"
 	_clamp_to_valley()
@@ -78,6 +105,32 @@ func scare_away() -> void:
 		home.x = clampf(home.x, -VALLEY_LIMIT, VALLEY_LIMIT)
 		home.z = clampf(home.z, -VALLEY_LIMIT, VALLEY_LIMIT)
 
+func _navigation_direction(target: Vector3) -> Vector3:
+	var direct := target - global_position
+	direct.y = 0.0
+	if navigation_agent != null:
+		navigation_agent.target_position = target
+		var next_point := navigation_agent.get_next_path_position()
+		var navigated := next_point - global_position
+		navigated.y = 0.0
+		if navigated.length() > 0.2:
+			return navigated.normalized()
+	return direct.normalized() if direct.length() > 0.01 else Vector3.ZERO
+
+func receive_attack(damage: float, attacker_position: Vector3) -> bool:
+	if not combat.take_hit(damage):
+		return false
+	var away := (global_position - attacker_position).normalized()
+	global_position += Vector3(away.x, 0.0, away.z) * 0.3
+	if combat.is_defeated():
+		defeat_timer = creature_profile.respawn_delay
+		visible = false
+		creature_defeated.emit(self, creature_profile)
+	else:
+		state = "warn"
+		warning_timer = 0.35
+	return true
+
 func _wander() -> void:
 	global_position = home + Vector3(sin(phase * 0.35) * 2.0, 0.0, cos(phase * 0.28) * 2.0)
 
@@ -88,8 +141,10 @@ func _clamp_to_valley() -> void:
 	home.z = clampf(home.z, -VALLEY_LIMIT, VALLEY_LIMIT)
 
 func _create_visuals() -> void:
+	if _try_imported_model():
+		return
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("#8b5f9d")
+	material.albedo_color = creature_profile.body_color if creature_profile != null else Color("#8b5f9d")
 	material.roughness = 0.88
 	body_mesh = MeshInstance3D.new()
 	var body_mesh := CapsuleMesh.new()
@@ -124,6 +179,52 @@ func _create_visuals() -> void:
 	head_rest_y = head_mesh.position.y
 	tail_rest_rotation = tail_mesh.rotation
 
+func _try_imported_model() -> bool:
+	if creature_profile == null:
+		return false
+	var model_path := "res://assets/models/dinosaurs/%s.glb" % creature_profile.id
+	if not ResourceLoader.exists(model_path):
+		return false
+	var model_scene := load(model_path) as PackedScene
+	if model_scene == null:
+		return false
+	imported_model = model_scene.instantiate() as Node3D
+	if imported_model == null:
+		return false
+	add_child(imported_model)
+	imported_model.name = "ImportedDinosaurModel"
+	imported_model.scale = Vector3.ONE * (0.82 + creature_profile.tier * 0.14)
+	_set_model_shadows(imported_model)
+	_create_imported_animation_library()
+	return true
+
+func _set_model_shadows(node: Node) -> void:
+	if node is GeometryInstance3D:
+		(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	for child in node.get_children():
+		_set_model_shadows(child)
+
+func _create_imported_animation_library() -> void:
+	imported_animation_player = AnimationPlayer.new()
+	var library := AnimationLibrary.new()
+	for name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+		var animation := Animation.new()
+		animation.length = 0.8 if name != "Idle" else 2.0
+		animation.loop_mode = Animation.LOOP_LINEAR if name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
+		var track := animation.add_track(Animation.TYPE_VALUE)
+		animation.track_set_path(track, NodePath("../ImportedDinosaurModel:rotation"))
+		var tilt := Vector3.ZERO
+		if name == "Attack": tilt.x = -0.2
+		elif name == "Hit": tilt.z = 0.16
+		elif name == "Defeat": tilt.z = 0.7
+		animation.track_insert_key(track, 0.0, Vector3.ZERO)
+		animation.track_insert_key(track, animation.length * 0.5, tilt)
+		animation.track_insert_key(track, animation.length, Vector3.ZERO)
+		library.add_animation(name, animation)
+	imported_animation_player.add_animation_library("", library)
+	add_child(imported_animation_player)
+	imported_animation_player.play("Idle")
+
 func _add_leg(leg_position: Vector3, material: Material) -> void:
 	var leg := MeshInstance3D.new()
 	var leg_shape := CapsuleMesh.new()
@@ -136,6 +237,11 @@ func _add_leg(leg_position: Vector3, material: Material) -> void:
 	leg_meshes.append(leg)
 
 func _animate_visuals(moving: bool) -> void:
+	if imported_animation_player != null:
+		var desired := "Run" if moving else "Idle"
+		if imported_animation_player.current_animation != desired:
+			imported_animation_player.play(desired)
+		return
 	if body_mesh == null:
 		return
 	var bob := sin(phase * 5.0) * (0.04 if moving else 0.012)

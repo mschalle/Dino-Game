@@ -22,6 +22,10 @@ var visual_time := 0.0
 var body_rest_y := 0.0
 var head_rest_y := 0.0
 var tail_rest_rotation := Vector3.ZERO
+var gravity := 24.0
+var imported_model: Node3D
+var imported_model_rest_y := 0.0
+var imported_animation_player: AnimationPlayer
 
 func configure(new_profile: DinosaurProfile) -> void:
 	profile = new_profile
@@ -40,6 +44,15 @@ func _physics_process(delta: float) -> void:
 	dash_timer = maxf(0.0, dash_timer - delta)
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := Vector3(input_vector.x, 0.0, input_vector.y)
+	var world := get_tree().get_first_node_in_group("world_controller")
+	var floor_y := global_position.y
+	if world != null and world.has_method("_terrain_height_at"):
+		floor_y = world._terrain_height_at(global_position.x, global_position.z)
+	if global_position.y > floor_y + 0.04:
+		velocity.y -= gravity * delta
+	else:
+		global_position.y = floor_y
+		velocity.y = 0.0
 	if dash_timer > 0.0:
 		direction = facing
 	var sprinting := Input.is_action_pressed("sprint") and energy > 0.0 and direction.length() > 0.0
@@ -58,6 +71,9 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, speed)
 		velocity.z = move_toward(velocity.z, 0.0, speed)
 	move_and_slide()
+	if global_position.y < floor_y - 2.0:
+		global_position.y = floor_y
+		velocity.y = 0.0
 	_animate_visuals(delta, Vector2(velocity.x, velocity.z).length() / maxf(move_speed, 0.01))
 
 func try_dash(unlocked: bool) -> bool:
@@ -74,11 +90,37 @@ func grow_to(new_scale: float) -> void:
 	tween.tween_property(self, "scale", Vector3.ONE * growth_scale, 0.35).set_trans(Tween.TRANS_BACK)
 
 func celebrate_bite() -> void:
+	if imported_animation_player != null:
+		imported_animation_player.play("Eat")
+	if imported_model != null:
+		var eat_tween := create_tween()
+		eat_tween.tween_property(imported_model, "rotation:x", -0.16, 0.10)
+		eat_tween.tween_property(imported_model, "rotation:x", 0.0, 0.18)
 	var tween := create_tween()
-	tween.tween_property(head_mesh, "position:z", -0.52, 0.08)
-	tween.tween_property(head_mesh, "position:z", -0.33, 0.12)
+	if head_mesh != null:
+		tween.tween_property(head_mesh, "position:z", -0.52, 0.08)
+		tween.tween_property(head_mesh, "position:z", -0.33, 0.12)
+
+func play_combat_animation(power_bite: bool) -> void:
+	if imported_animation_player != null:
+		imported_animation_player.play("Attack")
+	if imported_model != null:
+		var imported_tween := create_tween()
+		imported_tween.tween_property(imported_model, "rotation:x", -0.24 if power_bite else -0.14, 0.08)
+		imported_tween.tween_property(imported_model, "rotation:x", 0.0, 0.16)
+		return
+	var target_mesh := head_mesh
+	if target_mesh == null:
+		target_mesh = body_mesh
+	if target_mesh != null:
+		var original_scale := target_mesh.scale
+		var tween := create_tween()
+		tween.tween_property(target_mesh, "scale", original_scale * (1.12 if power_bite else 1.06), 0.08)
+		tween.tween_property(target_mesh, "scale", original_scale, 0.14)
 
 func _create_visuals() -> void:
+	if _try_imported_model():
+		return
 	if profile != null and profile.id == "velociraptor":
 		_create_raptor_visuals()
 		return
@@ -129,6 +171,65 @@ func _create_visuals() -> void:
 	for x in [-0.34, 0.34]:
 		_add_leg(Vector3(x, 0.4, -0.18), green, 0.13, 0.62)
 	_finish_visual_setup()
+
+func _try_imported_model() -> bool:
+	if profile == null:
+		return false
+	var model_paths: Array[String] = []
+	if profile.id == "t_rex":
+		model_paths.append("res://assets/models/dinosaurs/t_rex_hero.glb")
+	elif profile.id == "velociraptor":
+		model_paths.append("res://assets/models/dinosaurs/velociraptor.glb")
+	elif profile.id == "triceratops":
+		model_paths.append("res://assets/models/dinosaurs/triceratops.glb")
+	model_paths.append("res://assets/models/dinosaurs/%s.glb" % profile.id)
+	for model_path in model_paths:
+		if not ResourceLoader.exists(model_path):
+			continue
+		var model_scene := load(model_path) as PackedScene
+		if model_scene == null:
+			continue
+		imported_model = model_scene.instantiate() as Node3D
+		if imported_model == null:
+			continue
+		add_child(imported_model)
+		imported_model.name = "ImportedDinosaurModel"
+		imported_model_rest_y = imported_model.position.y
+		_create_imported_animation_library()
+		return true
+	return false
+
+func _create_imported_animation_library() -> void:
+	imported_animation_player = AnimationPlayer.new()
+	imported_animation_player.name = "AnimationPlayer"
+	var library := AnimationLibrary.new()
+	for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+		var animation := Animation.new()
+		animation.length = 0.8 if animation_name != "Idle" else 2.0
+		animation.loop_mode = Animation.LOOP_LINEAR if animation_name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
+		var position_track := animation.add_track(Animation.TYPE_VALUE)
+		animation.track_set_path(position_track, NodePath("../ImportedDinosaurModel:position"))
+		animation.track_insert_key(position_track, 0.0, imported_model.position)
+		animation.track_insert_key(position_track, animation.length * 0.5, imported_model.position + Vector3(0.0, 0.06 if animation_name in ["Idle", "Walk", "Run"] else 0.0, 0.0))
+		animation.track_insert_key(position_track, animation.length, imported_model.position)
+		var rotation_track := animation.add_track(Animation.TYPE_VALUE)
+		animation.track_set_path(rotation_track, NodePath("../ImportedDinosaurModel:rotation"))
+		var action_rotation := Vector3.ZERO
+		if animation_name == "Attack":
+			action_rotation.x = -0.24
+		elif animation_name == "Eat":
+			action_rotation.x = -0.16
+		elif animation_name == "Hit":
+			action_rotation.z = 0.18
+		elif animation_name == "Defeat":
+			action_rotation.z = 0.8
+		animation.track_insert_key(rotation_track, 0.0, Vector3.ZERO)
+		animation.track_insert_key(rotation_track, animation.length * 0.45, action_rotation)
+		animation.track_insert_key(rotation_track, animation.length, Vector3.ZERO)
+		library.add_animation(animation_name, animation)
+	imported_animation_player.add_animation_library("", library)
+	add_child(imported_animation_player)
+	imported_animation_player.play("Idle")
 
 func _create_raptor_visuals() -> void:
 	var blue := _material(profile.body_color)
@@ -230,6 +331,15 @@ func _finish_visual_setup() -> void:
 	tail_rest_rotation = tail_mesh.rotation
 
 func _animate_visuals(delta: float, speed_ratio: float) -> void:
+	if imported_model != null:
+		visual_time += delta * lerpf(2.0, 12.0, clampf(speed_ratio, 0.0, 1.0))
+		var imported_bob := sin(visual_time) * (0.035 if speed_ratio > 0.08 else 0.012)
+		imported_model.position.y = imported_model_rest_y + imported_bob
+		if imported_animation_player != null:
+			var desired_animation := "Run" if speed_ratio > 1.0 else ("Walk" if speed_ratio > 0.08 else "Idle")
+			if imported_animation_player.current_animation != desired_animation:
+				imported_animation_player.play(desired_animation)
+		return
 	if body_mesh == null or head_mesh == null or tail_mesh == null:
 		return
 	visual_time += delta * lerpf(2.0, 12.0, clampf(speed_ratio, 0.0, 1.0))

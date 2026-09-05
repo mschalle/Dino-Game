@@ -6,6 +6,7 @@ const PREDATOR = preload("res://predator.gd")
 const HUD_SCENE = preload("res://game_hud.gd")
 const PROFILES = preload("res://dinosaur_profiles.gd")
 const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
+const FOOD_TOKEN = preload("res://food_token.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
 const VALLEY_LIMIT := 28.0
@@ -34,6 +35,8 @@ var optional_completed := false
 var game_active := false
 var controls_overlay: ColorRect
 var waiting_rebind := ""
+var attack_cooldown := 0.0
+var active_target: Node3D
 var rebind_buttons: Dictionary = {}
 var sounds
 var environment_time := 0.0
@@ -43,6 +46,7 @@ var fireflies: Array[MeshInstance3D] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("world_controller")
 	randomize()
 	_ensure_default_inputs()
 	save_system.load_data()
@@ -67,6 +71,7 @@ func _process(delta: float) -> void:
 	if not game_active or get_tree().paused:
 		return
 	_tick_cooldowns(delta)
+	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	shield_timer = maxf(0.0, shield_timer - delta)
 	scent_timer = maxf(0.0, scent_timer - delta)
 	_set_scent_visible(scent_timer > 0.0)
@@ -86,8 +91,13 @@ func _process(delta: float) -> void:
 	_update_objectives(delta)
 	_update_endless_difficulty()
 	_keep_player_in_valley()
+	_ground_world_actors()
 	_follow_player(delta)
 	_update_hud()
+	if active_target != null and is_instance_valid(active_target):
+		var active_combat = active_target.get("combat")
+		if active_combat != null:
+			hud.update_target_health(active_combat.health, active_combat.max_health)
 
 func _create_world() -> void:
 	var environment := WorldEnvironment.new()
@@ -98,6 +108,10 @@ func _create_world() -> void:
 	env.ambient_light_color = Color("#fff3cd")
 	env.ambient_light_energy = 0.78
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.fog_enabled = true
+	env.fog_light_color = Color("#b9e8f2")
+	env.fog_density = 0.006
+	env.fog_sky_affect = 0.18
 	environment.environment = env
 	add_child(environment)
 	var light := DirectionalLight3D.new()
@@ -106,13 +120,17 @@ func _create_world() -> void:
 	light.light_energy = 1.2
 	add_child(light)
 	var ground := MeshInstance3D.new()
-	var ground_mesh := PlaneMesh.new()
-	ground_mesh.size = Vector2(60, 60)
-	ground.mesh = ground_mesh
-	ground.material_override = _material(Color("#8fca63"))
+	ground.mesh = _build_valley_mesh()
+	var terrain_material := _material(Color("#78b957"))
+	terrain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	terrain_material.vertex_color_use_as_albedo = true
+	ground.material_override = terrain_material
 	add_child(ground)
+	_create_terrain_collision()
+	_create_navigation_region()
 	for index in 30:
 		_create_scenery_piece(index)
+	_create_habitat_landmarks()
 	_create_waterfall()
 	_create_fireflies()
 
@@ -158,6 +176,20 @@ func _create_waterfall() -> void:
 		waterfall.set_meta("flow_offset", float(index) * 1.7)
 		add_child(waterfall)
 		waterfall_layers.append(waterfall)
+
+func _create_habitat_landmarks() -> void:
+	var landmarks: Array[Array] = [["Nest", Vector3(-15, 0, -12), Color("#e8bd72")], ["Meadow", Vector3(-13, 0, 11), Color("#83d36b")], ["Ridge", Vector3(0, 0, -18), Color("#e7a65c")], ["Arena", Vector3(16, 0, 16), Color("#d97868")]]
+	for landmark in landmarks:
+		var marker := MeshInstance3D.new()
+		var pillar := CylinderMesh.new()
+		pillar.top_radius = 0.18
+		pillar.bottom_radius = 0.42
+		pillar.height = 2.4
+		marker.mesh = pillar
+		marker.material_override = _glow_material(landmark[2])
+		var point: Vector3 = landmark[1]
+		marker.position = Vector3(point.x, _terrain_height_at(point.x, point.z) + 1.2, point.z)
+		add_child(marker)
 
 func _create_fireflies() -> void:
 	for index in 12:
@@ -493,15 +525,17 @@ func _create_food_spawner() -> void:
 	run_root.add_child(food_spawner)
 	food_spawner.configure(mode == "endless")
 	food_spawner.set_player(player)
+	food_spawner.creature_defeated.connect(_on_creature_defeated)
 
 func _create_predators() -> void:
 	predators.clear()
-	var predator_data: Array[Array] = [[2, Vector3(-20, 0, -18)], [3, Vector3(19, 0, 19)]]
+	var predator_data: Array[Array] = [[1, Vector3(-9, 0, 15)], [2, Vector3(-20, 0, -18)], [3, Vector3(19, 0, 19)], [4, Vector3(16, 0, 16)]]
 	for data in predator_data:
 		var predator := PREDATOR.new()
 		predator.setup(int(data[0]), data[1] as Vector3)
 		predator.set_player(player)
 		predator.bump_attack.connect(_on_predator_attack)
+		predator.creature_defeated.connect(_on_creature_defeated)
 		run_root.add_child(predator)
 		predators.append(predator)
 
@@ -514,28 +548,101 @@ func _create_hud() -> void:
 	hud.selection_requested.connect(func() -> void: call_deferred("_return_to_selection"))
 
 func _try_consume(power_bite: bool) -> bool:
-	var food_group := "plant_food" if profile.diet == "herbivore" else "prey"
-	var closest: Node3D
+	var reach := 3.2 if power_bite else 2.2
+	var closest_token
 	var closest_distance := INF
-	for food_node in get_tree().get_nodes_in_group(food_group):
-		var food := food_node as Node3D
-		var distance := player.global_position.distance_to(food.global_position)
+	for token_node in get_tree().get_nodes_in_group("food_token"):
+		var token = token_node
+		var distance := player.global_position.distance_to(token.global_position)
 		if distance < closest_distance:
-			closest = food
+			closest_token = token
 			closest_distance = distance
-	var reach := 3.2 if power_bite else 2.15
-	if closest == null or closest_distance > reach:
-		hud.show_message("Get closer to something tasty!")
+	if closest_token != null and closest_distance <= reach:
+		return _claim_food_token(closest_token)
+	if profile.diet == "herbivore":
+		closest_distance = INF
+		var closest_plant: Node3D
+		for plant_node in get_tree().get_nodes_in_group("plant_food"):
+			var plant := plant_node as Node3D
+			var distance := player.global_position.distance_to(plant.global_position)
+			if distance <= reach and distance < closest_distance:
+				closest_plant = plant
+				closest_distance = distance
+		if closest_plant != null:
+			player.celebrate_bite()
+			session.consume("plant_food", int(closest_plant.get("nutrition")))
+			sounds.play_food()
+			closest_plant.queue_free()
+			return true
+	if attack_cooldown > 0.0:
+		hud.show_message("Attack ready in %.1f seconds." % attack_cooldown)
 		return false
-	var nutrition := int(closest.get("nutrition"))
-	if profile.diet == "carnivore" and nutrition > player.strength and not power_bite:
-		hud.show_message("That dinosaur is too large. Grow stronger first!")
+	var target: Node3D
+	closest_distance = INF
+	for group_name in ["prey", "predator"]:
+		for target_node in get_tree().get_nodes_in_group(group_name):
+			var candidate := target_node as Node3D
+			if not candidate.visible:
+				continue
+			var distance := player.global_position.distance_to(candidate.global_position)
+			if distance < closest_distance:
+				target = candidate
+				closest_distance = distance
+	if target == null or closest_distance > reach:
+		hud.show_message("Get closer to a plant, token, or dinosaur.")
 		return false
-	player.celebrate_bite()
-	session.consume(food_group, nutrition)
-	sounds.play_food()
-	closest.queue_free()
+	var damage := (10.0 + player.strength * 5.0) * (1.6 if power_bite else 1.0)
+	if not target.receive_attack(damage, player.global_position):
+		return false
+	attack_cooldown = 0.7
+	player.play_combat_animation(power_bite)
+	session.record_attack(damage)
+	sounds.play_ability()
+	var target_profile = target.get("creature_profile")
+	var target_combat = target.get("combat")
+	active_target = target
+	hud.show_target(target_profile.display_name, target_profile.tier, target_combat.health, target_combat.max_health)
+	_spawn_hit_burst(target.global_position)
 	return true
+
+func _spawn_hit_burst(at_position: Vector3) -> void:
+	var settings := save_system.data["settings"] as Dictionary
+	if bool(settings.get("reduced_flashes", true)):
+		return
+	var burst := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.18
+	mesh.height = 0.36
+	burst.mesh = mesh
+	burst.material_override = _glow_material(Color("#fff3a6"))
+	burst.global_position = at_position + Vector3.UP * 0.8
+	run_root.add_child(burst)
+	var tween := burst.create_tween()
+	tween.tween_property(burst, "scale", Vector3.ONE * 2.2, 0.16)
+	tween.tween_property(burst, "modulate:a", 0.0, 0.18)
+	tween.tween_callback(burst.queue_free)
+
+func _claim_food_token(token) -> bool:
+	var reward: Dictionary = token.claim()
+	if reward.is_empty():
+		return false
+	var hunger_reward := float(reward["hunger"]) if profile.diet == "carnivore" else 0.0
+	session.claim_creature_reward(str(reward["species_id"]), int(reward["tier"]), int(reward["growth"]), hunger_reward)
+	var quest := quest_system.current()
+	if str(reward["species_id"]) == "allosaurus" and quest != null and quest.objective_type == "finale" and quest.target_id == "valley_rival" and session.growth.is_adult():
+		quest_system.record("finale", "valley_rival")
+	hud.show_message("Victory token! +%d Growth Points" % int(reward["growth"]))
+	sounds.play_food()
+	token.queue_free()
+	return true
+
+func _on_creature_defeated(creature: Node3D, creature_profile: RefCounted) -> void:
+	var token := FOOD_TOKEN.new()
+	token.setup(creature_profile)
+	token.global_position = creature.global_position
+	run_root.add_child(token)
+	session.record_target_defeated(creature_profile.id, creature_profile.tier)
+	hud.show_message("%s dropped a glowing victory token!" % creature_profile.display_name)
 
 func _use_primary_ability() -> void:
 	var ability := profile.ability_by_action("power_bite", session.growth.stage_index)
@@ -591,9 +698,6 @@ func _use_special_ability() -> void:
 		shield_timer = 5.0
 		hud.show_message("Shield Stance active for 5 seconds!")
 	_record_ability_objective(ability)
-	var quest := quest_system.current()
-	if quest != null and quest.objective_type == "finale" and quest.target_id == "valley_rival" and session.growth.is_adult() and _near_active_marker():
-		quest_system.record("finale", "valley_rival")
 	_start_cooldown(ability)
 	sounds.play_ability()
 
@@ -753,7 +857,7 @@ func _show_dust_transition() -> void:
 
 func _create_marker(target_position: Vector3, color: Color) -> Node3D:
 	var marker := Node3D.new()
-	marker.position = target_position
+	marker.position = Vector3(target_position.x, _terrain_height_at(target_position.x, target_position.z), target_position.z)
 	run_root.add_child(marker)
 	var ring := MeshInstance3D.new()
 	var ring_mesh := TorusMesh.new()
@@ -870,6 +974,106 @@ func _follow_player(delta: float) -> void:
 func _keep_player_in_valley() -> void:
 	player.position.x = clampf(player.position.x, -VALLEY_LIMIT, VALLEY_LIMIT)
 	player.position.z = clampf(player.position.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	player.position.y = _terrain_height_at(player.position.x, player.position.z)
+
+func _ground_world_actors() -> void:
+	for group_name in ["prey", "predator", "plant_food", "food_token"]:
+		for node in get_tree().get_nodes_in_group(group_name):
+			var actor := node as Node3D
+			if actor == null:
+				continue
+			if actor.global_position.y < -6.0:
+				if actor.is_in_group("food_token"):
+					actor.queue_free()
+					continue
+				actor.global_position = SAFE_SPAWN
+			actor.global_position.y = _terrain_height_at(actor.global_position.x, actor.global_position.z)
+			if actor is ValleyPredator:
+				(actor as ValleyPredator).home.y = _terrain_height_at((actor as ValleyPredator).home.x, (actor as ValleyPredator).home.z)
+
+func _terrain_height_at(x: float, z: float) -> float:
+	var point := Vector2(x, z)
+	var height := 0.0
+	height += 2.0 * exp(-point.distance_squared_to(Vector2(-13, 11)) / 85.0)
+	height += 4.0 * exp(-point.distance_squared_to(Vector2(14, -12)) / 70.0)
+	height += 6.0 * exp(-point.distance_squared_to(Vector2(0, -18)) / 62.0)
+	height += 3.5 * exp(-point.distance_squared_to(Vector2(17, 17)) / 95.0)
+	height -= 1.4 * exp(-point.distance_squared_to(Vector2(19, -4)) / 32.0)
+	return height
+
+func _build_valley_mesh() -> ArrayMesh:
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var cells := 30
+	var step := 2.0
+	for z_index in cells:
+		for x_index in cells:
+			var x0 := -30.0 + x_index * step
+			var z0 := -30.0 + z_index * step
+			var a := Vector3(x0, _terrain_height_at(x0, z0), z0)
+			var b := Vector3(x0 + step, _terrain_height_at(x0 + step, z0), z0)
+			var c := Vector3(x0 + step, _terrain_height_at(x0 + step, z0 + step), z0 + step)
+			var d := Vector3(x0, _terrain_height_at(x0, z0 + step), z0 + step)
+			for vertex in [a, c, b, a, d, c]:
+				var elevation_tint := clampf((vertex.y + 1.0) / 7.0, 0.0, 1.0)
+				var terrain_color := Color("#72ae50").lerp(Color("#b5d96a"), elevation_tint)
+				surface.set_color(terrain_color)
+				surface.set_uv(Vector2((vertex.x + 30.0) / 60.0, (vertex.z + 30.0) / 60.0))
+				surface.add_vertex(vertex)
+	surface.generate_normals()
+	return surface.commit()
+
+func _create_terrain_collision() -> void:
+	var body := StaticBody3D.new()
+	body.name = "TerrainSafetyCollision"
+	var shape := CollisionShape3D.new()
+	# Use the same triangles as the visible terrain so slopes and hills are solid.
+	# The broad safety volume remains unnecessary now that actors have recovery logic.
+	var triangles := PackedVector3Array()
+	var cells := 30
+	var step := 2.0
+	for z_index in cells:
+		for x_index in cells:
+			var x0 := -30.0 + x_index * step
+			var z0 := -30.0 + z_index * step
+			var a := Vector3(x0, _terrain_height_at(x0, z0), z0)
+			var b := Vector3(x0 + step, _terrain_height_at(x0 + step, z0), z0)
+			var c := Vector3(x0 + step, _terrain_height_at(x0 + step, z0 + step), z0 + step)
+			var d := Vector3(x0, _terrain_height_at(x0, z0 + step), z0 + step)
+			triangles.append_array([a, c, b, a, d, c])
+	var terrain_shape := ConcavePolygonShape3D.new()
+	terrain_shape.data = triangles
+	shape.shape = terrain_shape
+	body.add_child(shape)
+	add_child(body)
+
+func _create_navigation_region() -> void:
+	var region := NavigationRegion3D.new()
+	region.name = "ValleyNavigation"
+	var navigation_mesh := NavigationMesh.new()
+	navigation_mesh.agent_radius = 0.8
+	navigation_mesh.agent_max_slope = 35.0
+	navigation_mesh.agent_max_climb = 0.5
+	var vertices := PackedVector3Array()
+	var cells := 30
+	var step := 2.0
+	for z_index in cells + 1:
+		for x_index in cells + 1:
+			var x := -30.0 + x_index * step
+			var z := -30.0 + z_index * step
+			vertices.append(Vector3(x, _terrain_height_at(x, z) + 0.03, z))
+	navigation_mesh.vertices = vertices
+	for z_index in cells:
+		for x_index in cells:
+			var row := cells + 1
+			var a := z_index * row + x_index
+			var b := a + 1
+			var c := a + row + 1
+			var d := a + row
+			navigation_mesh.add_polygon(PackedInt32Array([a, c, b]))
+			navigation_mesh.add_polygon(PackedInt32Array([a, d, c]))
+	region.navigation_mesh = navigation_mesh
+	add_child(region)
 
 func _set_paused(paused: bool) -> void:
 	get_tree().paused = paused

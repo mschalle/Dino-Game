@@ -20,7 +20,7 @@ static func t_rex() -> DinosaurProfile:
 		QuestDefinition.new("trex_feast", "First Feast", "Eat three small dinosaurs.", "eat", "prey", 3, 3, 0, Vector3.ZERO),
 		QuestDefinition.new("trex_nest", "Ancient Nest", "Follow the scent to the Ancient Nest.", "reach", "ancient_nest", 1, 4, 1, Vector3(-15, 0, -12)),
 		QuestDefinition.new("trex_overlook", "Roaring Overlook", "Use Valley Roar at the overlook.", "ability", "roar", 1, 6, 2, Vector3(0, 0, -18)),
-		QuestDefinition.new("trex_finale", "Valley Rival", "Face the rival as an Adult and roar.", "finale", "valley_rival", 1, 6, 3, Vector3(16, 0, 16))
+		QuestDefinition.new("trex_finale", "Valley Rival", "Defeat the Allosaurus and claim its token as an Adult.", "finale", "valley_rival", 1, 6, 3, Vector3(16, 0, 16))
 	]
 	return DinosaurProfile.new("t_rex", "Young T. rex", "Powerful hunter with a mighty bite.", Color("#66bc5a"), Color("#f7d27c"), "carnivore", 6.0, 9.0, 1, 100.0, 105.0, 0.35, abilities, quests, _optional_quests(), {"prey": ["small_dino"], "threats": ["rival"]})
 

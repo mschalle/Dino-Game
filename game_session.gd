@@ -21,6 +21,10 @@ var defeat_count := 0
 var damage_taken := 0.0
 var starvation_seconds := 0.0
 var stage_seconds: Array[float] = [0.0, 0.0, 0.0, 0.0]
+var attacks_landed := 0
+var damage_dealt := 0.0
+var targets_defeated: Dictionary = {}
+var tokens_claimed := 0
 
 func start(new_profile: DinosaurProfile, new_mode: String) -> void:
 	profile = new_profile
@@ -38,6 +42,10 @@ func start(new_profile: DinosaurProfile, new_mode: String) -> void:
 	damage_taken = 0.0
 	starvation_seconds = 0.0
 	stage_seconds = [0.0, 0.0, 0.0, 0.0]
+	attacks_landed = 0
+	damage_dealt = 0.0
+	targets_defeated = {}
+	tokens_claimed = 0
 
 func tick(delta: float, danger_nearby: bool) -> void:
 	if defeat_in_progress:
@@ -64,6 +72,23 @@ func consume(food_id: String, nutrition: int) -> void:
 	growth.add_points(growth_award)
 	food_consumed.emit(food_id, growth_award)
 	hunger_changed.emit(hunger)
+
+func claim_creature_reward(species_id: String, tier: int, growth_reward: int, hunger_reward: float) -> void:
+	tokens_claimed += 1
+	food_eaten += 1
+	food_by_nutrition[tier] = int(food_by_nutrition.get(tier, 0)) + 1
+	hunger = minf(100.0, hunger + hunger_reward)
+	growth.add_points(growth_reward)
+	food_consumed.emit("prey", growth_reward)
+	hunger_changed.emit(hunger)
+
+func record_attack(damage: float) -> void:
+	attacks_landed += 1
+	damage_dealt += damage
+
+func record_target_defeated(species_id: String, tier: int) -> void:
+	var key := "%s_tier_%d" % [species_id, tier]
+	targets_defeated[key] = int(targets_defeated.get(key, 0)) + 1
 
 func take_damage(amount: float) -> void:
 	if defeat_in_progress:
@@ -96,7 +121,11 @@ func summary() -> Dictionary:
 		"defeat_count": defeat_count,
 		"damage_taken": damage_taken,
 		"starvation_seconds": starvation_seconds,
-		"stage_seconds": stage_seconds.duplicate()
+		"stage_seconds": stage_seconds.duplicate(),
+		"attacks_landed": attacks_landed,
+		"damage_dealt": damage_dealt,
+		"targets_defeated": targets_defeated.duplicate(),
+		"tokens_claimed": tokens_claimed
 	}
 
 func _apply_health_change(amount: float) -> void:

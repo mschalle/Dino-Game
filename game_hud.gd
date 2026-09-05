@@ -16,12 +16,23 @@ var growth_bar: ProgressBar
 var pause_panel: ColorRect
 var completion_panel: ColorRect
 var help_panel: ColorRect
+var target_panel: ColorRect
+var target_label: Label
+var target_health_bar: ProgressBar
+var target_timer := 0.0
 
 func _ready() -> void:
 	_create_status_panel()
 	_create_pause_panel()
 	_create_completion_panel()
 	_create_help_panel()
+	_create_target_panel()
+
+func _process(delta: float) -> void:
+	if target_timer > 0.0:
+		target_timer -= delta
+		if target_timer <= 0.0 and target_panel != null:
+			target_panel.visible = false
 
 func update_view(session: GameSession, player: PlayerDino, quest_system: QuestSystem, cooldown_text: String) -> void:
 	title_label.text = "%s  •  %s  •  %s" % [session.profile.display_name, session.growth.stage_name(), session.mode.capitalize()]
@@ -36,6 +47,38 @@ func update_view(session: GameSession, player: PlayerDino, quest_system: QuestSy
 
 func show_message(text: String) -> void:
 	message_label.text = text
+
+func show_target(target_name: String, tier: int, health: float, maximum: float) -> void:
+	target_label.text = "%s  •  Tier %d" % [target_name, tier]
+	target_health_bar.max_value = maximum
+	target_health_bar.value = health
+	target_panel.visible = true
+	target_timer = 3.0
+
+func update_target_health(health: float, maximum: float) -> void:
+	if target_panel == null or not target_panel.visible:
+		return
+	target_health_bar.max_value = maximum
+	target_health_bar.value = health
+
+func _create_target_panel() -> void:
+	target_panel = ColorRect.new()
+	target_panel.color = Color(0.04, 0.1, 0.16, 0.9)
+	target_panel.position = Vector2(465, 24)
+	target_panel.size = Vector2(350, 72)
+	target_panel.visible = false
+	add_child(target_panel)
+	target_label = Label.new()
+	target_label.position = Vector2(10, 5)
+	target_label.size = Vector2(330, 26)
+	target_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_style_text(target_label, Color.WHITE, 4)
+	target_panel.add_child(target_label)
+	target_health_bar = ProgressBar.new()
+	target_health_bar.position = Vector2(20, 38)
+	target_health_bar.size = Vector2(310, 22)
+	target_health_bar.show_percentage = true
+	target_panel.add_child(target_health_bar)
 
 func set_paused(visible: bool) -> void:
 	pause_panel.visible = visible

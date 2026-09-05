@@ -10,6 +10,7 @@ func _run_tests() -> void:
 	_test_growth()
 	_test_quests()
 	_test_survival()
+	_test_creature_combat()
 	_test_ai_states()
 	_test_low_level_food_supply()
 	_test_hud_contrast()
@@ -35,19 +36,28 @@ func _test_profiles() -> void:
 	var profiles := DinosaurProfiles.all()
 	_check(profiles.size() == 3, "Expected three playable profiles")
 	var ids: Dictionary = {}
+	var finale_ids: Dictionary = {}
 	for profile in profiles:
 		_check(not ids.has(profile.id), "Species IDs must be unique")
 		ids[profile.id] = true
 		_check(profile.growth_thresholds == [0, 5, 12, 25], "Growth thresholds must match the design")
 		_check(profile.adventure_quests.size() == 4, "%s needs four main quests" % profile.id)
+		var finale: QuestDefinition = profile.adventure_quests[3]
+		_check(finale.objective_type == "finale", "%s needs an Adult finale quest" % profile.id)
+		_check(not finale_ids.has(finale.id), "Finale quest IDs must be unique")
+		finale_ids[finale.id] = true
 		_check(not profile.abilities.is_empty(), "%s needs abilities" % profile.id)
 	_check(DinosaurProfiles.triceratops().diet == "herbivore", "Triceratops must eat plants")
 	_check(DinosaurProfiles.t_rex().diet == "carnivore", "T. rex must eat prey")
+	_check(FileAccess.file_exists("res://assets/models/dinosaurs/t_rex.glb"), "The first imported T. rex GLB should be present")
+	_check(FileAccess.file_exists("res://assets/models/dinosaurs/t_rex_hero.glb"), "The higher-resolution T. rex hero GLB should be present")
+	for model_id in ["velociraptor", "triceratops", "psittacosaurus", "dryosaurus", "parasaurolophus", "dilophosaurus", "carnotaurus", "allosaurus"]:
+		_check(FileAccess.file_exists("res://assets/models/dinosaurs/%s.glb" % model_id), "%s GLB should be present" % model_id)
 	for profile in profiles:
 		var dino := PlayerDino.new()
 		dino.configure(profile)
 		root.add_child(dino)
-		_check(dino.tail_mesh != null and dino.leg_meshes.size() >= 4, "%s needs a complete animated dinosaur silhouette" % profile.id)
+		_check((dino.imported_model != null) or (dino.tail_mesh != null and dino.leg_meshes.size() >= 4), "%s needs a complete dinosaur silhouette" % profile.id)
 		dino.free()
 
 func _test_growth() -> void:
@@ -85,6 +95,26 @@ func _test_survival() -> void:
 	var summary := session.summary()
 	_check(int(summary["defeat_count"]) == 1, "Run summary must track defeats")
 	_check(float(summary["starvation_seconds"]) > 0.0, "Run summary must track starvation time")
+
+func _test_creature_combat() -> void:
+	var creature_profiles := preload("res://creature_profiles.gd")
+	var profiles: Array = creature_profiles.all()
+	_check(profiles.size() == 7, "Expected seven distinct NPC creature profiles")
+	var ids: Dictionary = {}
+	for profile in profiles:
+		_check(not ids.has(profile.id), "NPC creature IDs must be unique")
+		ids[profile.id] = true
+	var combat := preload("res://combat_component.gd").new()
+	combat.configure(30.0)
+	_check(combat.take_hit(15.0), "A living creature should accept an attack")
+	combat.tick(0.2)
+	_check(combat.take_hit(15.0), "A stronger target should accept repeated attacks")
+	_check(combat.is_defeated(), "Multiple attacks should defeat a tier-one target")
+	var token := preload("res://food_token.gd").new()
+	token.setup(creature_profiles.prey_for_tier(1))
+	_check(not token.claim().is_empty(), "A defeated creature token should grant a reward")
+	_check(token.claim().is_empty(), "A creature token cannot be claimed twice")
+	token.free()
 
 func _test_ai_states() -> void:
 	var player := PlayerDino.new()
@@ -178,6 +208,10 @@ func _test_gameplay_integration() -> void:
 	_check(main_scene.animated_trees.size() == 10, "The valley should include animated trees")
 	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
+	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
+	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
+	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")
+	_check(main_scene.get_node_or_null("TerrainSafetyCollision") != null, "The valley should have terrain safety collision")
 	var trike := DinosaurProfiles.triceratops()
 	main_scene._start_run(trike, "adventure")
 	var plant := PlantFood.new()

@@ -1,6 +1,8 @@
 class_name FoodSpawner
 extends Node3D
 
+signal creature_defeated(creature: Node3D, profile: RefCounted)
+
 const PREY = preload("res://prey.gd")
 const PLANT = preload("res://plant_food.gd")
 
@@ -50,8 +52,10 @@ func _spawn_prey(forced_nutrition: int = 0) -> void:
 	var nutrition := forced_nutrition if forced_nutrition > 0 else randi_range(1, 3)
 	var colors: Array[Color] = [Color("#f3c353"), Color("#f2996b"), Color("#78cfd0"), Color("#c190e8")]
 	prey.setup("Valley Dino", nutrition, colors.pick_random())
-	prey.position = _random_position()
+	prey.position = _random_position(nutrition)
 	add_child(prey)
+	_place_on_terrain(prey)
+	prey.creature_defeated.connect(func(creature: Node3D, profile: RefCounted) -> void: creature_defeated.emit(creature, profile))
 	if player != null:
 		prey.set_player(player)
 
@@ -60,11 +64,33 @@ func _spawn_plant() -> void:
 	var nutrition := randi_range(1, 3)
 	var colors: Array[Color] = [Color("#60c879"), Color("#d8709e"), Color("#84c85c"), Color("#d6c65d")]
 	plant.setup("Valley Plant", nutrition, colors.pick_random())
-	plant.position = _random_position()
+	plant.position = _random_position(0)
 	add_child(plant)
+	_place_on_terrain(plant)
 
-func _random_position() -> Vector3:
-	var position_2d := Vector2(randf_range(-23.0, 23.0), randf_range(-23.0, 23.0))
-	while position_2d.length() < 5.0:
-		position_2d = Vector2(randf_range(-23.0, 23.0), randf_range(-23.0, 23.0))
+func _random_position(tier: int = 0) -> Vector3:
+	# Keep creatures in readable habitat bands: basin, meadow, then ridge.
+	var center := Vector2.ZERO
+	var radius := 10.0
+	match tier:
+		1:
+			center = Vector2(-8.0, 8.0)
+			radius = 9.0
+		2:
+			center = Vector2(-13.0, 11.0)
+			radius = 7.0
+		3:
+			center = Vector2(0.0, -18.0)
+			radius = 6.0
+		_:
+			center = Vector2(-4.0, 4.0)
+			radius = 18.0
+	var position_2d := center + Vector2(randf_range(-radius, radius), randf_range(-radius, radius))
+	while position_2d.length() < 5.0 or position_2d.x < -27.0 or position_2d.x > 27.0 or position_2d.y < -27.0 or position_2d.y > 27.0:
+		position_2d = center + Vector2(randf_range(-radius, radius), randf_range(-radius, radius))
 	return Vector3(position_2d.x, 0.0, position_2d.y)
+
+func _place_on_terrain(actor: Node3D) -> void:
+	var world := get_tree().get_first_node_in_group("world_controller")
+	if world != null and world.has_method("_terrain_height_at"):
+		actor.position.y = float(world._terrain_height_at(actor.position.x, actor.position.z))
