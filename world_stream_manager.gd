@@ -156,6 +156,7 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 	for group_name in ["prey", "predator"]:
 		npc_count += scene_root.get_tree().get_nodes_in_group(group_name).size()
 	var budget := active_population_budget()
+	var herd_budget := active_herd_budget()
 	var total_budget := int(budget.get("prey", 0)) + int(budget.get("predator", 0))
 	var biome_names := active_biome_names()
 	return {
@@ -166,7 +167,9 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 		"loaded_landmarks": active_landmark_positions().size(),
 		"npc_count": npc_count,
 		"population_budget": total_budget,
-		"population_utilization": float(npc_count) / float(maxi(1, total_budget))
+		"population_utilization": float(npc_count) / float(maxi(1, total_budget)),
+		"active_herd_count": herd_budget.size(),
+		"herd_budget": herd_budget
 	}
 
 func set_respawn_cooldown(chunk_id: String, seconds: float) -> void:

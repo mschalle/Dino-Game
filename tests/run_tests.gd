@@ -677,6 +677,7 @@ func _test_world_streaming() -> void:
 	var metrics := manager.runtime_metrics(root)
 	_check(int(metrics.get("active_chunks", 0)) > 0, "Runtime metrics should report active chunks")
 	_check(int(metrics.get("population_budget", 0)) >= 1, "Runtime metrics should report population budget")
+	_check(int(metrics.get("active_herd_count", 0)) >= 1, "Runtime metrics should report active herds")
 	_check(int(metrics.get("loaded_landmarks", 0)) >= 0, "Runtime metrics should report loaded landmarks")
 	_check((metrics.get("active_biomes", []) as Array).has("Redstone Badlands"), "Runtime metrics should report active biome names")
 	_check(int(metrics.get("active_biome_count", 0)) == (metrics.get("active_biomes", []) as Array).size(), "Runtime metrics should report the active biome count")

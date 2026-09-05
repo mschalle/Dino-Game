@@ -600,6 +600,7 @@ The player and spawned food now follow the authored elevation function with grav
 319. Added reusable herd regrouping toward shared anchors with recovery-state coverage for separated members.
 320. Added lightweight herd-count persistence to streamed chunk state alongside existing prey and predator population records.
 321. Added active herd-budget reporting so streamed and unloaded habitats contribute to ecosystem population accounting.
+322. Added herd counts to runtime metrics for population observability and budget diagnostics.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
