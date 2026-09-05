@@ -11,6 +11,7 @@ func _init() -> void:
 
 func _run_tests() -> void:
 	_test_profiles()
+	_test_all_playable_species()
 	_test_world_chunks()
 	_test_habitat_rules()
 	_test_world_streaming()
@@ -78,6 +79,20 @@ func _test_profiles() -> void:
 		root.add_child(dino)
 		_check((dino.imported_model != null) or (dino.tail_mesh != null and dino.leg_meshes.size() >= 4), "%s needs a complete dinosaur silhouette" % profile.id)
 		dino.free()
+
+func _test_all_playable_species() -> void:
+	var save := preload("res://save_system.gd").new()
+	for profile in DinosaurProfiles.all():
+		var session := GameSession.new()
+		session.start(profile, "adventure")
+		_check(session.profile.id == profile.id, "%s Adventure should start with its own profile" % profile.id)
+		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
+		_check(profile.quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
+		save.record_run(profile.id, 1.0, 1, 0, {"species_validation": true})
+	var records: Dictionary = save.data.get("records", {})
+	for profile in DinosaurProfiles.all():
+		_check(records.has(profile.id), "%s should persist an independent record" % profile.id)
+	save.free()
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
