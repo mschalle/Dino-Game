@@ -140,6 +140,12 @@ func _merge_defaults(loaded: Dictionary) -> Dictionary:
 	var merged := _defaults()
 	for key in loaded:
 		merged[key] = loaded[key]
+	var default_settings := merged["settings"] as Dictionary
+	var loaded_settings: Variant = loaded.get("settings", {})
+	if loaded_settings is Dictionary:
+		for setting_key in loaded_settings:
+			default_settings[setting_key] = loaded_settings[setting_key]
+	merged["settings"] = default_settings
 	return merged
 
 func _migrate(loaded: Dictionary) -> Dictionary:

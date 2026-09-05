@@ -1184,6 +1184,8 @@ func _test_save_recovery() -> void:
 	_check((save.data["badges"] as Array).has("old_badge"), "Migration must preserve rewards")
 	_check(save.is_endless_unlocked("velociraptor"), "Migration must preserve Endless unlocks")
 	_check(int(save.data["records"].get("velociraptor", {}).get("best_growth_points", 0)) == 9, "Migration must preserve species records")
+	var migrated_settings := save.data["settings"] as Dictionary
+	_check(migrated_settings.has("environment_quality") and migrated_settings.has("reduced_motion") and migrated_settings.has("day_cycle_enabled"), "Older saves should receive new environment setting defaults")
 	_check(save.data.has("event_discoveries") and (save.data["event_discoveries"] as Array).is_empty(), "Older saves should receive empty field-guide defaults")
 	save.unlock_endless("t_rex")
 	save.unlock_cosmetic("t_rex", "sunset")
