@@ -305,6 +305,7 @@ The player and spawned food now follow the authored elevation function with grav
 131. Wired active streamed landmarks into scent-trail fallback targeting while preserving quest priority.
 132. Centralized nearest-active-landmark selection in the stream manager for consistent destination guidance.
 133. Added loaded-landmark counts to streaming diagnostics for performance and accessibility validation.
+134. Stabilized active-landmark enumeration order for deterministic destination guidance.
 
 ## Release Readiness
 

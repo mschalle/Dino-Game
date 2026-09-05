@@ -201,6 +201,10 @@ func _test_world_chunks() -> void:
 	var landmark_position: Variant = stream.landmark_position_for_chunk("nest_basin")
 	_check(landmark_position is Vector3 and is_finite((landmark_position as Vector3).x), "Landmark destination should expose a world-space position")
 	_check(stream.active_landmark_positions().has("nest_basin"), "Active landmark positions should include loaded destinations")
+	var landmark_ids := stream.active_landmark_positions().keys()
+	var sorted_landmark_ids := landmark_ids.duplicate()
+	sorted_landmark_ids.sort()
+	_check(landmark_ids == sorted_landmark_ids, "Active landmark enumeration should be stable")
 	var nearest_landmark: Variant = stream.nearest_active_landmark(Vector3.ZERO)
 	_check(nearest_landmark is Vector3, "Stream manager should select the nearest active landmark")
 	if nest_instance != null:

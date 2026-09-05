@@ -242,7 +242,9 @@ func landmark_position_for_chunk(chunk_id: String) -> Variant:
 
 func active_landmark_positions() -> Dictionary:
 	var result: Dictionary = {}
-	for chunk_id in active_ids:
+	var active_chunk_ids_sorted := active_chunk_ids()
+	active_chunk_ids_sorted.sort()
+	for chunk_id in active_chunk_ids_sorted:
 		var position: Variant = landmark_position_for_chunk(str(chunk_id))
 		if position is Vector3:
 			result[str(chunk_id)] = position
