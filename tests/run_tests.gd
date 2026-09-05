@@ -622,6 +622,8 @@ func _test_creature_combat() -> void:
 	for profile in profiles:
 		_check(not ids.has(profile.id), "NPC creature IDs must be unique")
 		ids[profile.id] = true
+		_check(profile.role == "prey" or profile.role == "predator" or profile.role == "rival", "%s should use a supported NPC role" % profile.id)
+		_check(profile.tier >= 1 and profile.tier <= 4, "%s should use a supported NPC tier" % profile.id)
 	var combat := preload("res://combat_component.gd").new()
 	combat.configure(30.0)
 	_check(combat.take_hit(15.0), "A living creature should accept an attack")
