@@ -452,6 +452,7 @@ func _test_world_chunks() -> void:
 			_check(vegetation.multimesh.instance_count == maxi(1, int(round(float(base_vegetation_count) * chunk.vegetation_density))), "%s vegetation density should scale batched instances" % chunk.chunk_id)
 			_check(vegetation.multimesh.mesh.material is StandardMaterial3D and vegetation.multimesh.mesh.material.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.12)), "%s vegetation palette should follow its ground profile" % chunk.chunk_id)
 			_check(vegetation.multimesh.mesh.material.roughness >= 0.0 and vegetation.multimesh.mesh.material.roughness <= 1.0, "%s vegetation roughness should remain bounded" % chunk.chunk_id)
+			_check(vegetation.multimesh.mesh.material.metallic >= 0.0 and vegetation.multimesh.mesh.material.metallic <= 1.0, "%s vegetation metallic response should remain bounded" % chunk.chunk_id)
 			_check(vegetation.multimesh.instance_count <= 40, "%s vegetation instance budget should remain bounded" % chunk.chunk_id)
 		var water := visual_root.get_node_or_null("WaterSurface")
 		var has_water: bool = chunk.biome == "River Wetlands" or chunk.biome == "Coastal Marsh" or chunk.biome == "Cypress Basin"
