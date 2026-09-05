@@ -352,6 +352,7 @@ The player and spawned food now follow the authored elevation function with grav
 182. Updated the developer HUD to display the exact active-biome count alongside readable biome names.
 183. Added playable-roster integrity checks ensuring all six species IDs and display names remain unique.
 184. Added roster progression validation for the four growth stages and ordered, in-range ability unlock stages.
+185. Expanded legacy-save migration coverage to preserve species Endless unlocks and per-species records.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.
