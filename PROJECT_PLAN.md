@@ -2,9 +2,9 @@
 
 ## Vision
 
-Roar & Rise is a bright, kid-friendly 3D dinosaur adventure game. Players choose a dinosaur, explore a connected multi-biome prehistoric reserve, eat suitable food to grow from Hatchling to Adult, learn species abilities, complete a quest chain, and unlock Endless Survival.
+Roar & Rise is a naturalistic 3D dinosaur adventure game. Players choose a dinosaur, explore a connected multi-biome prehistoric reserve, eat suitable food to grow from Hatchling to Adult, learn species abilities, complete a quest chain, and unlock Endless Survival.
 
-The initial release targets Windows PC with keyboard/mouse and gamepad support. It is single-player and avoids graphic violence: dinosaurs bump, flee, recover, and respawn at a safe nest.
+The initial release targets Windows PC with keyboard/mouse and gamepad support. It is single-player with impactful but bounded combat: dinosaurs warn, attack, flee, recover, and respawn at a safe nest.
 
 ## Active Roadmap 3.0 — Living Reserve and Endless Adventures
 
@@ -30,7 +30,7 @@ Depends on F.
 
 - [ ] Introduce habitat-local herds of up to four compatible herbivores, using existing actors rather than extra decorative creatures.
 - [ ] Implement loose following, separation, shared threat alerts, flight, and regrouping.
-- [ ] Allow predators to approach and chase eligible NPC prey, followed by disengagement and recovery. Reuse existing combat and non-graphic feedback.
+- [ ] Allow predators to approach and chase eligible NPC prey, followed by disengagement and recovery. Reuse existing combat and bounded-impact feedback.
 - [ ] Give NPC-only encounters no player growth, quest progress, or collectible victory tokens. Preserve existing player combat rewards.
 - [ ] Preserve safe-nest exclusions and renewable food floors; ecosystem activity must not exhaust the player's food supply.
 - [ ] Count every participating creature toward the existing 25-actor simulation budget; unloaded habitats retain lightweight population records.
@@ -91,14 +91,14 @@ Depends on J.
 
 - [ ] Playtest 60 minutes of Endless per species and one two-hour soak.
 - [ ] Run Adventure regression routes to ensure ecosystem changes preserve quest targets, food access, and finales.
-- [ ] Conduct five observed family-friendly sessions. Target at least four participants understanding their first challenge without developer explanation.
+- [ ] Conduct five observed readability sessions. Target at least four participants understanding their first challenge without developer explanation.
 - [ ] Profile representative event-heavy routes and optimize measured bottlenecks, following [Godot's profiling guidance](https://docs.godotengine.org/en/latest/tutorials/performance/general_optimization.html).
 - [ ] Check warning readability, input accessibility, muted-audio play, and reduced motion against the [Xbox Accessibility Guidelines](https://learn.microsoft.com/en-us/xbox/accessibility/guidelines).
 - [ ] Complete actual Windows export and interactive packaged-build checks once prerequisites are resolved.
 
 Gate: no progression blockers, duplicate rewards, unbounded populations, or critical defects; existing performance targets hold; remaining issues have explicit severity and reproduction evidence.
 
-Evidence: automated six-species 60-minute endurance, two-hour ecosystem soak, and Adventure-finale regression passed in checkpoints 337–338. Outstanding external acceptance work: five observed family-friendly sessions, representative interactive profiling, accessibility review, and a Windows packaged-build test. Packaging is currently blocked because matching Godot 4.7.2 export templates are absent; `tools/windows_export_smoke.ps1` confirmed this on September 5, 2026.
+Evidence: automated six-species 60-minute endurance, two-hour ecosystem soak, and Adventure-finale regression passed in checkpoints 337–338. Outstanding external acceptance work: five observed readability sessions, representative interactive profiling, accessibility review, and a Windows packaged-build test. Packaging is currently blocked because matching Godot 4.7.2 export templates are absent; `tools/windows_export_smoke.ps1` confirmed this on September 5, 2026.
 
 ### Interfaces, validation, and execution rules
 
@@ -106,7 +106,7 @@ Evidence: automated six-species 60-minute endurance, two-hour ecosystem soak, an
 - Execute the earliest incomplete stage in focused implementation slices. Require targeted behavioral tests, existing gameplay validation, headless startup, and `git diff --check` for each slice. Tests of fixed constants alone do not constitute a completed gameplay feature.
 - Keep pending work as checkboxes. Record checkpoint 314 only after the first new implementation slice passes validation; continue sequentially thereafter. Preserve the earlier checkpoint log and its automation-compatible format.
 - Distinguish automated checks, observed playtests, and packaged-build verification in each evidence field. Mark a stage complete only when its deliverables and gate pass; document blockers explicitly.
-- Retain existing Windows, accessibility, non-graphic combat, asset licensing, and performance requirements. No new maps, dinosaurs, multiplayer, or automatic publication are included.
+- Retain existing Windows, accessibility, bounded-combat, asset licensing, and performance requirements. No new maps, dinosaurs, multiplayer, or automatic publication are included.
 - Retain the manual-trigger development loop and local-commit policy below; this document update does not implement gameplay or create a completion checkpoint.
 
 ## Historical roadmap context
@@ -144,7 +144,7 @@ Optional exploration challenges award growth and badges.
 
 - Reusable profile, session, growth, quest, food-spawning, AI, HUD, and save systems.
 - Four growth stages: Hatchling (0), Juvenile (5), Young Adult (12), Adult (25).
-- Hunger, health, safe recovery, stage-floor respawn, and non-graphic defeat effects.
+- Hunger, health, safe recovery, stage-floor respawn, and bounded defeat effects.
 - Renewable food supply with guaranteed tier-1, tier-2, and tier-3 prey.
 - Prey flee/recover behavior and predator warning/chase/disengage behavior.
 - Adventure quest chains, finales, optional exploration quest, and Endless Survival unlocks.
@@ -169,7 +169,7 @@ Goal: make a first Adventure run understandable, forgiving, and enjoyable for ch
 - Tune one variable at a time: hunger drain, food nutrition, predator awareness, damage, and quest rewards.
 - Test every quest marker, Scent Trail route, finale trigger, and optional challenge.
 - Play through selection, movement, eating, abilities, pause, restart, and completion using only a gamepad.
-- Have at least one child/family-friendly readability review of HUD text, colors, goals, and defeat messaging.
+- Have at least one readability review of HUD text, colors, goals, and defeat messaging.
 
 ## Detailed Development Steps
 
@@ -638,6 +638,7 @@ The player and spawned food now follow the authored elevation function with grav
 357. Added daylight-linked sky gradient changes so sunrise, daytime, and dusk affect the valley atmosphere alongside the animated sun.
 358. Extended developer telemetry with environment quality, weather state, and daylight-cycle state alongside chunk, NPC, and frame metrics.
 359. Added predator warning and attack audio signals with readable retreat messaging and stronger naturalistic threat feedback.
+360. Reconciled active roadmap language with the naturalistic adventure direction while retaining bounded combat, readability, accessibility, and performance gates.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
