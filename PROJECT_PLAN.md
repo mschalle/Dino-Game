@@ -256,6 +256,7 @@ The player and spawned food now follow the authored elevation function with grav
 82. Added streamed NavigationLink3D connectors between loaded neighboring biome chunks with unload cleanup.
 83. Added shared active-chunk world-position checks for navigation and actor recovery logic.
 84. Connected active-chunk confinement to the world actor grounding pass for safe NPC recovery.
+85. Added reusable habitat spawn rules and applied them to predator spawning and tier validation.
 
 ## Release Readiness
 

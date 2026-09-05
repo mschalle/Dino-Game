@@ -2,6 +2,7 @@ extends SceneTree
 
 const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
+const HABITAT_SPAWN_RULES = preload("res://habitat_spawn_rules.gd")
 
 var failures := 0
 
@@ -11,6 +12,7 @@ func _init() -> void:
 func _run_tests() -> void:
 	_test_profiles()
 	_test_world_chunks()
+	_test_habitat_rules()
 	_test_world_streaming()
 	_test_growth()
 	_test_quests()
@@ -112,6 +114,12 @@ func _test_world_chunks() -> void:
 				has_labelled_landmark = true
 		_check(has_labelled_landmark, "%s landmark should include a readable label" % chunk.chunk_id)
 		visual_root.free()
+
+func _test_habitat_rules() -> void:
+	_check(HABITAT_SPAWN_RULES.allows_tier("Nest Basin", "prey", 1), "Nest Basin should support tier-1 prey")
+	_check(not HABITAT_SPAWN_RULES.allows_tier("Nest Basin", "prey", 3), "Nest Basin should not support tier-3 prey")
+	_check(HABITAT_SPAWN_RULES.allows_tier("Redstone Badlands", "predator", 3), "Badlands should support tier-3 predators")
+	_check(not HABITAT_SPAWN_RULES.allows_tier("Ancient Meadow", "predator", 2), "Ancient Meadow should not support predators")
 
 func _test_world_streaming() -> void:
 	var manager = WORLD_STREAM_MANAGER.new()

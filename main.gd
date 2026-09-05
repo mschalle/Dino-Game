@@ -3,6 +3,7 @@ extends Node3D
 const PLAYER = preload("res://player.gd")
 const FOOD_SPAWNER = preload("res://food_spawner.gd")
 const PREDATOR = preload("res://predator.gd")
+const HABITAT_SPAWN_RULES = preload("res://habitat_spawn_rules.gd")
 const HUD_SCENE = preload("res://game_hud.gd")
 const PROFILES = preload("res://dinosaur_profiles.gd")
 const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
@@ -605,6 +606,8 @@ func _create_predators() -> void:
 	predators.clear()
 	var predator_data: Array[Array] = [[1, Vector3(-9, 0, 15)], [2, Vector3(-20, 0, -18)], [3, Vector3(19, 0, 19)], [4, Vector3(16, 0, 16)]]
 	for data in predator_data:
+		if not HABITAT_SPAWN_RULES.allows_tier("Nest Basin", "predator", int(data[0])):
+			continue
 		var predator := PREDATOR.new()
 		predator.setup(int(data[0]), data[1] as Vector3)
 		predator.set_player(player)
