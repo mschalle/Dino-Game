@@ -99,6 +99,8 @@ func _process(delta: float) -> void:
 		_toggle_weather()
 	if game_active and Input.is_action_just_pressed("reduced_motion"):
 		_toggle_reduced_motion()
+	if game_active and Input.is_action_just_pressed("day_cycle_toggle"):
+		_toggle_day_cycle()
 	if not game_active or get_tree().paused:
 		return
 	_tick_cooldowns(delta)
@@ -1565,6 +1567,7 @@ func _ensure_default_inputs() -> void:
 	_ensure_key_action("environment_quality", KEY_F4)
 	_ensure_key_action("weather_toggle", KEY_F5)
 	_ensure_key_action("reduced_motion", KEY_F6)
+	_ensure_key_action("day_cycle_toggle", KEY_F7)
 	_add_joy_button("sprint", JOY_BUTTON_LEFT_STICK)
 	_add_joy_button("eat", JOY_BUTTON_X)
 	_add_joy_button("power_bite", JOY_BUTTON_B)
@@ -1626,6 +1629,12 @@ func _toggle_reduced_motion() -> void:
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Reduced motion: %s" % ("ON" if ENVIRONMENT_QUALITY.reduced_motion else "OFF"))
+
+func _toggle_day_cycle() -> void:
+	var settings := save_system.data["settings"] as Dictionary
+	settings["day_cycle_enabled"] = not bool(settings.get("day_cycle_enabled", true))
+	save_system.save_data()
+	hud.show_message("Daylight cycle: %s" % ("ON" if bool(settings["day_cycle_enabled"]) else "OFF"))
 
 func _apply_environment_settings_to_loaded_chunks() -> void:
 	for chunk in chunk_instances.values():

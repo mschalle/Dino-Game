@@ -667,6 +667,7 @@ The player and spawned food now follow the authored elevation function with grav
 386. Extended reduced-motion coverage to the authored valley: tree sway, waterfall flow, firefly pulses, quest-marker motion, and scent-trail pulsing now pause without hiding objectives or changing gameplay.
 387. Applied the Low/Medium/High environment effects and foliage budgets to authored waterfall and firefly dressing so hero-scene effects match streamed-chunk quality changes at runtime.
 388. Applied the saved environment-quality budget during hero-valley creation, preventing authored effects from briefly using default visibility before the first runtime quality update.
+389. Added a persisted F7 daylight-cycle toggle with HUD/help guidance, allowing players to opt out of time-of-day motion while retaining the naturalistic lighting presentation.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
