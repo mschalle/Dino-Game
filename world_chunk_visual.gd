@@ -23,6 +23,7 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 		biome_environment.environment.background_color = profile.ground_color.lightened(0.45)
 		biome_environment.environment.ambient_light_color = profile.ground_color.lightened(0.6)
 		biome_environment.environment.fog_light_color = profile.ground_color.lightened(0.3)
+		biome_environment.environment.fog_sky_affect = 0.15
 	var vegetation := get_node_or_null("Vegetation") as MultiMeshInstance3D
 	if vegetation != null and vegetation.multimesh != null:
 		var base_count := int(get_meta("vegetation_base_count", vegetation.multimesh.instance_count))
