@@ -18,6 +18,7 @@ func _run_tests() -> void:
 	_test_all_species_endless_unlocks()
 	_test_endless_progression_all_species()
 	_test_stage_k_endless_endurance()
+	_test_stage_k_adventure_routes()
 	_test_endless_scaling_rules()
 	_test_world_events()
 	_test_endless_challenges()
@@ -240,6 +241,21 @@ func _test_stage_k_endless_endurance() -> void:
 				session.respawn_at_stage_floor()
 		_check(session.survival_time == 3600.0, "%s should complete a deterministic 60-minute Endless endurance run" % profile.id)
 		_check(session.defeat_count == 0, "%s endurance run should retain a recoverable food cadence" % profile.id)
+
+func _test_stage_k_adventure_routes() -> void:
+	for profile in DinosaurProfiles.all():
+		var session := GameSession.new()
+		session.start(profile, "adventure")
+		var quests := QuestSystem.new()
+		quests.start(profile.adventure_quests)
+		for quest in profile.adventure_quests:
+			var required_points := profile.growth_thresholds[quest.required_stage] - session.growth.points
+			if required_points > 0:
+				session.growth.add_points(required_points)
+			_check(quests.record(quest.objective_type, quest.target_id, quest.required_amount), "%s should complete %s through its valid objective" % [profile.id, quest.id])
+			if quest.reward_growth > 0:
+				session.growth.add_points(quest.reward_growth)
+		_check(quests.current() == null and session.growth.is_adult(), "%s Adventure route should reach Adult through its finale" % profile.id)
 
 func _test_endless_scaling_rules() -> void:
 	var awareness_start := 1.0 + minf(0.0 / 600.0, 0.75)
