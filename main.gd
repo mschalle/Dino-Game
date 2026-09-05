@@ -48,6 +48,7 @@ var rebind_buttons: Dictionary = {}
 var sounds
 var environment_time := 0.0
 var valley_sky_material: ProceduralSkyMaterial
+var valley_environment: Environment
 var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
@@ -149,6 +150,7 @@ func _create_world() -> void:
 	var environment := WorldEnvironment.new()
 	environment.name = "LegacyEnvironment"
 	var env := Environment.new()
+	valley_environment = env
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
 	var sky_material := ProceduralSkyMaterial.new()
@@ -355,6 +357,9 @@ func _animate_environment(delta: float) -> void:
 				var dawn := Color("#d28d78").lerp(Color("#263d58"), arc)
 				valley_sky_material.sky_top_color = dawn.darkened(0.12)
 				valley_sky_material.sky_horizon_color = Color("#e0b28c").lerp(Color("#c2b79f"), arc)
+			if valley_environment != null:
+				valley_environment.fog_light_color = Color("#7b6472").lerp(Color("#a9a18e"), arc)
+				valley_environment.fog_density = 0.0062 - arc * 0.002
 	for tree in animated_trees:
 		if is_instance_valid(tree):
 			tree.rotation.z = sin(environment_time * 0.8 + float(tree.get_meta("sway_offset", 0.0))) * 0.045
