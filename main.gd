@@ -140,6 +140,7 @@ func _create_world() -> void:
 	environment.environment = env
 	add_child(environment)
 	var light := DirectionalLight3D.new()
+	light.name = "ValleySun"
 	light.rotation_degrees = Vector3(-52, -35, 0)
 	light.light_color = Color("#fff0bd")
 	light.light_energy = 1.2
