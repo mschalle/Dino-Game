@@ -494,6 +494,7 @@ func _test_world_chunks() -> void:
 			_check(elevation.material_override.metallic >= 0.0 and elevation.material_override.metallic <= 1.0, "%s elevated terrain metallic response should remain bounded" % chunk.chunk_id)
 			var elevation_collision := visual_root.get_node_or_null("ElevationCollision/ElevationShape") as CollisionShape3D
 			_check(elevation_collision != null and elevation_collision.shape is BoxShape3D and (elevation_collision.shape as BoxShape3D).size.is_equal_approx((elevation.mesh as BoxMesh).size), "%s elevation collision should match its visible dimensions" % chunk.chunk_id)
+			_check(elevation_collision != null and elevation_collision.position.is_equal_approx(elevation.position), "%s elevation collision should align with its visible mound" % chunk.chunk_id)
 			_check(visual_root.get_node_or_null("ElevationCollision") != null, "%s should create elevated terrain collision" % chunk.chunk_id)
 		var has_labelled_landmark := false
 		var landmark_label_matches := false
