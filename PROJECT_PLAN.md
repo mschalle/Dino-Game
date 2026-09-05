@@ -393,6 +393,7 @@ The player and spawned food now follow the authored elevation function with grav
 219. Added playable-roster presentation validation for child-friendly taglines and visible body/accent colors.
 220. Added playable-profile AI relationship validation for declared prey and threat categories.
 221. Added AI relationship value-type validation so prey and threat categories remain arrays for data-driven encounter logic.
+222. Added AI relationship identifier validation for nonempty string entries in prey and threat categories.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

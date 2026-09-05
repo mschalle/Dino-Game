@@ -129,6 +129,9 @@ func _test_all_playable_species() -> void:
 		_check(profile.ai_relationships is Dictionary, "%s should expose AI relationships" % profile.id)
 		_check(profile.ai_relationships.has("prey") and profile.ai_relationships.has("threats"), "%s AI relationships should define prey and threats" % profile.id)
 		_check(profile.ai_relationships.get("prey") is Array and profile.ai_relationships.get("threats") is Array, "%s AI relationship values should be arrays" % profile.id)
+		for relationship_key in ["prey", "threats"]:
+			for relationship_id in profile.ai_relationships.get(relationship_key, []):
+				_check(relationship_id is String and not relationship_id.is_empty(), "%s AI relationship IDs should be nonempty strings" % profile.id)
 		for quest in profile.adventure_quests:
 			if quest.objective_type == "eat":
 				if profile.diet == "carnivore":
