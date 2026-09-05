@@ -114,6 +114,7 @@ func _process(delta: float) -> void:
 		food_spawner.set_tier_respawn_cooldowns(world_stream.active_tier_respawn_cooldowns())
 		world_stream.prune_inactive_actors(self)
 		world_stream.capture_population(self)
+		hud.update_diagnostics(world_stream.runtime_metrics(self))
 	if active_target != null and is_instance_valid(active_target):
 		var active_combat = active_target.get("combat")
 		if active_combat != null:

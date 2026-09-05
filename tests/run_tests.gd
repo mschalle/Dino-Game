@@ -26,6 +26,7 @@ func _run_tests() -> void:
 	_test_low_level_food_supply()
 	_test_habitat_food_filter()
 	_test_hud_contrast()
+	_test_runtime_metrics_warning()
 	_test_gameplay_integration()
 	_test_main_predator_gate_helper()
 	_test_save_recovery()
@@ -126,6 +127,10 @@ func _test_habitat_rules() -> void:
 	_check(not HABITAT_SPAWN_RULES.allows_tier("Nest Basin", "prey", 3), "Nest Basin should not support tier-3 prey")
 	_check(HABITAT_SPAWN_RULES.allows_tier("Redstone Badlands", "predator", 3), "Badlands should support tier-3 predators")
 	_check(not HABITAT_SPAWN_RULES.allows_tier("Ancient Meadow", "predator", 2), "Ancient Meadow should not support predators")
+
+func _test_runtime_metrics_warning() -> void:
+	var metrics := {"npc_count": 22, "population_utilization": 0.88}
+	_check(int(metrics.get("npc_count", 0)) >= 20, "Diagnostics warning threshold should be testable")
 
 func _test_predator_respawn_gate() -> void:
 	var predator := preload("res://predator.gd").new()

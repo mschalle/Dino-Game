@@ -18,6 +18,7 @@ var completion_panel: ColorRect
 var help_panel: ColorRect
 var target_panel: ColorRect
 var target_label: Label
+var diagnostics_label: Label
 var target_health_bar: ProgressBar
 var target_timer := 0.0
 var large_text_enabled := true
@@ -106,6 +107,13 @@ func update_view(session: GameSession, player: PlayerDino, quest_system: QuestSy
 	growth_bar.value = session.growth.progress_to_next_stage() * 100.0
 	quest_label.text = "MAIN QUEST\n%s" % quest_system.progress_text()
 	abilities_label.text = "%s\n%s" % [session.profile.ability_summary(session.growth.stage_index), cooldown_text]
+
+func update_diagnostics(metrics: Dictionary) -> void:
+	if diagnostics_label == null:
+		return
+	var npc_count := int(metrics.get("npc_count", 0))
+	diagnostics_label.text = "DEV  Chunks %d  Scenes %d  NPCs %d/25  Budget %.0f%%" % [int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0]
+	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 else Color("#b8e6ef")
 
 func show_message(text: String) -> void:
 	message_label.text = text
@@ -226,6 +234,13 @@ func _create_status_panel() -> void:
 	message_label.add_theme_font_size_override("font_size", 22)
 	_style_text(message_label, Color("#fff3a6"), 5)
 	message_backdrop.add_child(message_label)
+	diagnostics_label = Label.new()
+	diagnostics_label.position = Vector2(930, 12)
+	diagnostics_label.size = Vector2(330, 28)
+	diagnostics_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	diagnostics_label.add_theme_font_size_override("font_size", 14)
+	diagnostics_label.text = "DEV  Metrics initializing"
+	add_child(diagnostics_label)
 	controls_backdrop = ColorRect.new()
 	controls_backdrop.color = Color(0.02, 0.06, 0.1, 0.92)
 	controls_backdrop.position = Vector2(30, 674)

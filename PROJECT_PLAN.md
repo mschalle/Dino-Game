@@ -275,6 +275,7 @@ The player and spawned food now follow the authored elevation function with grav
 101. Added mixed-population integration coverage for independent prey and predator cooldowns across active chunks.
 102. Added a 600-step streaming-session validation for bounded populations and cooldown expiry.
 103. Added runtime streaming metrics for active chunks, loaded scenes, NPC count, and population utilization.
+104. Added a compact diagnostics HUD with a warning threshold near the 25-NPC performance target.
 
 ## Release Readiness
 
