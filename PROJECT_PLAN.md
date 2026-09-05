@@ -340,6 +340,7 @@ The player and spawned food now follow the authored elevation function with grav
 170. Added null-safe validation for unknown streamed landmark and position lookups.
 171. Added stable active-biome name enumeration for UI and accessibility consumers.
 172. Added deterministic ordering validation for active-biome name enumeration.
+173. Included ordered active biome names in runtime streaming diagnostics data.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.

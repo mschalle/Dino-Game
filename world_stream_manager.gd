@@ -140,6 +140,7 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 	var total_budget := int(budget.get("prey", 0)) + int(budget.get("predator", 0))
 	return {
 		"active_chunks": active_ids.size(),
+		"active_biomes": active_biome_names(),
 		"loaded_chunk_scenes": scene_instances.size(),
 		"loaded_landmarks": active_landmark_positions().size(),
 		"npc_count": npc_count,
