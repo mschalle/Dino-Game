@@ -3,6 +3,8 @@ extends Node3D
 
 signal bump_attack(damage: float)
 signal creature_defeated(creature: Node3D, profile: RefCounted)
+signal warning_started
+signal attack_landed
 
 const CREATURE_PROFILES = preload("res://creature_profiles.gd")
 const COMBAT_COMPONENT = preload("res://combat_component.gd")
@@ -89,6 +91,7 @@ func _process(delta: float) -> void:
 		if can_challenge and distance < 11.0 * awareness_multiplier:
 			state = "warn"
 			warning_timer = 1.0
+			warning_started.emit()
 	elif state == "warn":
 		warning_timer -= delta
 		look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
@@ -101,6 +104,7 @@ func _process(delta: float) -> void:
 		if distance < 1.7 and attack_cooldown <= 0.0:
 			attack_cooldown = 1.5
 			bump_attack.emit(creature_profile.attack_damage)
+			attack_landed.emit()
 		if distance > 20.0 or not can_challenge:
 			state = "recover"
 	elif state == "recover":

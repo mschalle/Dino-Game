@@ -739,6 +739,8 @@ func _create_predators() -> void:
 		predator.set_player(player)
 		predator.set_respawn_gate(func() -> bool: return _predator_respawn_ready(predator))
 		predator.bump_attack.connect(_on_predator_attack)
+		predator.warning_started.connect(_on_predator_warning)
+		predator.attack_landed.connect(_on_predator_attack_landed)
 		predator.creature_defeated.connect(_on_creature_defeated)
 		run_root.add_child(predator)
 		predators.append(predator)
@@ -1090,6 +1092,15 @@ func _on_predator_attack(damage: float) -> void:
 	session.take_damage(final_damage)
 	hud.show_message("A larger dinosaur bumped you! Find space to recover.")
 	sounds.play_warning()
+
+func _on_predator_warning() -> void:
+	if sounds != null:
+		sounds.play_predator_warning()
+	hud.show_message("A predator is warning you. Find space or retreat.")
+
+func _on_predator_attack_landed() -> void:
+	if sounds != null:
+		sounds.play_predator_attack()
 
 func _on_player_defeated() -> void:
 	_cancel_world_event("you returned to the safe nest")

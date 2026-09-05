@@ -637,6 +637,7 @@ The player and spawned food now follow the authored elevation function with grav
 356. Added animated water and shoreline foam motion to streamed wetland and cypress chunk visuals.
 357. Added daylight-linked sky gradient changes so sunrise, daytime, and dusk affect the valley atmosphere alongside the animated sun.
 358. Extended developer telemetry with environment quality, weather state, and daylight-cycle state alongside chunk, NPC, and frame metrics.
+359. Added predator warning and attack audio signals with readable retreat messaging and stronger naturalistic threat feedback.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

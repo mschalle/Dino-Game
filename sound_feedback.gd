@@ -72,6 +72,14 @@ func play_growth() -> void:
 func play_warning() -> void:
 	_queue_tone(220.0, 0.16, 0.18)
 
+func play_predator_warning() -> void:
+	_queue_tone(120.0, 0.22, 0.16)
+	_queue_tone(95.0, 0.28, 0.12)
+
+func play_predator_attack() -> void:
+	_queue_tone(170.0, 0.08, 0.2)
+	_queue_tone(110.0, 0.16, 0.16)
+
 func play_environment_cue(biome: String) -> void:
 	var base := 180.0
 	if biome.find("Wetland") >= 0 or biome.find("Marsh") >= 0:
