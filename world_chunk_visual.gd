@@ -184,16 +184,16 @@ func _create_vegetation(biome: String) -> void:
 	add_child(foliage)
 
 func _create_water(biome: String) -> void:
-	if biome != "River Wetlands":
+	if biome != "River Wetlands" and biome != "Coastal Marsh" and biome != "Cypress Basin":
 		return
 	var water := MeshInstance3D.new()
 	water.name = "WaterSurface"
 	var surface := PlaneMesh.new()
-	surface.size = Vector2(24.0, 18.0)
+	surface.size = Vector2(24.0, 18.0) if biome == "River Wetlands" else Vector2(20.0, 14.0)
 	water.mesh = surface
-	water.position = Vector3(6.0, 0.08, 5.0)
+	water.position = Vector3(6.0, 0.08, 5.0) if biome == "River Wetlands" else Vector3(-4.0, 0.08, 6.0)
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("#55b9d1")
+	material.albedo_color = Color("#55b9d1") if biome != "Cypress Basin" else Color("#4f9f8b")
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.albedo_color.a = 0.72
 	material.roughness = 0.12

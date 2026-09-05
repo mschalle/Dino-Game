@@ -242,7 +242,8 @@ func _test_world_chunks() -> void:
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		var water := visual_root.get_node_or_null("WaterSurface")
-		_check((chunk.biome == "River Wetlands") == (water != null), "%s water surface should match its biome" % chunk.chunk_id)
+		var has_water: bool = chunk.biome == "River Wetlands" or chunk.biome == "Coastal Marsh" or chunk.biome == "Cypress Basin"
+		_check(has_water == (water != null), "%s water surface should match its biome" % chunk.chunk_id)
 		var particles := visual_root.get_node_or_null("AmbientParticles") as GPUParticles3D
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		var navigation := visual_root.get_node_or_null("NavigationRegion") as NavigationRegion3D
