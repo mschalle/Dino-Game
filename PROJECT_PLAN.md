@@ -342,6 +342,7 @@ The player and spawned food now follow the authored elevation function with grav
 172. Added deterministic ordering validation for active-biome name enumeration.
 173. Included ordered active biome names in runtime streaming diagnostics data.
 174. Added empty-state validation for active biome enumeration before first stream activation.
+175. Extended streamed chunk snapshot coverage to the expanded Glacier Valley biome, including nested state restoration and scene reload compatibility.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.
