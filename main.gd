@@ -1632,6 +1632,7 @@ func _toggle_weather() -> void:
 	ENVIRONMENT_QUALITY.configure(settings)
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
+	sounds.play_weather_toggle(ENVIRONMENT_QUALITY.weather_enabled)
 	hud.show_message("Weather effects: %s (applied now)" % ("ON" if ENVIRONMENT_QUALITY.weather_enabled else "OFF"))
 
 func _toggle_reduced_motion() -> void:

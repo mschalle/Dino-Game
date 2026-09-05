@@ -81,6 +81,14 @@ func play_predator_attack() -> void:
 	_queue_tone(170.0, 0.08, 0.2)
 	_queue_tone(110.0, 0.16, 0.16)
 
+func play_weather_toggle(enabled: bool) -> void:
+	if enabled:
+		_queue_tone(280.0, 0.12, 0.08)
+		_queue_tone(360.0, 0.16, 0.06)
+	else:
+		_queue_tone(360.0, 0.12, 0.07)
+		_queue_tone(240.0, 0.16, 0.05)
+
 func play_environment_cue(biome: String) -> void:
 	var base := 180.0
 	if biome.find("Wetland") >= 0 or biome.find("Marsh") >= 0:

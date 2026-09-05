@@ -673,6 +673,7 @@ The player and spawned food now follow the authored elevation function with grav
 392. Corrected F4 quality and F5 weather feedback so HUD messages state that settings apply immediately to the current loaded world as well as future streamed areas.
 393. Added quality-scaled visibility for authored distant mountain silhouettes, keeping the expanded horizon aligned with camera far-clip and foliage budgets across Low, Medium, and High modes.
 394. Deep-merged settings during save migration so older files retain their values while receiving newer environment and accessibility defaults; added regression coverage for the migrated keys.
+395. Added distinct rising/falling audio cues when weather effects are toggled, giving the environmental state change an immediate, non-visual signal.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
