@@ -13,6 +13,7 @@ var allowed_prey_tiers: Array[int] = [1, 2, 3]
 var population_caps: Dictionary = {1: 5, 2: 3, 3: 2}
 var persisted_population_budget := 0
 var habitat_respawn_cooldown := 0.0
+var tier_respawn_cooldowns: Dictionary = {}
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -52,6 +53,9 @@ func set_population_budget(budget: Dictionary) -> void:
 func set_respawn_cooldown(seconds: float) -> void:
 	habitat_respawn_cooldown = maxf(0.0, seconds)
 
+func set_tier_respawn_cooldowns(cooldowns: Dictionary) -> void:
+	tier_respawn_cooldowns = cooldowns.duplicate()
+
 func maintain(delta: float, survival_time: float) -> void:
 	respawn_timer -= delta
 	habitat_respawn_cooldown = maxf(0.0, habitat_respawn_cooldown - delta)
@@ -80,6 +84,8 @@ func _spawn_to_targets(scarcity: int) -> void:
 	}
 	for nutrition in tier_targets:
 		if not allowed_prey_tiers.has(int(nutrition)):
+			continue
+		if float(tier_respawn_cooldowns.get("prey_%d" % int(nutrition), 0.0)) > 0.0:
 			continue
 		tier_targets[nutrition] = mini(int(tier_targets[nutrition]), int(population_caps.get(int(nutrition), tier_targets[nutrition])))
 		for index in maxi(0, int(tier_targets[nutrition]) - int(tier_counts[nutrition])):

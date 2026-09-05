@@ -149,6 +149,16 @@ func active_respawn_cooldown() -> float:
 			highest = maxf(highest, get_respawn_cooldown(chunk.chunk_id))
 	return highest
 
+func active_tier_respawn_cooldowns() -> Dictionary:
+	var result: Dictionary = {}
+	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
+		var cooldowns: Dictionary = get_chunk_state(chunk.chunk_id).get("tier_respawn_cooldowns", {})
+		for key in cooldowns:
+			result[key] = maxf(float(result.get(key, 0.0)), float(cooldowns[key]))
+	return result
+
 func tick_respawn_cooldowns(delta: float) -> void:
 	for chunk in chunks:
 		var cooldown := get_respawn_cooldown(chunk.chunk_id)
