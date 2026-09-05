@@ -223,6 +223,7 @@ func _test_world_chunks() -> void:
 	_check(stream.is_active("nest_basin") and stream.is_active("fernwood"), "Origin chunk should activate adjacent reserve cells")
 	_check(stream.profile_for_chunk("fernwood") != null and stream.profile_for_chunk("fernwood").biome == "Fernwood", "Stream manager should expose readable chunk profiles")
 	_check(stream.profile_for_chunk("missing_chunk") == null, "Unknown chunk profile lookups should return null")
+	_check(stream.landmark_for_chunk("missing_chunk") == null and stream.landmark_position_for_chunk("missing_chunk") == null, "Unknown landmark lookups should return null")
 	var nest_instance := stream.instantiate_chunk("nest_basin", root)
 	_check(stream.landmark_for_chunk("nest_basin") != null, "Active chunks should expose their landmark destination")
 	var landmark_position: Variant = stream.landmark_position_for_chunk("nest_basin")
