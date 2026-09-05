@@ -54,6 +54,29 @@ func chunk_id_at_world_position(world_position: Vector3) -> String:
 func is_world_position_navigable(world_position: Vector3) -> bool:
 	return not chunk_id_at_world_position(world_position).is_empty() and world_position.y >= -1.0
 
+func confine_actor(actor: Node3D, fallback: Vector3) -> bool:
+	if is_world_position_navigable(actor.global_position):
+		return false
+	var nearest: Variant = _nearest_active_chunk_position(actor.global_position)
+	if nearest == null:
+		actor.global_position = fallback
+	else:
+		actor.global_position = nearest
+	return true
+
+func _nearest_active_chunk_position(world_position: Vector3) -> Variant:
+	var best: Variant = null
+	var best_distance := INF
+	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
+		var center := Vector3(chunk.grid_position.x * chunk_world_size, 0.0, chunk.grid_position.y * chunk_world_size)
+		var distance := center.distance_squared_to(world_position)
+		if distance < best_distance:
+			best_distance = distance
+			best = center
+	return best
+
 func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 	if scene_instances.has(chunk_id):
 		return scene_instances[chunk_id]

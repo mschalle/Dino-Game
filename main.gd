@@ -1057,6 +1057,8 @@ func _ground_world_actors() -> void:
 			var actor := node as Node3D
 			if actor == null:
 				continue
+			if world_stream != null:
+				world_stream.confine_actor(actor, SAFE_SPAWN)
 			if actor.global_position.y < -6.0:
 				if actor.is_in_group("food_token"):
 					actor.queue_free()
