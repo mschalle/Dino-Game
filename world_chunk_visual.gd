@@ -18,6 +18,7 @@ func _ready() -> void:
 	_create_elevation(biome)
 	_create_vegetation(biome)
 	_create_water(biome)
+	_create_ambient_particles(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -147,3 +148,26 @@ func _create_water(biome: String) -> void:
 	material.metallic = 0.05
 	water.material_override = material
 	add_child(water)
+
+func _create_ambient_particles(biome: String) -> void:
+	var particles := GPUParticles3D.new()
+	particles.name = "AmbientParticles"
+	particles.amount = 10 if biome == "River Wetlands" else 7
+	particles.lifetime = 5.0
+	particles.visibility_aabb = AABB(Vector3(-30.0, -1.0, -30.0), Vector3(60.0, 12.0, 60.0))
+	var particle_material := StandardMaterial3D.new()
+	particle_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particle_material.albedo_color = Color("#d8f1b0") if biome != "Redstone Badlands" else Color("#f5c78c")
+	var particle_mesh := QuadMesh.new()
+	particle_mesh.size = Vector2(0.08, 0.08)
+	particle_mesh.material = particle_material
+	particles.draw_pass_1 = particle_mesh
+	var process_material := ParticleProcessMaterial.new()
+	process_material.gravity = Vector3(0.0, -0.03, 0.0)
+	process_material.initial_velocity_min = 0.08
+	process_material.initial_velocity_max = 0.18
+	process_material.spread = 35.0
+	process_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	process_material.emission_box_extents = Vector3(24.0, 3.0, 24.0)
+	particles.process_material = process_material
+	add_child(particles)

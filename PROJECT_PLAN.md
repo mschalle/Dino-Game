@@ -251,6 +251,7 @@ The player and spawned food now follow the authored elevation function with grav
 77. Added biome-specific elevated terrain forms with matching collision for ridge, wetlands, meadow, and badlands chunks.
 78. Added deterministic low-cost MultiMesh vegetation batches to every streamed biome chunk.
 79. Added a shallow translucent water surface to the River Wetlands chunk with biome-specific validation.
+80. Added lightweight biome ambient particle effects with dry-biome color variation.
 
 ## Release Readiness
 
