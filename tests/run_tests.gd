@@ -18,6 +18,7 @@ func _run_tests() -> void:
 	_test_quests()
 	_test_survival()
 	_test_creature_combat()
+	_test_predator_respawn_gate()
 	_test_ai_states()
 	_test_low_level_food_supply()
 	_test_habitat_food_filter()
@@ -121,6 +122,15 @@ func _test_habitat_rules() -> void:
 	_check(not HABITAT_SPAWN_RULES.allows_tier("Nest Basin", "prey", 3), "Nest Basin should not support tier-3 prey")
 	_check(HABITAT_SPAWN_RULES.allows_tier("Redstone Badlands", "predator", 3), "Badlands should support tier-3 predators")
 	_check(not HABITAT_SPAWN_RULES.allows_tier("Ancient Meadow", "predator", 2), "Ancient Meadow should not support predators")
+
+func _test_predator_respawn_gate() -> void:
+	var predator := preload("res://predator.gd").new()
+	var gate_state := [false]
+	predator.set_respawn_gate(func() -> bool: return gate_state[0])
+	_check(not predator.respawn_gate.call(), "Predator respawn gate should block while cooldown is active")
+	gate_state[0] = true
+	_check(predator.respawn_gate.call(), "Predator respawn gate should open after cooldown")
+	predator.free()
 
 func _test_habitat_food_filter() -> void:
 	var spawner := preload("res://food_spawner.gd").new()

@@ -30,6 +30,7 @@ var head_rest_y := 0.0
 var tail_rest_rotation := Vector3.ZERO
 var imported_model: Node3D
 var imported_animation_player: AnimationPlayer
+var respawn_gate: Callable
 
 func setup(new_strength: int, new_position: Vector3) -> void:
 	strength = new_strength
@@ -39,6 +40,9 @@ func setup(new_strength: int, new_position: Vector3) -> void:
 
 func set_player(new_player: PlayerDino) -> void:
 	player = new_player
+
+func set_respawn_gate(gate: Callable) -> void:
+	respawn_gate = gate
 
 func _ready() -> void:
 	add_to_group("predator")
@@ -56,7 +60,7 @@ func _process(delta: float) -> void:
 	combat.tick(delta)
 	if combat.is_defeated():
 		defeat_timer -= delta
-		if defeat_timer <= 0.0 and creature_profile.respawn_delay > 0.0:
+		if defeat_timer <= 0.0 and creature_profile.respawn_delay > 0.0 and (respawn_gate.is_null() or respawn_gate.call()):
 			combat.reset()
 			visible = true
 			global_position = home

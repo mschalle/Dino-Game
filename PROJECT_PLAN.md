@@ -269,6 +269,7 @@ The player and spawned food now follow the authored elevation function with grav
 95. Added independent per-role and per-tier respawn cooldowns to chunk state.
 96. Connected active tier cooldowns to prey replenishment so only affected tiers pause.
 97. Added role-neutral tier readiness checks for independent predator and prey respawn behavior.
+98. Added an injectable predator respawn gate so tier cooldowns can control hidden-to-visible recovery.
 
 ## Release Readiness
 
