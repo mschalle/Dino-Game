@@ -11,21 +11,21 @@ const EVADE_PREDATOR := "evade_predator"
 var last_family := ""
 var skipped_ids: Dictionary = {}
 
-func next(round: int, dinosaur_profile, active_event_id: String, destination: Vector3) -> QuestDefinition:
+func next(challenge_round: int, dinosaur_profile, active_event_id: String, destination: Vector3) -> QuestDefinition:
 	var families: Array[String] = [FORAGE, DISCOVER]
 	if active_event_id == "herd_journey":
 		families.append(OBSERVE_HERD)
 	if active_event_id == "predator_passage":
 		families.append(EVADE_PREDATOR)
-	var family := families[round % families.size()]
+	var family := families[challenge_round % families.size()]
 	if active_event_id == "herd_journey" and last_family != OBSERVE_HERD:
 		family = OBSERVE_HERD
 	elif active_event_id == "predator_passage" and last_family != EVADE_PREDATOR:
 		family = EVADE_PREDATOR
 	if family == last_family and families.size() > 1:
-		family = families[(round + 1) % families.size()]
+		family = families[(challenge_round + 1) % families.size()]
 	last_family = family
-	var id := "endless_%s_%d" % [family, round]
+	var id := "endless_%s_%d" % [family, challenge_round]
 	if family == FORAGE:
 		var target := "plant" if dinosaur_profile.diet == "herbivore" else "prey"
 		return QUEST.new(id, "Endless Forage", "Find suitable renewable food.", "eat", target, 5, 3, 0, Vector3.ZERO)

@@ -47,10 +47,10 @@ func apply_ui_settings(settings: Dictionary) -> void:
 	_apply_accessibility_style()
 
 func _apply_ui_settings(settings: Dictionary) -> void:
-	var scale := 1.0
+	var ui_scale_value := 1.0
 	if not settings.is_empty():
-		scale = clampf(float(settings.get("ui_scale", 1.0)), 1.0, 1.75)
-	get_tree().root.content_scale_factor = scale
+		ui_scale_value = clampf(float(settings.get("ui_scale", 1.0)), 1.0, 1.75)
+	get_tree().root.content_scale_factor = ui_scale_value
 
 func _apply_accessibility_style() -> void:
 	var font_scale := 1.15 if large_text_enabled else 1.0
@@ -195,8 +195,8 @@ func _create_target_panel() -> void:
 	target_health_bar.show_percentage = true
 	target_panel.add_child(target_health_bar)
 
-func set_paused(visible: bool) -> void:
-	pause_panel.visible = visible
+func set_paused(paused_visible: bool) -> void:
+	pause_panel.visible = paused_visible
 
 func toggle_help() -> void:
 	if help_panel != null:

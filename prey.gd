@@ -300,20 +300,20 @@ func _set_model_shadows(node: Node) -> void:
 func _create_imported_animation_library() -> void:
 	imported_animation_player = AnimationPlayer.new()
 	var library := AnimationLibrary.new()
-	for name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+	for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
 		var animation := Animation.new()
-		animation.length = 0.8 if name != "Idle" else 2.0
-		animation.loop_mode = Animation.LOOP_LINEAR if name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
+		animation.length = 0.8 if animation_name != "Idle" else 2.0
+		animation.loop_mode = Animation.LOOP_LINEAR if animation_name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
 		var track := animation.add_track(Animation.TYPE_VALUE)
 		animation.track_set_path(track, NodePath("../ImportedDinosaurModel:rotation"))
 		var tilt := Vector3(0, 0, 0)
-		if name == "Attack": tilt.x = -0.18
-		elif name == "Hit": tilt.z = 0.16
-		elif name == "Defeat": tilt.z = 0.7
+		if animation_name == "Attack": tilt.x = -0.18
+		elif animation_name == "Hit": tilt.z = 0.16
+		elif animation_name == "Defeat": tilt.z = 0.7
 		animation.track_insert_key(track, 0.0, Vector3.ZERO)
 		animation.track_insert_key(track, animation.length * 0.5, tilt)
 		animation.track_insert_key(track, animation.length, Vector3.ZERO)
-		library.add_animation(name, animation)
+		library.add_animation(animation_name, animation)
 	imported_animation_player.add_animation_library("", library)
 	add_child(imported_animation_player)
 	imported_animation_player.play("Idle")

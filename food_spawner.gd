@@ -52,9 +52,9 @@ func set_population_budget(budget: Dictionary) -> void:
 	var total_caps := int(population_caps.get(1, 0)) + int(population_caps.get(2, 0)) + int(population_caps.get(3, 0))
 	if total_caps <= prey_budget:
 		return
-	var scale := float(prey_budget) / float(total_caps)
+	var population_scale := float(prey_budget) / float(total_caps)
 	for tier in population_caps:
-		population_caps[tier] = maxi(1, floori(float(population_caps[tier]) * scale))
+		population_caps[tier] = maxi(1, floori(float(population_caps[tier]) * population_scale))
 
 func set_persisted_herd_records(records: Dictionary) -> void:
 	# Records come from streamed chunks.  Keep a private copy so unloading a chunk
@@ -133,7 +133,7 @@ func _spawn_prey(forced_nutrition: int = 0) -> void:
 	for sibling in get_children():
 		if sibling is PreyDino and (sibling as PreyDino).nutrition == nutrition:
 			same_tier_count += 1
-	var herd_id := str(restored_herd.get("id", "tier_%d_%d" % [nutrition, int(same_tier_count / 4)]))
+	var herd_id := str(restored_herd.get("id", "tier_%d_%d" % [nutrition, int(float(same_tier_count) / 4.0)]))
 	var herd_anchor := prey.position
 	var herd_leader := true
 	if not restored_herd.is_empty():

@@ -73,7 +73,7 @@ func consume(food_id: String, nutrition: int) -> void:
 	food_consumed.emit(food_id, growth_award)
 	hunger_changed.emit(hunger)
 
-func claim_creature_reward(species_id: String, tier: int, growth_reward: int, hunger_reward: float) -> void:
+func claim_creature_reward(_species_id: String, tier: int, growth_reward: int, hunger_reward: float) -> void:
 	tokens_claimed += 1
 	food_eaten += 1
 	food_by_nutrition[tier] = int(food_by_nutrition.get(tier, 0)) + 1

@@ -515,7 +515,7 @@ func _show_controls_overlay() -> void:
 		var action := actions[index]
 		var button := Button.new()
 		button.text = "%s: %s" % [_action_label(action), _primary_event_name(action)]
-		button.position = Vector2(360 + (index % 2) * 310, 155 + (index / 2) * 70)
+		button.position = Vector2(360 + (index % 2) * 310, 155 + floori(float(index) / 2.0) * 70)
 		button.size = Vector2(280, 48)
 		button.pressed.connect(func() -> void:
 			waiting_rebind = action
@@ -594,7 +594,7 @@ func _action_label(action: String) -> String:
 
 func _create_species_card(parent: Control, species_profile: DinosaurProfile, index: int) -> void:
 	var column := index % 3
-	var row := index / 3
+	var row := floori(float(index) / 3.0)
 	var x := 105.0 + column * 390.0
 	var card := ColorRect.new()
 	card.color = Color(species_profile.body_color, 0.34)
