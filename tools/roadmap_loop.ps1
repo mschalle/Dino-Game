@@ -17,6 +17,12 @@ $planPath = Join-Path $ProjectPath "PROJECT_PLAN.md"
 if (-not (Test-Path -LiteralPath $validation)) { throw "Validation script was not found: $validation" }
 if (-not (Test-Path -LiteralPath $status)) { throw "Status script was not found: $status" }
 if (-not (Test-Path -LiteralPath $planPath)) { throw "Project plan was not found: $planPath" }
+if (-not [string]::IsNullOrWhiteSpace($ResultPath)) {
+    $resultParent = Split-Path -Parent $ResultPath
+    if (-not [string]::IsNullOrWhiteSpace($resultParent) -and -not (Test-Path -LiteralPath $resultParent)) {
+        throw "Result directory was not found: $resultParent"
+    }
+}
 if ($RequireExportTemplates) {
     $templateRoot = Join-Path $env:APPDATA "Godot\export_templates\4.7.2.stable"
     if (-not (Test-Path -LiteralPath (Join-Path $templateRoot "windows_debug_x86_64.exe")) -or
