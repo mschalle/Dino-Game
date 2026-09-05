@@ -94,6 +94,20 @@ func _test_profiles() -> void:
 				for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
 					_check(dino.imported_animation_player.has_animation(animation_name), "%s should expose %s animation" % [profile.id, animation_name])
 		dino.free()
+	var prey := PreyDino.new()
+	prey.setup("Animation Test Prey", 1, Color.WHITE)
+	root.add_child(prey)
+	_check(prey.imported_animation_player != null, "Imported prey should have an animation player")
+	if prey.imported_animation_player != null:
+		_check(prey.imported_animation_player.has_animation("Idle") and prey.imported_animation_player.has_animation("Defeat"), "Imported prey should expose Idle and Defeat animations")
+	prey.free()
+	var predator := ValleyPredator.new()
+	predator.setup(2, Vector3.ZERO)
+	root.add_child(predator)
+	_check(predator.imported_animation_player != null, "Imported predator should have an animation player")
+	if predator.imported_animation_player != null:
+		_check(predator.imported_animation_player.has_animation("Attack") and predator.imported_animation_player.has_animation("Defeat"), "Imported predator should expose Attack and Defeat animations")
+	predator.free()
 
 func _test_all_playable_species() -> void:
 	var save := preload("res://save_system.gd").new()
