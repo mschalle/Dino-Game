@@ -322,6 +322,7 @@ The player and spawned food now follow the authored elevation function with grav
 148. Added per-biome streamed environments with fog density and background color derived from chunk profiles.
 149. Added exact profile-to-runtime fog density validation for every authored chunk.
 150. Added biome-aware ambient light color and energy for bright, readable streamed scenes.
+151. Applied per-profile navigation layers and agent radius after streamed chunk instantiation; slope and climb remain profile metadata for editor baking.
 
 ## Release Readiness
 

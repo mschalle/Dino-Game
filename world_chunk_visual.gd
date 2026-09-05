@@ -7,6 +7,11 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 	set_meta("agent_radius", profile.agent_radius)
 	set_meta("max_slope_degrees", profile.max_slope_degrees)
 	set_meta("max_climb", profile.max_climb)
+	var navigation_region := get_node_or_null("NavigationRegion") as NavigationRegion3D
+	if navigation_region != null:
+		navigation_region.navigation_layers = profile.navigation_layers
+		if navigation_region.navigation_mesh != null:
+			navigation_region.navigation_mesh.agent_radius = profile.agent_radius
 	var biome_environment := get_node_or_null("BiomeEnvironment") as WorldEnvironment
 	if biome_environment != null and biome_environment.environment != null:
 		biome_environment.environment.fog_density = profile.fog_density

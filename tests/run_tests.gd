@@ -264,6 +264,9 @@ func _test_world_chunks() -> void:
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		var navigation := visual_root.get_node_or_null("NavigationRegion") as NavigationRegion3D
 		_check(navigation != null and navigation.navigation_mesh != null, "%s should create a navigation region" % chunk.chunk_id)
+		if navigation != null and navigation.navigation_mesh != null:
+			_check(navigation.navigation_layers == chunk.navigation_layers, "%s navigation layers should match its profile" % chunk.chunk_id)
+			_check(is_equal_approx(navigation.navigation_mesh.agent_radius, chunk.agent_radius), "%s navigation radius should match its profile" % chunk.chunk_id)
 		_check(navigation.navigation_mesh.vertices.size() == 4, "%s navigation mesh should cover its ground pad" % chunk.chunk_id)
 		if chunk.biome != "Nest Basin":
 			_check(visual_root.get_node_or_null("Elevation") != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
