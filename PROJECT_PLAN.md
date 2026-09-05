@@ -661,6 +661,7 @@ The player and spawned food now follow the authored elevation function with grav
 380. Added quality-scaled camera far clipping: 220m Low, 280m Medium, and 340m High, applied immediately by F4.
 381. Added velocity-based camera look-ahead so movement frames upcoming terrain and landmarks while preserving smooth follow behavior.
 382. Rechecked the Windows packaging gate; `tools/windows_export_smoke.ps1` still reports missing matching Godot 4.7.2 export templates, while gameplay and headless validation remain available.
+383. Updated Help and control hints to describe naturalistic predator behavior, bounded combat feedback, environment quality (F4), and weather (F5).
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
