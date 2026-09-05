@@ -432,6 +432,7 @@ The player and spawned food now follow the authored elevation function with grav
 258. Added an explicit legacy-environment node and integration validation for global child-friendly fog.
 259. Added bounded-density and visible-color validation for the legacy valley fog and background environment.
 260. Added an explicit ValleySun node and integration validation for bounded directional and ambient lighting energy.
+261. Added integration validation for legacy habitat-label font sizing and outline strength at gameplay distance.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

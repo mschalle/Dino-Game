@@ -871,6 +871,8 @@ func _test_gameplay_integration() -> void:
 	for child in main_scene.get_children():
 		if child is MeshInstance3D and child.get_child_count() > 0 and child.get_child(0) is Label3D:
 			_check(child.visibility_range_end > child.visibility_range_begin, "Habitat landmark markers should define a bounded visibility range")
+			var label := child.get_child(0) as Label3D
+			_check(label.font_size >= 24 and label.outline_size >= 6, "Habitat landmark labels should remain readable at gameplay distance")
 	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
 	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
 	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")
