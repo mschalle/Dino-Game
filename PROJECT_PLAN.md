@@ -614,6 +614,7 @@ The player and spawned food now follow the authored elevation function with grav
 333. Replaced the fixed Endless rotation with reusable forage, discovery, herd-observation, and predator-evasion challenges plus no-reward skipping and event-aware filtering.
 334. Added gamepad challenge skipping, child-friendly on-screen skip guidance, and automatic reachable-challenge replacement when an event target disappears.
 335. Added persistent field-guide discoveries and per-species challenge records, including duplicate-safe event and ten-challenge badges.
+336. Added old-save migration and reload coverage for field-guide defaults and species-isolated challenge progression records.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
