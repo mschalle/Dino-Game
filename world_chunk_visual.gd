@@ -27,6 +27,8 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 		var base_count := int(get_meta("vegetation_base_count", vegetation.multimesh.instance_count))
 		set_meta("vegetation_base_count", base_count)
 		vegetation.multimesh.instance_count = maxi(1, int(round(float(base_count) * profile.vegetation_density)))
+		if vegetation.multimesh.mesh != null and vegetation.multimesh.mesh.material is StandardMaterial3D:
+			(vegetation.multimesh.mesh.material as StandardMaterial3D).albedo_color = profile.ground_color.lightened(0.12)
 		for index in vegetation.multimesh.instance_count:
 			var x := float((index * 13) % 29) - 14.0
 			var z := float((index * 17) % 29) - 14.0
