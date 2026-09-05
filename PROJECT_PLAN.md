@@ -253,6 +253,7 @@ The player and spawned food now follow the authored elevation function with grav
 79. Added a shallow translucent water surface to the River Wetlands chunk with biome-specific validation.
 80. Added lightweight biome ambient particle effects with dry-biome color variation.
 81. Added per-biome NavigationRegion3D meshes aligned to streamed ground pads and authored agent limits.
+82. Added streamed NavigationLink3D connectors between loaded neighboring biome chunks with unload cleanup.
 
 ## Release Readiness
 

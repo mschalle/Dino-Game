@@ -7,6 +7,7 @@ signal chunk_deactivated(chunk_id: String)
 var chunks: Array = []
 var active_ids: Dictionary = {}
 var scene_instances: Dictionary = {}
+var connection_links: Dictionary = {}
 var chunk_states: Dictionary = {}
 var active_radius := 1
 var chunk_world_size := 60.0
@@ -16,6 +17,7 @@ func configure(chunk_profiles: Array, radius: int = 1) -> void:
 	active_radius = maxi(0, radius)
 	active_ids.clear()
 	scene_instances.clear()
+	connection_links.clear()
 	chunk_states.clear()
 
 func update_player_chunk(grid_position: Vector2i) -> void:
@@ -61,16 +63,54 @@ func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 		if instance.has_method("apply_chunk_state"):
 			instance.apply_chunk_state(get_chunk_state(chunk_id))
 		scene_instances[chunk_id] = instance
+		_create_neighbor_links(chunk, parent)
 		return instance
 	return null
 
 func release_chunk(chunk_id: String) -> void:
+	_remove_neighbor_links(chunk_id)
 	if not scene_instances.has(chunk_id):
 		return
 	var instance: Node3D = scene_instances[chunk_id]
 	if is_instance_valid(instance):
 		instance.queue_free()
 	scene_instances.erase(chunk_id)
+
+func _create_neighbor_links(chunk: RefCounted, parent: Node) -> void:
+	for neighbor_id in chunk.neighbor_ids:
+		var key := _connection_key(chunk.chunk_id, neighbor_id)
+		if connection_links.has(key) or not scene_instances.has(neighbor_id):
+			continue
+		var neighbor := _find_chunk(neighbor_id)
+		if neighbor == null:
+			continue
+		var link := NavigationLink3D.new()
+		link.name = "Link_%s" % key
+		var start := Vector3(chunk.grid_position.x * chunk_world_size, 0.05, chunk.grid_position.y * chunk_world_size)
+		var end := Vector3(neighbor.grid_position.x * chunk_world_size, 0.05, neighbor.grid_position.y * chunk_world_size)
+		link.start_position = start
+		link.end_position = end
+		link.enter_cost = 1.0
+		link.travel_cost = start.distance_to(end)
+		parent.add_child(link)
+		connection_links[key] = link
+
+func _remove_neighbor_links(chunk_id: String) -> void:
+	for key in connection_links.keys():
+		if str(key).begins_with(chunk_id + "|") or str(key).ends_with("|" + chunk_id):
+			var link: NavigationLink3D = connection_links[key]
+			if is_instance_valid(link):
+				link.queue_free()
+			connection_links.erase(key)
+
+func _find_chunk(chunk_id: String) -> RefCounted:
+	for chunk in chunks:
+		if chunk.chunk_id == chunk_id:
+			return chunk
+	return null
+
+func _connection_key(first: String, second: String) -> String:
+	return first + "|" + second if first < second else second + "|" + first
 
 func set_chunk_state(chunk_id: String, state: Dictionary) -> void:
 	chunk_states[chunk_id] = state.duplicate(true)
