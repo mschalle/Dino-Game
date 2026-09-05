@@ -10,7 +10,9 @@ static func reserve() -> Array[RefCounted]:
 		CHUNK_PROFILE.new("river_wetlands", "River Wetlands", Vector2i(0, 1), "Waterfall Pool", {"prey": [2, 3], "plants": true}, "res://world_chunks/river_wetlands.tscn", Color("#6bb8a0"), 1.2, 0.012, 3),
 		CHUNK_PROFILE.new("sunstone_ridge", "Sunstone Ridge", Vector2i(1, 1), "Roaring Overlook", {"prey": [2], "predators": [2]}, "res://world_chunks/sunstone_ridge.tscn", Color("#c88b55"), 0.7, 0.005, 7),
 		CHUNK_PROFILE.new("redstone_badlands", "Redstone Badlands", Vector2i(2, 1), "Rival Arena", {"predators": [2, 3, 4]}, "res://world_chunks/redstone_badlands.tscn", Color("#c97862"), 0.45, 0.004, 7),
-		CHUNK_PROFILE.new("ancient_meadow", "Ancient Meadow", Vector2i(0, 2), "Herd Sanctuary", {"prey": [1, 2, 3], "plants": true}, "res://world_chunks/ancient_meadow.tscn", Color("#91c85a"), 1.35, 0.007, 3)
+		CHUNK_PROFILE.new("ancient_meadow", "Ancient Meadow", Vector2i(0, 2), "Herd Sanctuary", {"prey": [1, 2, 3], "plants": true}, "res://world_chunks/ancient_meadow.tscn", Color("#91c85a"), 1.35, 0.007, 3),
+		CHUNK_PROFILE.new("cloudforest", "Cloudforest Rise", Vector2i(-1, 1), "Misty Canopy", {"prey": [2], "predators": [1]}, "res://world_chunks/cloudforest.tscn", Color("#568b78"), 1.1, 0.014, 3),
+		CHUNK_PROFILE.new("coastal_marsh", "Coastal Marsh", Vector2i(1, 2), "Reed Crossing", {"prey": [1, 2], "plants": true}, "res://world_chunks/coastal_marsh.tscn", Color("#6caa8d"), 1.0, 0.01, 3)
 	]
 	for chunk in chunks:
 		var neighbors: Array[String] = []
