@@ -188,6 +188,7 @@ func _on_chunk_activated(chunk_id: String) -> void:
 				hud.show_message("Entering %s" % chunk_profile.biome)
 
 func _on_chunk_deactivated(chunk_id: String) -> void:
+	_cancel_world_event("the habitat unloaded")
 	world_stream.release_chunk(chunk_id)
 	chunk_instances.erase(chunk_id)
 
@@ -641,7 +642,7 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	endless_round = 0
 	endless_second_timer = 0.0
 	world_events = WORLD_EVENT_SYSTEM.new()
-	next_endless_event_time = 120.0
+	next_endless_event_time = 180.0
 	endless_event_index = 0
 	if mode == "adventure":
 		quest_system.start(profile.adventure_quests)
@@ -1000,6 +1001,7 @@ func _on_predator_attack(damage: float) -> void:
 	sounds.play_warning()
 
 func _on_player_defeated() -> void:
+	_cancel_world_event("you returned to the safe nest")
 	_show_dust_transition()
 	player.position = SAFE_SPAWN
 	player.velocity = Vector3.ZERO
@@ -1103,13 +1105,17 @@ func _update_endless_difficulty() -> void:
 func _update_world_events(delta: float) -> void:
 	if mode != "endless" or world_events == null or food_spawner == null:
 		return
+	if get_tree().paused:
+		return
 	var active_event_before_tick: String = world_events.active_event_id
 	if world_events.tick(delta):
 		_finish_world_event(active_event_before_tick)
 	if world_events.active_event_id.is_empty() and session.survival_time >= next_endless_event_time:
 		var event_ids := [WORLD_EVENT_SYSTEM.FRESH_GROWTH, WORLD_EVENT_SYSTEM.HERD_JOURNEY, WORLD_EVENT_SYSTEM.PREDATOR_PASSAGE]
 		var event_id: String = event_ids[endless_event_index % event_ids.size()]
-		if world_events.start(event_id, 45.0):
+		if not _event_is_eligible(event_id):
+			next_endless_event_time += 30.0
+		elif world_events.start(event_id, 45.0):
 			if event_id == WORLD_EVENT_SYSTEM.FRESH_GROWTH:
 				food_spawner.set_event_plant_bonus(4)
 				hud.show_message("Fresh Growth! Extra plants have appeared for a short time.")
@@ -1159,6 +1165,39 @@ func _finish_world_event(finished_id: String) -> void:
 		hud.show_message("Herd Journey complete. The herd has settled into a new meadow.")
 	else:
 		hud.show_message("Predator Passage complete. The route is safe again.")
+
+func _event_is_eligible(event_id: String) -> bool:
+	if event_id == WORLD_EVENT_SYSTEM.FRESH_GROWTH:
+		return food_spawner != null
+	if event_id == WORLD_EVENT_SYSTEM.HERD_JOURNEY:
+		for node in get_tree().get_nodes_in_group("prey"):
+			var prey := node as PreyDino
+			if prey != null and prey.visible and not prey.herd_id.is_empty() and _event_actor_is_reachable(prey):
+				return true
+		return false
+	for predator in predators:
+		if is_instance_valid(predator) and predator.visible and _event_actor_is_reachable(predator):
+			return true
+	return false
+
+func _event_actor_is_reachable(actor: Node3D) -> bool:
+	return world_stream == null or not world_stream.chunk_id_at_world_position(actor.global_position).is_empty()
+
+func _cancel_world_event(reason: String) -> void:
+	if world_events == null or world_events.active_event_id.is_empty():
+		return
+	var cancelled_id: String = world_events.cancel()
+	if food_spawner != null:
+		food_spawner.set_event_plant_bonus(0)
+	for node in get_tree().get_nodes_in_group("prey"):
+		var prey := node as PreyDino
+		if prey != null:
+			prey.cancel_journey()
+	for predator in predators:
+		if is_instance_valid(predator):
+			predator.cancel_passage()
+	if hud != null:
+		hud.show_message("%s was cancelled because %s." % [cancelled_id.capitalize().replace("_", " "), reason])
 
 func _tick_cooldowns(delta: float) -> void:
 	for ability_id in ability_cooldowns.keys():
@@ -1316,6 +1355,7 @@ func _set_paused(paused: bool) -> void:
 		hud.set_paused(paused)
 
 func _restart_run() -> void:
+	_cancel_world_event("the run restarted")
 	var restart_profile := profile
 	var restart_mode := mode
 	_record_current_run()
@@ -1323,6 +1363,7 @@ func _restart_run() -> void:
 	_start_run(restart_profile, restart_mode)
 
 func _return_to_selection() -> void:
+	_cancel_world_event("you returned to dinosaur selection")
 	_record_current_run()
 	_cleanup_run()
 	_show_selection()

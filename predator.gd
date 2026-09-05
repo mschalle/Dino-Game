@@ -171,6 +171,11 @@ func begin_passage(destination: Vector3) -> void:
 	passage_active = true
 	state = "passage"
 
+func cancel_passage() -> void:
+	passage_active = false
+	home = passage_return_home
+	state = "recover"
+
 func _update_passage(delta: float) -> void:
 	var direction := _navigation_direction(passage_target)
 	var speed := maxf(2.5, creature_profile.move_speed * 0.7)

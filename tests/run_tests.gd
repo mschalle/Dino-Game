@@ -244,6 +244,7 @@ func _test_world_events() -> void:
 	_check(events.start(WORLD_EVENT_SYSTEM.HERD_JOURNEY, 45.0), "Herd Journey should start after the prior event ends")
 	events.tick(45.0)
 	_check(events.start(WORLD_EVENT_SYSTEM.PREDATOR_PASSAGE, 45.0), "Predator Passage should start after the prior event ends")
+	_check(events.cancel() == WORLD_EVENT_SYSTEM.PREDATOR_PASSAGE and events.active_event_id.is_empty(), "World events should cancel cleanly when their habitat unloads or a run ends")
 	var spawner := FoodSpawner.new()
 	spawner.set_event_plant_bonus(4)
 	_check(spawner.event_plant_bonus == 4, "Fresh Growth should add a bounded plant-spawn bonus")

@@ -160,6 +160,10 @@ func begin_journey(destination: Vector3) -> void:
 	journey_active = true
 	state = "journey"
 
+func cancel_journey() -> void:
+	journey_active = false
+	state = "recover"
+
 func _update_journey(delta: float) -> void:
 	var direction := _navigation_direction(journey_target)
 	var speed := maxf(1.2, creature_profile.move_speed * 0.55)

@@ -30,5 +30,11 @@ func tick(delta: float) -> bool:
 	event_finished.emit(finished_id)
 	return true
 
+func cancel() -> String:
+	var cancelled_id := active_event_id
+	active_event_id = ""
+	remaining_seconds = 0.0
+	return cancelled_id
+
 func is_active(event_id: String) -> bool:
 	return active_event_id == event_id
