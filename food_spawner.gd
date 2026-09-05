@@ -14,6 +14,7 @@ var population_caps: Dictionary = {1: 5, 2: 3, 3: 2}
 var persisted_population_budget := 0
 var habitat_respawn_cooldown := 0.0
 var tier_respawn_cooldowns: Dictionary = {}
+var respawn_gate_factory: Callable
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -55,6 +56,9 @@ func set_respawn_cooldown(seconds: float) -> void:
 
 func set_tier_respawn_cooldowns(cooldowns: Dictionary) -> void:
 	tier_respawn_cooldowns = cooldowns.duplicate()
+
+func set_respawn_gate_factory(factory: Callable) -> void:
+	respawn_gate_factory = factory
 
 func maintain(delta: float, survival_time: float) -> void:
 	respawn_timer -= delta
@@ -104,6 +108,8 @@ func _spawn_prey(forced_nutrition: int = 0) -> void:
 	add_child(prey)
 	_place_on_terrain(prey)
 	prey.creature_defeated.connect(func(creature: Node3D, profile: RefCounted) -> void: creature_defeated.emit(creature, profile))
+	if not respawn_gate_factory.is_null():
+		prey.set_respawn_gate(respawn_gate_factory.bind(prey))
 	if player != null:
 		prey.set_player(player)
 

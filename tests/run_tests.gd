@@ -19,6 +19,7 @@ func _run_tests() -> void:
 	_test_survival()
 	_test_creature_combat()
 	_test_predator_respawn_gate()
+	_test_prey_respawn_gate()
 	_test_ai_states()
 	_test_low_level_food_supply()
 	_test_habitat_food_filter()
@@ -132,6 +133,15 @@ func _test_predator_respawn_gate() -> void:
 	gate_state[0] = true
 	_check(predator.respawn_gate.call(), "Predator respawn gate should open after cooldown")
 	predator.free()
+
+func _test_prey_respawn_gate() -> void:
+	var prey := preload("res://prey.gd").new()
+	var gate_state := [false]
+	prey.set_respawn_gate(func() -> bool: return gate_state[0])
+	_check(not prey.respawn_gate.call(), "Prey respawn gate should block while cooldown is active")
+	gate_state[0] = true
+	_check(prey.respawn_gate.call(), "Prey respawn gate should open after cooldown")
+	prey.free()
 
 func _test_main_predator_gate_helper() -> void:
 	var controller := preload("res://main.gd").new()

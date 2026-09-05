@@ -608,6 +608,7 @@ func _create_food_spawner() -> void:
 	run_root.add_child(food_spawner)
 	food_spawner.configure(mode == "endless")
 	food_spawner.set_player(player)
+	food_spawner.set_respawn_gate_factory(_prey_respawn_ready)
 	food_spawner.creature_defeated.connect(_on_creature_defeated)
 
 func _create_predators() -> void:
@@ -630,6 +631,12 @@ func _predator_respawn_ready(predator: ValleyPredator) -> bool:
 		return true
 	var chunk_id: String = world_stream.chunk_id_at_world_position(predator.global_position)
 	return not chunk_id.is_empty() and world_stream.tier_respawn_ready(chunk_id, "predator", predator.creature_profile.tier)
+
+func _prey_respawn_ready(prey: PreyDino) -> bool:
+	if world_stream == null or prey.creature_profile == null:
+		return true
+	var chunk_id: String = world_stream.chunk_id_at_world_position(prey.global_position)
+	return not chunk_id.is_empty() and world_stream.tier_respawn_ready(chunk_id, "prey", prey.creature_profile.tier)
 
 func _create_hud() -> void:
 	hud = HUD_SCENE.new()
