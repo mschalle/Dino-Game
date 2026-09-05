@@ -155,6 +155,17 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 		color = Color("#587b62")
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
+	var texture_path := "res://Textures/Grass.png"
+	if biome == "Sunstone Ridge" or biome == "Redstone Badlands" or biome == "Fossil Flats" or biome == "Saltwind Dunes":
+		texture_path = "res://Textures/Rocks_Desert_Diffuse.png"
+	elif biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Glacier Valley":
+		texture_path = "res://Textures/PathRocks_Diffuse.png"
+	elif biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
+		texture_path = "res://Textures/Leaves.png"
+	var albedo := load(texture_path) as Texture2D
+	if albedo != null:
+		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		material.albedo_texture = albedo
 	material.roughness = 0.86
 	material.metallic = 0.0
 	return material

@@ -632,6 +632,7 @@ The player and spawned food now follow the authored elevation function with grav
 351. Added biome-specific mist, snow, and dust particle presets controlled by weather and environment-quality settings.
 352. Added distinctive landmark ground markers and reusable environment/landmark discovery audio cues for streamed biome transitions.
 353. Added licensed-pack biome ambience loops with automatic Grassy Field, Rain Forest, Hail Storm, and Wind selection plus procedural fallback tones.
+354. Added optional biome-aware imported albedo textures for grass, rock, wetland, volcanic, and glacier terrain with procedural color fallback.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
