@@ -318,6 +318,7 @@ The player and spawned food now follow the authored elevation function with grav
 144. Assigned distinct landmark offsets by biome so destination silhouettes no longer overlap at one generic corner.
 145. Added reserve uniqueness validation for chunk IDs, biome names, and landmark destinations.
 146. Added full-reserve reachability validation from the safe nest across symmetric chunk links.
+147. Added authored-scene validation for non-empty landmark presentation kinds.
 
 ## Release Readiness
 
