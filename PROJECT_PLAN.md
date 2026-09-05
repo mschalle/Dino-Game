@@ -645,6 +645,7 @@ The player and spawned food now follow the authored elevation function with grav
 364. Added daylight-linked global fog color and density so atmospheric depth changes coherently with the sky and sun cycle.
 365. Made F4 quality changes update loaded prop visibility and main sun shadow distance immediately, not only future streamed chunks.
 366. Expanded biome asset palettes with additional rocks, flowers, forest props, and meadow ground dressing while retaining missing-asset fallbacks.
+367. Added low-detail distant mountain silhouettes around the expanded reserve to provide a stronger geographic horizon and hide hard world edges.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

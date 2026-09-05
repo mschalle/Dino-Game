@@ -206,6 +206,26 @@ func _create_world() -> void:
 	_create_habitat_landmarks()
 	_create_waterfall()
 	_create_fireflies()
+	_create_distant_mountains()
+
+func _create_distant_mountains() -> void:
+	var mountain_material := _material(Color("#4e5c5b"))
+	mountain_material.roughness = 1.0
+	for index in 8:
+		var peak := MeshInstance3D.new()
+		peak.name = "DistantMountain_%d" % index
+		var mesh := PrismMesh.new()
+		mesh.size = Vector3(26.0 + float(index % 3) * 7.0, 18.0 + float(index % 4) * 4.0, 16.0 + float(index % 2) * 5.0)
+		peak.mesh = mesh
+		var angle := TAU * float(index) / 8.0
+		peak.position = Vector3(cos(angle) * 178.0, mesh.size.y * 0.35 - 1.0, sin(angle) * 178.0)
+		peak.rotation.y = angle + 0.4
+		peak.material_override = mountain_material
+		peak.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		peak.visibility_range_begin = 80.0
+		peak.visibility_range_end = 320.0
+		peak.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+		add_child(peak)
 
 func _add_authored_hero_valley() -> void:
 	var terrain_path := "res://assets/environment/hero_valley.glb"
