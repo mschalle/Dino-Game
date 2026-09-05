@@ -1621,7 +1621,7 @@ func _cycle_environment_quality() -> void:
 	_apply_authored_environment_quality()
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
-	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
+	hud.show_message("Environment quality: %s (applied now)" % next.to_upper())
 
 func _toggle_weather() -> void:
 	var settings := save_system.data["settings"] as Dictionary
@@ -1629,7 +1629,7 @@ func _toggle_weather() -> void:
 	ENVIRONMENT_QUALITY.configure(settings)
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
-	hud.show_message("Weather effects: %s (new areas use this setting)" % ("ON" if ENVIRONMENT_QUALITY.weather_enabled else "OFF"))
+	hud.show_message("Weather effects: %s (applied now)" % ("ON" if ENVIRONMENT_QUALITY.weather_enabled else "OFF"))
 
 func _toggle_reduced_motion() -> void:
 	var settings := save_system.data["settings"] as Dictionary
