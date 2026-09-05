@@ -186,6 +186,7 @@ func _on_chunk_deactivated(chunk_id: String) -> void:
 
 func _create_scenery_piece(index: int) -> void:
 	var piece := MeshInstance3D.new()
+	piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	piece.visibility_range_begin = 0.0
 	piece.visibility_range_end = 170.0
 	piece.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
@@ -202,6 +203,7 @@ func _create_scenery_piece(index: int) -> void:
 		crown_mesh.radius = 0.72
 		crown_mesh.height = 1.35
 		crown.mesh = crown_mesh
+		crown.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		crown.visibility_range_begin = 0.0
 		crown.visibility_range_end = 170.0
 		crown.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
@@ -227,6 +229,7 @@ func _create_waterfall() -> void:
 		var mesh := BoxMesh.new()
 		mesh.size = Vector3(0.68, 4.0 - index * 0.25, 0.18)
 		waterfall.mesh = mesh
+		waterfall.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		waterfall.visibility_range_begin = 0.0
 		waterfall.visibility_range_end = 150.0
 		waterfall.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
@@ -245,6 +248,7 @@ func _create_habitat_landmarks() -> void:
 		pillar.bottom_radius = 0.42
 		pillar.height = 2.4
 		marker.mesh = pillar
+		marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		marker.visibility_range_begin = 0.0
 		marker.visibility_range_end = 180.0
 		marker.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED

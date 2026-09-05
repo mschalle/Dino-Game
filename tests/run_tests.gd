@@ -865,11 +865,14 @@ func _test_gameplay_integration() -> void:
 	_check(main_scene.animated_trees.size() == 10, "The valley should include animated trees")
 	for tree in main_scene.animated_trees:
 		_check(tree.visibility_range_end > tree.visibility_range_begin, "Animated tree trunks should define a bounded visibility range")
+		_check(tree.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Animated tree trunks should cast shadows")
 		var crown := tree.get_child(0) as MeshInstance3D
 		_check(crown != null and crown.visibility_range_end > crown.visibility_range_begin, "Animated tree crowns should define a bounded visibility range")
+		_check(crown != null and crown.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Animated tree crowns should cast shadows")
 	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
 	for waterfall in main_scene.waterfall_layers:
 		_check(waterfall.visibility_range_end > waterfall.visibility_range_begin, "Waterfall layers should define a bounded visibility range")
+		_check(waterfall.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Waterfall layers should avoid unnecessary shadows")
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
 	for firefly in main_scene.fireflies:
 		_check(firefly.visibility_range_end > firefly.visibility_range_begin, "Ambient fireflies should define a bounded visibility range")
@@ -879,6 +882,7 @@ func _test_gameplay_integration() -> void:
 			var label := child.get_child(0) as Label3D
 			_check(label.font_size >= 24 and label.outline_size >= 6, "Habitat landmark labels should remain readable at gameplay distance")
 			_check(label.outline_modulate != Color.WHITE, "Habitat landmark labels should retain a contrasting outline")
+			_check(child.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Habitat landmark markers should cast shadows")
 	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
 	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
 	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")
