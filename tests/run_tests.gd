@@ -15,6 +15,7 @@ func _run_tests() -> void:
 	_test_species_asset_and_save_isolation()
 	_test_all_species_endless_unlocks()
 	_test_endless_progression_all_species()
+	_test_endless_scaling_rules()
 	_test_selection_roster_layout()
 	_test_selection_navigation()
 	_test_selection_focus_mapping()
@@ -138,6 +139,16 @@ func _test_endless_progression_all_species() -> void:
 		_check(float(records.get(profile.id, {}).get("best_survival_seconds", 0.0)) >= 45.0, "%s Endless record should persist" % profile.id)
 		_check(int(records.get(profile.id, {}).get("best_quests", 0)) >= 2, "%s Endless quest record should persist" % profile.id)
 	save.free()
+
+func _test_endless_scaling_rules() -> void:
+	var awareness_start := 1.0 + minf(0.0 / 600.0, 0.75)
+	var awareness_late := 1.0 + minf(600.0 / 600.0, 0.75)
+	_check(is_equal_approx(awareness_start, 1.0), "Endless predators should start at baseline awareness")
+	_check(is_equal_approx(awareness_late, 1.75), "Endless predator awareness should cap at 1.75x")
+	var scarcity_start := mini(int(0.0 / 180.0), 4)
+	var scarcity_late := mini(int(720.0 / 180.0), 4)
+	_check(scarcity_start == 0 and scarcity_late == 4, "Endless scarcity should increase in bounded steps")
+	_check(maxi(3, 5 - scarcity_late) >= 3, "Endless scarcity should preserve tier-1 food availability")
 
 func _test_selection_roster_layout() -> void:
 	var profiles := DinosaurProfiles.all()

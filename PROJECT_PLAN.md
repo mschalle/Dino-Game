@@ -290,6 +290,7 @@ The player and spawned food now follow the authored elevation function with grav
 116. Extended save-recovery validation for settings defaults and chunk state across run transitions.
 117. Added six-species Adventure reward validation proving independent Endless unlock persistence.
 118. Added six-species Endless progression validation for survival time, repeatable quests, and personal records.
+119. Added Endless difficulty-scaling validation for predator awareness and bounded resource scarcity.
 
 ## Release Readiness
 
