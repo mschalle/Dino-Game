@@ -333,6 +333,10 @@ The player and spawned food now follow the authored elevation function with grav
 159. Added `tools/roadmap_validation.ps1` as a repeatable three-gate validator for tests, headless startup, and Git whitespace.
 160. Documented the roadmap validator workflow in `README.md` for repeatable milestone handoff.
 161. Hardened the validator to require the explicit gameplay PASS marker and reject reported test failures.
+162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
+163. Added playable imported-model animation-library validation for all required child-friendly motion states.
+164. Added imported prey and predator animation-library validation for the complete required motion set.
+165. Updated README asset guidance to distinguish imported GLB models from procedural fallbacks.
 166. Hardened the validator startup gate to reject script and parse errors while preserving known environment warnings.
 167. Added a shared stream-manager profile lookup for readable biome names in UI and quest systems.
 168. Added readable biome-entry feedback when a new streamed chunk activates during gameplay.
@@ -360,11 +364,7 @@ The player and spawned food now follow the authored elevation function with grav
 190. Added `tools/roadmap_status.ps1` to report the latest checkpoint and optionally run the complete validation gate in one command.
 191. Added duplicate-checkpoint rejection to the roadmap status runner before milestone validation runs.
 192. Added roadmap checkpoint integrity as the fourth gate in the main validation script.
-162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
-163. Added playable imported-model animation-library validation for all required child-friendly motion states.
-164. Added imported prey and predator animation-library validation for the complete required motion set.
-165. Updated README asset guidance to distinguish imported GLB models from procedural fallbacks.
-
+193. Added chronological ordering for checkpoints 162–165 in the roadmap execution history.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
