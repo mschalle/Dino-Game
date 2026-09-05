@@ -313,6 +313,7 @@ The player and spawned food now follow the authored elevation function with grav
 139. Completed the planned sixteen-chunk reserve with Glacier Valley and Cypress Basin.
 140. Added distinct materials and elevation forms for all ten newly authored biomes.
 141. Added water surfaces to Coastal Marsh and Cypress Basin with biome-specific styling.
+142. Tuned batched vegetation density and scale for sparse, wetland, forest, and highland biomes.
 
 ## Release Readiness
 

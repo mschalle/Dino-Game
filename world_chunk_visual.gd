@@ -171,7 +171,14 @@ func _create_vegetation(biome: String) -> void:
 	foliage.name = "Vegetation"
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
-	batch.instance_count = 10 if biome == "River Wetlands" else 16
+	var foliage_count := 16
+	if biome == "River Wetlands" or biome == "Coastal Marsh":
+		foliage_count = 10
+	elif biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Glacier Valley" or biome == "Saltwind Dunes":
+		foliage_count = 6
+	elif biome == "Cypress Basin" or biome == "Redwood Canyon":
+		foliage_count = 22
+	batch.instance_count = foliage_count
 	var blade := BoxMesh.new()
 	blade.size = Vector3(0.22, 0.7, 0.22)
 	blade.material = _biome_material(biome)
@@ -179,7 +186,10 @@ func _create_vegetation(biome: String) -> void:
 	for index in batch.instance_count:
 		var x := float((index * 13) % 29) - 14.0
 		var z := float((index * 17) % 29) - 14.0
-		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * (0.8 + float(index % 3) * 0.15)), Vector3(x, 0.35, z)))
+		var height_scale := 0.8 + float(index % 3) * 0.15
+		if biome == "Redwood Canyon" or biome == "Cypress Basin":
+			height_scale *= 1.35
+		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
 	foliage.multimesh = batch
 	add_child(foliage)
 
