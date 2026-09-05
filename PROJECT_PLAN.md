@@ -444,7 +444,8 @@ The player and spawned food now follow the authored elevation function with grav
 270. Added non-shadowing configuration for legacy fireflies with integration validation to reduce ambient-effect cost.
 271. Added explicit shadow casting for the legacy valley ground mesh with integration validation.
 272. Added validation that streamed ambient particles use unshaded materials for bright, low-cost presentation.
-273. Preserved authored water tint alpha during profile application and validated translucent wetland surfaces.
+273. Added authored water tint alpha preservation during profile application and validated translucent wetland surfaces.
+274. Added bounded roughness and metallic validation for authored wetland water materials.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

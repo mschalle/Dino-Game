@@ -461,6 +461,7 @@ func _test_world_chunks() -> void:
 			_check(water.visibility_range_end > water.visibility_range_begin, "%s water surface should define a bounded visibility range" % chunk.chunk_id)
 			_check(water.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "%s water surface should avoid unnecessary shadows" % chunk.chunk_id)
 			_check(water.material_override.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA and water.material_override.albedo_color.a > 0.0 and water.material_override.albedo_color.a < 1.0, "%s water surface should remain visibly translucent" % chunk.chunk_id)
+			_check(water.material_override.roughness >= 0.0 and water.material_override.roughness <= 1.0 and water.material_override.metallic >= 0.0 and water.material_override.metallic <= 1.0, "%s water material channels should remain bounded" % chunk.chunk_id)
 		var particles := visual_root.get_node_or_null("AmbientParticles") as GPUParticles3D
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		if particles != null:
