@@ -605,6 +605,7 @@ The player and spawned food now follow the authored elevation function with grav
 324. Added spawn-maintenance coverage confirming tiered prey herds remain capped at four members during replenishment.
 325. Added chunk unload, snapshot, and scene-reactivation coverage for persisted herd records.
 326. Added persisted herd anchors and restoration records so streamed prey reform their saved herd identity and capped formation after an area reload.
+327. Added a hard active-creature spawn ceiling so renewable prey cannot exceed the roaming simulation budget when streamed habitat plans expand.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

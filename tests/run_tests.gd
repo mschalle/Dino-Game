@@ -944,6 +944,9 @@ func _test_low_level_food_supply() -> void:
 			herd_counts[herd_id] = int(herd_counts.get(herd_id, 0)) + 1
 	for herd_id in herd_counts:
 		_check(int(herd_counts[herd_id]) <= 4, "Spawn maintenance must cap herd %s at four members" % herd_id)
+	var active_creatures := get_nodes_in_group("prey").size() + get_nodes_in_group("predator").size()
+	spawner.set_active_creature_limit(active_creatures + 2)
+	_check(spawner._available_creature_slots() == 2, "Creature simulation slots should enforce the roaming simulation ceiling")
 	var low_prey: Array[Node] = []
 	for prey_node in get_nodes_in_group("prey"):
 		var nutrition_value: Variant = prey_node.get("nutrition")

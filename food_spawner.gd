@@ -16,6 +16,7 @@ var habitat_respawn_cooldown := 0.0
 var tier_respawn_cooldowns: Dictionary = {}
 var respawn_gate_factory: Callable
 var persisted_herd_records: Dictionary = {}
+var active_creature_limit := 25
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -59,6 +60,9 @@ func set_persisted_herd_records(records: Dictionary) -> void:
 	# cannot mutate a herd while it is being rebuilt by the spawner.
 	persisted_herd_records = records.duplicate(true)
 
+func set_active_creature_limit(limit: int) -> void:
+	active_creature_limit = maxi(1, limit)
+
 func set_respawn_cooldown(seconds: float) -> void:
 	habitat_respawn_cooldown = maxf(0.0, seconds)
 
@@ -100,12 +104,17 @@ func _spawn_to_targets(scarcity: int) -> void:
 		if float(tier_respawn_cooldowns.get("prey_%d" % int(nutrition), 0.0)) > 0.0:
 			continue
 		tier_targets[nutrition] = mini(int(tier_targets[nutrition]), int(population_caps.get(int(nutrition), tier_targets[nutrition])))
-		for index in maxi(0, int(tier_targets[nutrition]) - int(tier_counts[nutrition])):
+		var missing := maxi(0, int(tier_targets[nutrition]) - int(tier_counts[nutrition]))
+		for index in mini(missing, _available_creature_slots()):
 			_spawn_prey(int(nutrition))
 	var plant_target := maxi(5, 9 - scarcity)
 	var plant_missing := maxi(0, plant_target - get_tree().get_nodes_in_group("plant_food").size())
 	for index in plant_missing:
 		_spawn_plant()
+
+func _available_creature_slots() -> int:
+	var active_creatures := get_tree().get_nodes_in_group("prey").size() + get_tree().get_nodes_in_group("predator").size()
+	return maxi(0, active_creature_limit - active_creatures)
 
 func _spawn_prey(forced_nutrition: int = 0) -> void:
 	var prey := PREY.new()
