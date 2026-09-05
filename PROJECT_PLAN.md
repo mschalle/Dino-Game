@@ -8,6 +8,8 @@ The initial release targets Windows PC with keyboard/mouse and gamepad support. 
 
 ## Active Roadmap 3.0 — Living Reserve and Endless Adventures
 
+**Execution priority: Balanced Realism Visual Upgrade.** The newly approved plan supersedes the delivery order below. Historical numbered checkpoints are change records, not completed production milestones. See [the accepted upgrade and evidence gates](BALANCED_REALISM_PLAN.md). Begin with runtime recovery and an active Adventure test, then seamless terrain and performance work before producing the detailed dinosaur roster.
+
 Updated September 5, 2026. Prioritize living ecosystems and Endless replayability within the existing reserve and six playable species before adding maps or dinosaurs. Stages F–K below are pending implementation; completed checkpoints through 313 remain historical evidence, not proof that every release acceptance gate has passed.
 
 ### Current milestone: F — Establish the gameplay expansion baseline

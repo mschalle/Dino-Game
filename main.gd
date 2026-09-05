@@ -252,6 +252,10 @@ func _add_authored_hero_valley() -> void:
 	authored.name = "AuthoredHeroValley"
 	authored.position = Vector3.ZERO
 	add_child(authored)
+	# The imported surface now matches collision; avoid overlapping terrain faces.
+	var fallback := get_node_or_null("LegacyValleyGround") as MeshInstance3D
+	if fallback != null:
+		fallback.hide()
 
 func _update_world_stream() -> void:
 	if world_stream == null or player == null:
@@ -1287,7 +1291,7 @@ func _update_world_events(delta: float) -> void:
 			endless_event_index += 1
 
 func _start_herd_journey() -> void:
-	var lead: PreyDino
+	var lead: PreyDino = null
 	for node in get_tree().get_nodes_in_group("prey"):
 		var prey := node as PreyDino
 		if prey != null and prey.visible and (lead == null or prey.herd_leader):
@@ -1305,7 +1309,7 @@ func _start_herd_journey() -> void:
 	hud.show_message("Herd Journey! Follow the traveling herd to its new meadow.")
 
 func _start_predator_passage() -> void:
-	var traveler: ValleyPredator
+	var traveler: ValleyPredator = null
 	for predator in predators:
 		if is_instance_valid(predator) and predator.visible and (traveler == null or predator.strength < traveler.strength):
 			traveler = predator

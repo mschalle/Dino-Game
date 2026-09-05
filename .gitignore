@@ -1,5 +1,6 @@
 # Godot editor-generated files
 .godot/
+.validation/
 
 # Exported builds
 builds/

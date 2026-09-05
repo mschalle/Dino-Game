@@ -15,28 +15,38 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectPath "project.godot"))) {
 
 Push-Location $ProjectPath
 try {
-    Write-Host "[1/4] Running automated gameplay tests..."
+    Write-Host "[1/5] Running automated gameplay tests..."
     $test_output = (& $Godot --headless --path "." --script "res://tests/run_tests.gd" 2>&1 | Out-String)
     Write-Host $test_output
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "Godot gameplay tests failed ($exit_code)" }
+    if ($test_output -match "SCRIPT ERROR|Parse Error|couldn't resolve track") {
+        throw "Gameplay tests reported a runtime or animation error despite their exit status"
+    }
     if ($test_output -notmatch "Roar & Rise tests: PASS" -or $test_output -match "Roar & Rise tests: [1-9][0-9]* failure") {
         throw "Godot gameplay tests did not report a clean PASS marker"
     }
 
-    Write-Host "[2/4] Checking headless project startup..."
+    Write-Host "[2/5] Checking headless project startup..."
     $startup_output = (& $Godot --headless --path "." --quit-after 5 2>&1 | Out-String)
     Write-Host $startup_output
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "Godot startup check failed ($exit_code)" }
     if ($startup_output -match "SCRIPT ERROR|Parse Error") { throw "Godot startup reported a script or parse error" }
 
-    Write-Host "[3/4] Checking Git whitespace..."
+    Write-Host "[3/5] Exercising Adventure movement and combat over real frames..."
+    $smoke_output = (& $Godot --headless --path "." --fixed-fps 60 --script "res://tests/active_run_smoke.gd" 2>&1 | Out-String)
+    Write-Host $smoke_output
+    if ($LASTEXITCODE -ne 0 -or $smoke_output -notmatch "Active run smoke: PASS" -or $smoke_output -match "SCRIPT ERROR|Parse Error|couldn't resolve track") {
+        throw "Active Adventure movement/combat smoke test failed"
+    }
+
+    Write-Host "[4/5] Checking Git whitespace..."
     git diff --check
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "git diff --check failed ($exit_code)" }
 
-    Write-Host "[4/4] Checking roadmap checkpoint integrity..."
+    Write-Host "[5/5] Checking roadmap checkpoint integrity..."
     $statusArgs = @{ ProjectPath = $ProjectPath }
     if ($RequireExportTemplates) { $statusArgs.RequireExportTemplates = $true }
     & (Join-Path $ProjectPath "tools\roadmap_status.ps1") @statusArgs

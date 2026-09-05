@@ -21,7 +21,8 @@ rock = mat("Ridge Rock", (0.25, 0.24, 0.21))
 wet = mat("Wetland Silt", (0.16, 0.28, 0.24))
 
 size = 60.0
-steps = 48
+# Match the current collision grid until the shared heightfield milestone lands.
+steps = 30
 verts = []
 faces = []
 materials = []
@@ -29,25 +30,28 @@ for z_i in range(steps + 1):
     z = -size / 2.0 + size * z_i / steps
     for x_i in range(steps + 1):
         x = -size / 2.0 + size * x_i / steps
-        ridge = 4.5 * math.exp(-((x - 13.0) ** 2 + (z + 10.0) ** 2) / 180.0)
-        overlook = 3.0 * math.exp(-((x + 18.0) ** 2 + (z - 17.0) ** 2) / 120.0)
-        wetland = -1.0 * math.exp(-((x + 10.0) ** 2 + (z - 12.0) ** 2) / 100.0)
-        basin = 0.35 * math.sin(x * 0.22) * math.cos(z * 0.18)
-        verts.append((x, ridge + overlook + wetland + basin, z))
+        height = 2.0 * math.exp(-((x + 13.0) ** 2 + (z - 11.0) ** 2) / 85.0)
+        height += 4.0 * math.exp(-((x - 14.0) ** 2 + (z + 12.0) ** 2) / 70.0)
+        height += 6.0 * math.exp(-(x ** 2 + (z + 18.0) ** 2) / 62.0)
+        height += 3.5 * math.exp(-((x - 17.0) ** 2 + (z - 17.0) ** 2) / 95.0)
+        height -= 1.4 * math.exp(-((x - 19.0) ** 2 + (z + 4.0) ** 2) / 32.0)
+        # Blender Z-up -> glTF/Godot Y-up maps (x, -z, height) to (x, height, z).
+        verts.append((x, -z, height))
 for z_i in range(steps):
     for x_i in range(steps):
         a = z_i * (steps + 1) + x_i
-        faces.append((a, a + 1, a + steps + 2, a + steps + 1))
+        # Explicit diagonals match the Godot collision mesh; faces point upward.
+        faces.extend([(a, a + steps + 2, a + 1), (a, a + steps + 1, a + steps + 2)])
         center_x = -size / 2.0 + size * (x_i + 0.5) / steps
         center_z = -size / 2.0 + size * (z_i + 0.5) / steps
         if center_z > 8.0 and center_x < -3.0:
-            materials.append(3)
+            materials.extend([3, 3])
         elif abs(center_x - 13.0) < 11.0 and center_z < 1.0:
-            materials.append(2)
+            materials.extend([2, 2])
         elif abs(center_x) + abs(center_z) > 40.0:
-            materials.append(1)
+            materials.extend([1, 1])
         else:
-            materials.append(0)
+            materials.extend([0, 0])
 
 mesh = bpy.data.meshes.new("HeroValleyTerrain")
 mesh.from_pydata(verts, [], faces)

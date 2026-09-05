@@ -208,12 +208,12 @@ func _create_imported_animation_library() -> void:
 		animation.length = 0.8 if animation_name != "Idle" else 2.0
 		animation.loop_mode = Animation.LOOP_LINEAR if animation_name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
 		var position_track := animation.add_track(Animation.TYPE_VALUE)
-		animation.track_set_path(position_track, NodePath("../ImportedDinosaurModel:position"))
+		animation.track_set_path(position_track, NodePath("ImportedDinosaurModel:position"))
 		animation.track_insert_key(position_track, 0.0, imported_model.position)
 		animation.track_insert_key(position_track, animation.length * 0.5, imported_model.position + Vector3(0.0, 0.06 if animation_name in ["Idle", "Walk", "Run"] else 0.0, 0.0))
 		animation.track_insert_key(position_track, animation.length, imported_model.position)
 		var rotation_track := animation.add_track(Animation.TYPE_VALUE)
-		animation.track_set_path(rotation_track, NodePath("../ImportedDinosaurModel:rotation"))
+		animation.track_set_path(rotation_track, NodePath("ImportedDinosaurModel:rotation"))
 		var action_rotation := Vector3.ZERO
 		if animation_name == "Attack":
 			action_rotation.x = -0.24

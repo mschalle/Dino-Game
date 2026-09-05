@@ -32,6 +32,7 @@ var head_rest_y := 0.0
 var tail_rest_rotation := Vector3.ZERO
 var imported_model: Node3D
 var imported_animation_player: AnimationPlayer
+var body_base_color := Color.WHITE
 var respawn_gate: Callable
 var prey_target: PreyDino
 var passage_target := Vector3.ZERO
@@ -243,6 +244,7 @@ func _create_visuals() -> void:
 		return
 	var material := StandardMaterial3D.new()
 	material.albedo_color = creature_profile.body_color if creature_profile != null else Color("#8b5f9d")
+	body_base_color = material.albedo_color
 	material.roughness = 0.88
 	body_mesh = MeshInstance3D.new()
 	var body_shape := CapsuleMesh.new()
@@ -310,7 +312,7 @@ func _create_imported_animation_library() -> void:
 		animation.length = 0.8 if animation_name != "Idle" else 2.0
 		animation.loop_mode = Animation.LOOP_LINEAR if animation_name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
 		var track := animation.add_track(Animation.TYPE_VALUE)
-		animation.track_set_path(track, NodePath("../ImportedDinosaurModel:rotation"))
+		animation.track_set_path(track, NodePath("ImportedDinosaurModel:rotation"))
 		var tilt := Vector3.ZERO
 		if animation_name == "Attack": tilt.x = -0.2
 		elif animation_name == "Hit": tilt.z = 0.16
@@ -337,12 +339,10 @@ func _add_leg(leg_position: Vector3, material: Material) -> void:
 func _animate_visuals(moving: bool) -> void:
 	if impact_timer > 0.0:
 		rotation.z = sin(impact_timer * 42.0) * 0.08
-		if body_mesh != null:
-			body_mesh.modulate = Color(1.0, 0.68, 0.52)
+		_set_body_flash(Color(1.0, 0.68, 0.52))
 		return
 	rotation.z = lerpf(rotation.z, 0.0, 0.25)
-	if body_mesh != null:
-		body_mesh.modulate = Color.WHITE
+	_set_body_flash(body_base_color)
 	if imported_animation_player != null:
 		var desired := "Run" if moving else "Idle"
 		if imported_animation_player.current_animation != desired:
@@ -356,3 +356,10 @@ func _animate_visuals(moving: bool) -> void:
 	tail_mesh.rotation = tail_rest_rotation + Vector3(0.0, sin(phase * 2.2) * (0.2 if moving else 0.05), 0.0)
 	for index in leg_meshes.size():
 		leg_meshes[index].rotation.x = sin(phase * 5.0 + PI * float(index % 2)) * (0.28 if moving else 0.04)
+
+func _set_body_flash(color: Color) -> void:
+	if body_mesh == null:
+		return
+	var material := body_mesh.material_override as StandardMaterial3D
+	if material != null:
+		material.albedo_color = color
