@@ -3,6 +3,7 @@ extends Node3D
 var chunk_state: Dictionary = {}
 
 func apply_chunk_profile(profile: RefCounted) -> void:
+	set_meta("vegetation_density", profile.vegetation_density)
 	set_meta("navigation_layers", profile.navigation_layers)
 	set_meta("agent_radius", profile.agent_radius)
 	set_meta("max_slope_degrees", profile.max_slope_degrees)
@@ -17,6 +18,16 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 	var biome_environment := get_node_or_null("BiomeEnvironment") as WorldEnvironment
 	if biome_environment != null and biome_environment.environment != null:
 		biome_environment.environment.fog_density = profile.fog_density
+	var vegetation := get_node_or_null("Vegetation") as MultiMeshInstance3D
+	if vegetation != null and vegetation.multimesh != null:
+		var base_count := int(get_meta("vegetation_base_count", vegetation.multimesh.instance_count))
+		set_meta("vegetation_base_count", base_count)
+		vegetation.multimesh.instance_count = maxi(1, int(round(float(base_count) * profile.vegetation_density)))
+		for index in vegetation.multimesh.instance_count:
+			var x := float((index * 13) % 29) - 14.0
+			var z := float((index * 17) % 29) - 14.0
+			var height_scale := 0.8 + float(index % 3) * 0.15
+			vegetation.multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
 
 func apply_chunk_state(state: Dictionary) -> void:
 	chunk_state = state.duplicate(true)
@@ -205,6 +216,7 @@ func _create_vegetation(biome: String) -> void:
 	elif biome == "Cypress Basin" or biome == "Redwood Canyon":
 		foliage_count = 22
 	batch.instance_count = foliage_count
+	set_meta("vegetation_base_count", foliage_count)
 	var blade := BoxMesh.new()
 	blade.size = Vector3(0.22, 0.7, 0.22)
 	blade.material = _biome_material(biome)

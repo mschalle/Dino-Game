@@ -405,6 +405,7 @@ The player and spawned food now follow the authored elevation function with grav
 231. Added habitat spawn-tier validation to keep prey and predator entries within supported tiers 1–4.
 232. Added strict boolean validation for authored plant-availability habitat flags.
 233. Added authored-chunk visual and navigation tuning validation for bounded vegetation density, fog density, and positive navigation layers.
+234. Applied authored vegetation-density profiles to streamed MultiMesh instance counts and validated runtime scaling per biome.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

@@ -430,6 +430,10 @@ func _test_world_chunks() -> void:
 		_check(not str(silhouette.get_meta("landmark_kind", "")).is_empty(), "%s landmark should expose a presentation kind" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
+		if vegetation != null and vegetation.multimesh != null:
+			var base_vegetation_count := int(visual_root.get_meta("vegetation_base_count", 0))
+			_check(is_equal_approx(float(visual_root.get_meta("vegetation_density", 0.0)), chunk.vegetation_density), "%s vegetation density should be applied to the visual root" % chunk.chunk_id)
+			_check(vegetation.multimesh.instance_count == maxi(1, int(round(float(base_vegetation_count) * chunk.vegetation_density))), "%s vegetation density should scale batched instances" % chunk.chunk_id)
 		var water := visual_root.get_node_or_null("WaterSurface")
 		var has_water: bool = chunk.biome == "River Wetlands" or chunk.biome == "Coastal Marsh" or chunk.biome == "Cypress Basin"
 		_check(has_water == (water != null), "%s water surface should match its biome" % chunk.chunk_id)
