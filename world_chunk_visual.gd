@@ -16,6 +16,7 @@ func _ready() -> void:
 	var landmark := str(get_meta("landmark", biome))
 	_create_ground(biome)
 	_create_elevation(biome)
+	_create_vegetation(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -110,3 +111,20 @@ func _create_elevation(biome: String) -> void:
 	collider.position = position
 	body.add_child(collider)
 	add_child(body)
+
+func _create_vegetation(biome: String) -> void:
+	var foliage := MultiMeshInstance3D.new()
+	foliage.name = "Vegetation"
+	var batch := MultiMesh.new()
+	batch.transform_format = MultiMesh.TRANSFORM_3D
+	batch.instance_count = 10 if biome == "River Wetlands" else 16
+	var blade := BoxMesh.new()
+	blade.size = Vector3(0.22, 0.7, 0.22)
+	blade.material = _biome_material(biome)
+	batch.mesh = blade
+	for index in batch.instance_count:
+		var x := float((index * 13) % 29) - 14.0
+		var z := float((index * 17) % 29) - 14.0
+		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * (0.8 + float(index % 3) * 0.15)), Vector3(x, 0.35, z)))
+	foliage.multimesh = batch
+	add_child(foliage)
