@@ -35,6 +35,7 @@ Run the project headlessly to verify startup, then run `res://tests/run_tests.gd
 For the complete roadmap gate, run `.\tools\roadmap_validation.ps1`. It runs gameplay tests, headless startup, and `git diff --check` in sequence; it does not stage, commit, or push changes. Use `.\tools\roadmap_status.ps1` to report the latest checkpoint, or add `-RunValidation` to report it and run the full gate together.
 
 Windows packaging also requires the matching Godot 4.7.2 Windows export templates. If `--export-release "Windows Desktop"` reports a missing `windows_debug_x86_64.exe` or `windows_release_x86_64.exe` template, install the templates through Godot's Editor Settings before running the packaged-build gate.
+Use `.\tools\windows_export_smoke.ps1` for the repeatable packaging check; it writes only to a temporary output directory and reports missing templates explicitly.
 
 ## Next milestones
 
