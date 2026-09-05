@@ -309,6 +309,7 @@ The player and spawned food now follow the authored elevation function with grav
 135. Expanded the authored reserve with Cloudforest Rise and Coastal Marsh chunk profiles.
 136. Expanded the authored reserve with Volcanic Foothills and Fossil Flats tiered habitats.
 137. Expanded the authored reserve with Redwood Canyon and Highland Plateau tiered habitats.
+138. Expanded the authored reserve with Moonlit Grove and Saltwind Dunes tiered habitats.
 
 ## Release Readiness
 

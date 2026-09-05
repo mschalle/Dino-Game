@@ -16,7 +16,9 @@ static func reserve() -> Array[RefCounted]:
 		CHUNK_PROFILE.new("volcanic_foothills", "Volcanic Foothills", Vector2i(2, 2), "Ember Steps", {"prey": [2, 3], "predators": [2, 3]}, "res://world_chunks/volcanic_foothills.tscn", Color("#9c6257"), 0.55, 0.006, 7),
 		CHUNK_PROFILE.new("fossil_flats", "Fossil Flats", Vector2i(-1, 2), "Bonewind Basin", {"prey": [1, 2], "predators": [1], "plants": true}, "res://world_chunks/fossil_flats.tscn", Color("#b49b68"), 0.9, 0.008, 3),
 		CHUNK_PROFILE.new("redwood_canyon", "Redwood Canyon", Vector2i(-2, 1), "Echoing Gulch", {"prey": [1, 2], "predators": [1, 2], "plants": true}, "res://world_chunks/redwood_canyon.tscn", Color("#536f4d"), 1.25, 0.011, 3),
-		CHUNK_PROFILE.new("highland_plateau", "Highland Plateau", Vector2i(2, 3), "Cloudbreak Shelf", {"prey": [3], "predators": [2, 3]}, "res://world_chunks/highland_plateau.tscn", Color("#8a8370"), 0.5, 0.005, 7)
+		CHUNK_PROFILE.new("highland_plateau", "Highland Plateau", Vector2i(2, 3), "Cloudbreak Shelf", {"prey": [3], "predators": [2, 3]}, "res://world_chunks/highland_plateau.tscn", Color("#8a8370"), 0.5, 0.005, 7),
+		CHUNK_PROFILE.new("moonlit_grove", "Moonlit Grove", Vector2i(-2, 2), "Lunar Clearing", {"prey": [1, 2], "predators": [1], "plants": true}, "res://world_chunks/moonlit_grove.tscn", Color("#536c78"), 1.15, 0.01, 3),
+		CHUNK_PROFILE.new("saltwind_dunes", "Saltwind Dunes", Vector2i(3, 2), "Windcarved Arch", {"prey": [2, 3], "predators": [2]}, "res://world_chunks/saltwind_dunes.tscn", Color("#c4a36c"), 0.6, 0.006, 7)
 	]
 	for chunk in chunks:
 		var neighbors: Array[String] = []

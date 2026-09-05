@@ -27,6 +27,10 @@ static func for_biome(biome: String) -> Dictionary:
 			return {"prey_tiers": [1, 2], "predator_tiers": [1, 2], "plants": true}
 		"Highland Plateau":
 			return {"prey_tiers": [3], "predator_tiers": [2, 3], "plants": false}
+		"Moonlit Grove":
+			return {"prey_tiers": [1, 2], "predator_tiers": [1], "plants": true}
+		"Saltwind Dunes":
+			return {"prey_tiers": [2, 3], "predator_tiers": [2], "plants": false}
 		_:
 			return {"prey_tiers": [1], "predator_tiers": [], "plants": true}
 
