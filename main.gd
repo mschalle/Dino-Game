@@ -1387,7 +1387,11 @@ func _update_hud() -> void:
 func _follow_player(delta: float) -> void:
 	var desired := player.global_position + Vector3(0, 5.8, 9.5)
 	camera.global_position = camera.global_position.lerp(desired, minf(delta * 5.0, 1.0))
-	camera.look_at(player.global_position + Vector3(0, 0.9, 0), Vector3.UP)
+	var look_ahead := player.velocity
+	look_ahead.y = 0.0
+	if look_ahead.length() > 0.1:
+		look_ahead = look_ahead.normalized() * 1.3
+	camera.look_at(player.global_position + Vector3(0, 0.9, 0) + look_ahead, Vector3.UP)
 
 func _keep_player_in_valley() -> void:
 	player.position.x = clampf(player.position.x, -VALLEY_LIMIT, VALLEY_LIMIT)
