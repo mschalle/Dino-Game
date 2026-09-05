@@ -455,9 +455,12 @@ func _test_world_chunks() -> void:
 		var has_water: bool = chunk.biome == "River Wetlands" or chunk.biome == "Coastal Marsh" or chunk.biome == "Cypress Basin"
 		_check(has_water == (water != null), "%s water surface should match its biome" % chunk.chunk_id)
 		if water != null:
-			_check(water.material_override is StandardMaterial3D and water.material_override.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.18)), "%s water palette should follow its ground profile" % chunk.chunk_id)
+			var expected_water_color: Color = chunk.ground_color.lightened(0.18)
+			expected_water_color.a = 0.72
+			_check(water.material_override is StandardMaterial3D and water.material_override.albedo_color.is_equal_approx(expected_water_color), "%s water palette should follow its ground profile" % chunk.chunk_id)
 			_check(water.visibility_range_end > water.visibility_range_begin, "%s water surface should define a bounded visibility range" % chunk.chunk_id)
 			_check(water.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "%s water surface should avoid unnecessary shadows" % chunk.chunk_id)
+			_check(water.material_override.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA and water.material_override.albedo_color.a > 0.0 and water.material_override.albedo_color.a < 1.0, "%s water surface should remain visibly translucent" % chunk.chunk_id)
 		var particles := visual_root.get_node_or_null("AmbientParticles") as GPUParticles3D
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		if particles != null:

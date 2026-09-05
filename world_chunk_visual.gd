@@ -43,7 +43,9 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 		(landmark.material_override as StandardMaterial3D).albedo_color = profile.ground_color.darkened(0.18)
 	var water := get_node_or_null("WaterSurface") as MeshInstance3D
 	if water != null and water.material_override is StandardMaterial3D:
-		(water.material_override as StandardMaterial3D).albedo_color = profile.ground_color.lightened(0.18)
+		var water_color: Color = profile.ground_color.lightened(0.18)
+		water_color.a = 0.72
+		(water.material_override as StandardMaterial3D).albedo_color = water_color
 	var particles := get_node_or_null("AmbientParticles") as GPUParticles3D
 	if particles != null and particles.draw_pass_1 is QuadMesh:
 		var particle_mesh := particles.draw_pass_1 as QuadMesh
