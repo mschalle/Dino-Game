@@ -296,6 +296,7 @@ The player and spawned food now follow the authored elevation function with grav
 122. Added biome identity metadata to landmark silhouettes for runtime presentation and future navigation cues.
 123. Connected active chunk selection to the player's world position instead of a fixed origin chunk.
 124. Added boundary-transition validation for activating adjacent chunks and releasing distant chunks.
+125. Corrected playable-species validation to use the profile's typed adventure quest chain.
 
 ## Release Readiness
 

@@ -97,7 +97,7 @@ func _test_all_playable_species() -> void:
 		session.start(profile, "adventure")
 		_check(session.profile.id == profile.id, "%s Adventure should start with its own profile" % profile.id)
 		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
-		_check(profile.quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
+		_check(profile.adventure_quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
 		save.record_run(profile.id, 1.0, 1, 0, {"species_validation": true})
 	var records: Dictionary = save.data.get("records", {})
 	for profile in DinosaurProfiles.all():
