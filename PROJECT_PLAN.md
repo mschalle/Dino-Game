@@ -652,6 +652,7 @@ The player and spawned food now follow the authored elevation function with grav
 371. Enabled restrained SSAO on global and biome environments for deeper contact shadows around terrain, props, and creatures.
 372. Integrated SSAO with Low/Medium/High quality presets and made F4 update global and loaded biome environments immediately.
 373. Connected water transparency and roughness to environment quality, including immediate updates for loaded wetland chunks.
+374. Added world-scale UV tiling for imported biome textures to prevent stretched surfaces across the expanded reserve.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

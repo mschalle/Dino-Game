@@ -190,6 +190,7 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 	if albedo != null:
 		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 		material.albedo_texture = albedo
+		material.uv1_scale = Vector3(5.0, 5.0, 5.0) if texture_path.find("Grass") >= 0 else Vector3(3.5, 3.5, 3.5)
 	material.roughness = 0.86
 	material.metallic = 0.0
 	return material
