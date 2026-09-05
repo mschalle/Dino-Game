@@ -857,6 +857,10 @@ func _test_ai_states() -> void:
 	_check(npc_predator.state == "warn", "Predators should warn before pursuing NPC prey")
 	npc_predator._process(1.0)
 	_check(npc_predator.state == "chase", "Predators should chase eligible NPC prey after warning")
+	npc_prey.position = Vector3(26.0, 0.0, 0.0)
+	npc_predator.position = Vector3.ZERO
+	npc_predator._process(0.1)
+	_check(npc_predator.state == "recover", "Predators should disengage from NPC prey beyond territory")
 	npc_predator.free()
 	npc_prey.free()
 	player.free()
