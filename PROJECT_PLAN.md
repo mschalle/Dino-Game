@@ -635,6 +635,7 @@ The player and spawned food now follow the authored elevation function with grav
 354. Added optional biome-aware imported albedo textures for grass, rock, wetland, volcanic, and glacier terrain with procedural color fallback.
 355. Added a persisted optional daylight cycle that animates sun direction and energy for naturalistic time-of-day variation.
 356. Added animated water and shoreline foam motion to streamed wetland and cypress chunk visuals.
+357. Added daylight-linked sky gradient changes so sunrise, daytime, and dusk affect the valley atmosphere alongside the animated sun.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

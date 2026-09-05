@@ -47,6 +47,7 @@ var active_target: Node3D
 var rebind_buttons: Dictionary = {}
 var sounds
 var environment_time := 0.0
+var valley_sky_material: ProceduralSkyMaterial
 var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
@@ -143,6 +144,7 @@ func _create_world() -> void:
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
 	var sky_material := ProceduralSkyMaterial.new()
+	valley_sky_material = sky_material
 	sky_material.sky_top_color = Color("#263d58")
 	sky_material.sky_horizon_color = Color("#c2b79f")
 	sky_material.ground_bottom_color = Color("#1b242b")
@@ -341,6 +343,10 @@ func _animate_environment(delta: float) -> void:
 			var arc := sin(cycle * TAU) * 0.5 + 0.5
 			sun.rotation_degrees = Vector3(-28.0 - arc * 38.0, -35.0 + cycle * 24.0, 0.0)
 			sun.light_energy = 0.72 + arc * 0.65
+			if valley_sky_material != null:
+				var dawn := Color("#d28d78").lerp(Color("#263d58"), arc)
+				valley_sky_material.sky_top_color = dawn.darkened(0.12)
+				valley_sky_material.sky_horizon_color = Color("#e0b28c").lerp(Color("#c2b79f"), arc)
 	for tree in animated_trees:
 		if is_instance_valid(tree):
 			tree.rotation.z = sin(environment_time * 0.8 + float(tree.get_meta("sway_offset", 0.0))) * 0.045
