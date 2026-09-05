@@ -648,6 +648,7 @@ The player and spawned food now follow the authored elevation function with grav
 367. Added low-detail distant mountain silhouettes around the expanded reserve to provide a stronger geographic horizon and hide hard world edges.
 368. Added quality-scaled wind sway to imported trees, ferns, bushes, flowers, and pines while keeping rocks and landmarks static.
 369. Added batched biome-tinted ground debris and low-poly stones with no decorative collision overhead.
+370. Extended live F4 quality updates to batched ground debris visibility ranges in already-loaded chunks.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

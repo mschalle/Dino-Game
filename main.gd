@@ -1605,6 +1605,9 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 			var prop_distance := 95.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
 			for visual in dressing.find_children("*", "GeometryInstance3D", true, false):
 				(visual as GeometryInstance3D).visibility_range_end = prop_distance
+		var debris := chunk.get_node_or_null("GroundDebris") as MultiMeshInstance3D
+		if debris != null:
+			debris.visibility_range_end = 85.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):
