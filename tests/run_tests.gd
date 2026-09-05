@@ -915,6 +915,13 @@ func _test_low_level_food_supply() -> void:
 	_check(low_level_count >= 5, "Adventure must always begin with at least five Hatchling-edible dinosaurs")
 	_check(medium_level_count >= 3, "Adventure must supply Juvenile growth food")
 	_check(high_level_count >= 2, "Adventure must supply Adult growth food")
+	var herd_counts: Dictionary = {}
+	for prey_node in get_nodes_in_group("prey"):
+		var herd_id: Variant = prey_node.get("herd_id")
+		if herd_id != null and not str(herd_id).is_empty():
+			herd_counts[herd_id] = int(herd_counts.get(herd_id, 0)) + 1
+	for herd_id in herd_counts:
+		_check(int(herd_counts[herd_id]) <= 4, "Spawn maintenance must cap herd %s at four members" % herd_id)
 	var low_prey: Array[Node] = []
 	for prey_node in get_nodes_in_group("prey"):
 		var nutrition_value: Variant = prey_node.get("nutrition")
