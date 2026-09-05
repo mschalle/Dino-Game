@@ -474,6 +474,7 @@ The player and spawned food now follow the authored elevation function with grav
 300. Added a hard 100-iteration safety cap to prevent unbounded roadmap automation.
 301. Added `ROADMAP_AUTOMATION.md` documenting the milestone loop contract, gates, stop conditions, and packaging prerequisite.
 302. Added optional JSON result reporting to the roadmap loop for scheduled-run observability.
+303. Added end-to-end validation evidence for JSON loop reporting, including checkpoint, iteration count, stop reason, and pass status.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
