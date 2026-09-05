@@ -15,9 +15,13 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectPath "project.godot"))) {
 Push-Location $ProjectPath
 try {
     Write-Host "[1/3] Running automated gameplay tests..."
-    & $Godot --headless --path "." --script "res://tests/run_tests.gd"
+    $test_output = (& $Godot --headless --path "." --script "res://tests/run_tests.gd" 2>&1 | Out-String)
+    Write-Host $test_output
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "Godot gameplay tests failed ($exit_code)" }
+    if ($test_output -notmatch "Roar & Rise tests: PASS" -or $test_output -match "Roar & Rise tests: [1-9][0-9]* failure") {
+        throw "Godot gameplay tests did not report a clean PASS marker"
+    }
 
     Write-Host "[2/3] Checking headless project startup..."
     & $Godot --headless --path "." --quit-after 5
