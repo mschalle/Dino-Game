@@ -341,7 +341,9 @@ func _create_asset_pack_dressing(biome: String) -> void:
 		"res://glTF/CommonTree_2.gltf",
 		"res://glTF/Fern_1.gltf",
 		"res://glTF/Rock_Medium_1.gltf",
-		"res://glTF/Bush_Common.gltf"
+		"res://glTF/Bush_Common.gltf",
+		"res://glTF/Flower_3_Group.gltf",
+		"res://glTF/Rock_Medium_2.gltf"
 	]
 	if biome == "Sunstone Ridge" or biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Saltwind Dunes":
 		paths = ["res://glTF/Rock_Medium_1.gltf", "res://glTF/Rock_Medium_2.gltf", "res://glTF/Pine_2.gltf", "res://glTF/DeadTree_2.gltf"]
@@ -349,6 +351,8 @@ func _create_asset_pack_dressing(biome: String) -> void:
 		paths = ["res://glTF/Rock_Medium_3.gltf", "res://glTF/DeadTree_3.gltf", "res://glTF/DeadTree_5.gltf", "res://glTF/Rock_Medium_2.gltf"]
 	elif biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
 		paths = ["res://glTF/Fern_1.gltf", "res://glTF/Bush_Common.gltf", "res://glTF/Flower_3_Group.gltf", "res://glTF/CommonTree_1.gltf"]
+	elif biome == "Ancient Meadow" or biome == "Cloudforest Rise" or biome == "Fernwood" or biome == "Moonlit Grove":
+		paths = ["res://glTF/CommonTree_3.gltf", "res://glTF/Fern_1.gltf", "res://glTF/Flower_4_Group.gltf", "res://glTF/Bush_Common_Flowers.gltf", "res://glTF/Rock_Medium_1.gltf"]
 	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
 	var foliage_scale := float(quality.get("foliage", 1.0))
 	var prop_count := mini(paths.size(), maxi(3, int(ceil(paths.size() * foliage_scale))))
