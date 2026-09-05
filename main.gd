@@ -144,6 +144,8 @@ func _create_world() -> void:
 	light.rotation_degrees = Vector3(-52, -35, 0)
 	light.light_color = Color("#fff0bd")
 	light.light_energy = 1.2
+	light.shadow_enabled = true
+	light.directional_shadow_max_distance = 90.0
 	add_child(light)
 	var ground := MeshInstance3D.new()
 	ground.name = "LegacyValleyGround"

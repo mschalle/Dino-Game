@@ -437,6 +437,7 @@ The player and spawned food now follow the authored elevation function with grav
 263. Added streamed-chunk landmark-label contrast validation to require a non-white outline against bright terrain.
 264. Added legacy habitat-label contrast validation to require a non-white outline against bright terrain.
 265. Added bounded sky-affect validation for legacy valley fog to protect atmospheric readability.
+266. Enabled bounded directional shadows for ValleySun and validated shadow coverage for readable terrain depth.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

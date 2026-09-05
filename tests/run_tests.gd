@@ -891,6 +891,7 @@ func _test_gameplay_integration() -> void:
 		_check(main_environment.environment.ambient_light_energy > 0.0 and main_environment.environment.ambient_light_energy <= 4.0, "Legacy valley ambient light energy should remain bounded")
 	var sun := main_scene.get_node_or_null("ValleySun") as DirectionalLight3D
 	_check(sun != null and sun.light_energy > 0.0 and sun.light_energy <= 4.0, "Legacy valley directional light should remain bounded")
+	_check(sun != null and sun.shadow_enabled and sun.directional_shadow_max_distance > 0.0, "Legacy valley directional light should provide bounded shadows")
 	var trike := DinosaurProfiles.triceratops()
 	main_scene._start_run(trike, "adventure")
 	var plant := PlantFood.new()
