@@ -123,6 +123,8 @@ func _test_world_streaming() -> void:
 	manager.update_player_chunk(Vector2i(2, 1))
 	_check(manager.is_active("redstone_badlands"), "New player neighborhood should activate")
 	_check(not manager.is_active("nest_basin"), "Distant previous chunk should deactivate")
+	_check(manager.is_world_position_navigable(Vector3(120.0, 0.0, 60.0)), "Active chunk positions should be navigable")
+	_check(not manager.is_world_position_navigable(Vector3(500.0, 0.0, 500.0)), "Distant positions should not be navigable")
 	var holder := Node3D.new()
 	root.add_child(holder)
 	manager.instantiate_chunk("nest_basin", holder)

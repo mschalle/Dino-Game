@@ -254,6 +254,7 @@ The player and spawned food now follow the authored elevation function with grav
 80. Added lightweight biome ambient particle effects with dry-biome color variation.
 81. Added per-biome NavigationRegion3D meshes aligned to streamed ground pads and authored agent limits.
 82. Added streamed NavigationLink3D connectors between loaded neighboring biome chunks with unload cleanup.
+83. Added shared active-chunk world-position checks for navigation and actor recovery logic.
 
 ## Release Readiness
 

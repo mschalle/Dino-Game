@@ -44,6 +44,16 @@ func active_chunk_ids() -> Array[String]:
 		result.append(str(chunk_id))
 	return result
 
+func chunk_id_at_world_position(world_position: Vector3) -> String:
+	var grid := Vector2i(roundi(world_position.x / chunk_world_size), roundi(world_position.z / chunk_world_size))
+	for chunk in chunks:
+		if chunk.grid_position == grid and is_active(chunk.chunk_id):
+			return chunk.chunk_id
+	return ""
+
+func is_world_position_navigable(world_position: Vector3) -> bool:
+	return not chunk_id_at_world_position(world_position).is_empty() and world_position.y >= -1.0
+
 func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 	if scene_instances.has(chunk_id):
 		return scene_instances[chunk_id]
