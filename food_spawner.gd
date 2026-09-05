@@ -109,6 +109,16 @@ func _spawn_prey(forced_nutrition: int = 0) -> void:
 	prey.position = _random_position(nutrition)
 	add_child(prey)
 	_place_on_terrain(prey)
+	var herd_id := "tier_%d" % nutrition
+	var herd_anchor := prey.position
+	var herd_leader := true
+	for sibling in get_children():
+		if sibling is PreyDino and sibling != prey and (sibling as PreyDino).nutrition == nutrition and not (sibling as PreyDino).herd_id.is_empty():
+			herd_id = (sibling as PreyDino).herd_id
+			herd_anchor = (sibling as PreyDino).herd_anchor
+			herd_leader = false
+			break
+	prey.set_herd_context(herd_id, herd_leader, herd_anchor)
 	prey.creature_defeated.connect(func(creature: Node3D, profile: RefCounted) -> void: creature_defeated.emit(creature, profile))
 	if not respawn_gate_factory.is_null():
 		prey.set_respawn_gate(respawn_gate_factory.bind(prey))

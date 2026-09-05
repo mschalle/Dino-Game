@@ -30,6 +30,9 @@ var tail_rest_rotation := Vector3.ZERO
 var imported_model: Node3D
 var imported_animation_player: AnimationPlayer
 var respawn_gate: Callable
+var herd_id := ""
+var herd_leader := false
+var herd_anchor := Vector3.ZERO
 
 func setup(new_label: String, new_nutrition: int, new_tint: Color) -> void:
 	label = new_label
@@ -108,6 +111,14 @@ func set_player(new_player: PlayerDino) -> void:
 func set_respawn_gate(gate: Callable) -> void:
 	respawn_gate = gate
 
+func set_herd_context(id: String, is_leader: bool, anchor: Vector3) -> void:
+	herd_id = id
+	herd_leader = is_leader
+	herd_anchor = anchor
+
+func herd_context() -> Dictionary:
+	return {"id": herd_id, "leader": herd_leader, "anchor": herd_anchor}
+
 func _navigation_direction(target: Vector3) -> Vector3:
 	var direct := target - global_position
 	direct.y = 0.0
@@ -134,7 +145,13 @@ func receive_attack(damage: float, attacker_position: Vector3) -> bool:
 	return true
 
 func _wander() -> void:
-	position = base_position + Vector3(sin(phase) * 0.8, 0.0, cos(phase * 0.7) * 0.55)
+	var sway := Vector3(sin(phase) * 0.8, 0.0, cos(phase * 0.7) * 0.55)
+	if not herd_leader and not herd_id.is_empty():
+		var toward_anchor := herd_anchor - base_position
+		toward_anchor.y = 0.0
+		position = base_position + toward_anchor.clamp(Vector3(-1.5, 0.0, -1.5), Vector3(1.5, 0.0, 1.5)) * 0.18 + sway
+	else:
+		position = base_position + sway
 	rotation.y = -phase
 
 func _clamp_to_valley() -> void:

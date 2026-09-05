@@ -34,6 +34,7 @@ func _run_tests() -> void:
 	_test_mixed_population_cooldowns()
 	_test_long_streaming_session()
 	_test_ai_states()
+	_test_herd_context()
 	_test_low_level_food_supply()
 	_test_habitat_food_filter()
 	_test_hud_contrast()
@@ -848,6 +849,16 @@ func _test_ai_states() -> void:
 	player.free()
 	prey.free()
 	predator.free()
+
+func _test_herd_context() -> void:
+	var prey := PreyDino.new()
+	prey.setup("Herd Test", 1, Color.WHITE)
+	root.add_child(prey)
+	prey.set_herd_context("tier_1", false, Vector3(2.0, 0.0, 0.0))
+	var context := prey.herd_context()
+	_check(context.get("id", "") == "tier_1" and not bool(context.get("leader", true)), "Prey should expose herd context")
+	_check((context.get("anchor", Vector3.ZERO) as Vector3).x == 2.0, "Herd followers should retain their anchor")
+	prey.free()
 
 func _test_low_level_food_supply() -> void:
 	var spawner := FoodSpawner.new()
