@@ -481,6 +481,7 @@ The player and spawned food now follow the authored elevation function with grav
 307. Added packaging-gate error ordering so missing export templates are reported before secondary imported-asset case warnings.
 308. Added export-smoke preflight checks for both required Godot 4.7.2 Windows templates, avoiding a noisy export scan when the prerequisite is absent.
 309. Added optional packaging-smoke execution to the roadmap loop for release-gate validation.
+310. Added packaging-loop validation evidence confirming the optional gate halts before checkpoint advancement when export templates are missing.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
