@@ -14,6 +14,10 @@ Each iteration:
 4. Stops safely when no new checkpoint was recorded.
 5. Rejects skipped checkpoint numbers and never runs more than 100 iterations.
 
+The loop does not create roadmap entries or claim unfinished work. A milestone
+must be implemented and recorded in `PROJECT_PLAN.md` by the development pass;
+the next loop iteration then validates that checkpoint before continuing.
+
 Use `-StopAtCheckpoint N` to stop after a specific checkpoint, and
 `-RequireExportTemplates` when packaging is part of the gate. Windows export
 templates are currently an external packaging prerequisite; normal development
