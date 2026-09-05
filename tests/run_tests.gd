@@ -233,6 +233,14 @@ func _test_world_chunks() -> void:
 	for biome_name in active_biomes:
 		unique_active_biomes[biome_name] = true
 	_check(active_biomes.size() == unique_active_biomes.size(), "Active biome names should not contain duplicates")
+	var duplicate_profiles: Array[RefCounted] = [
+		WorldChunkProfile.new("duplicate_a", "Shared Biome", Vector2i.ZERO, "A", {}),
+		WorldChunkProfile.new("duplicate_b", "Shared Biome", Vector2i.ONE, "B", {})
+	]
+	var duplicate_stream := WORLD_STREAM_MANAGER.new()
+	duplicate_stream.configure(duplicate_profiles, 1)
+	duplicate_stream.update_player_chunk(Vector2i.ZERO)
+	_check(duplicate_stream.active_biome_names() == ["Shared Biome"], "Duplicate profile biomes should collapse to one diagnostic name")
 	var cleared_stream := WORLD_STREAM_MANAGER.new()
 	cleared_stream.configure(chunks, 1)
 	cleared_stream.update_player_chunk(Vector2i.ZERO)
