@@ -26,6 +26,10 @@ Write-Host "Recorded checkpoint entries: $($checkpointNumbers.Count) (unique $un
 if ($uniqueCount -ne $checkpointNumbers.Count) {
     throw "Roadmap checkpoint numbers must be unique"
 }
+$sortedCheckpoints = @($checkpointNumbers | Sort-Object)
+if (($sortedCheckpoints -join ",") -ne ($checkpointNumbers -join ",")) {
+    throw "Roadmap checkpoint numbers must be in ascending order"
+}
 
 if ($RunValidation) {
     $validator = Join-Path $ProjectPath "tools\roadmap_validation.ps1"

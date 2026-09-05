@@ -365,6 +365,7 @@ The player and spawned food now follow the authored elevation function with grav
 191. Added duplicate-checkpoint rejection to the roadmap status runner before milestone validation runs.
 192. Added roadmap checkpoint integrity as the fourth gate in the main validation script.
 193. Added chronological ordering for checkpoints 162–165 in the roadmap execution history.
+194. Added ascending-order enforcement for roadmap checkpoints in the status runner.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
