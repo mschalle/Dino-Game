@@ -10,6 +10,7 @@ const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
 const FOOD_TOKEN = preload("res://food_token.gd")
 const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
+const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
 const VALLEY_LIMIT := 28.0
@@ -49,6 +50,8 @@ var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
 var world_stream
 var chunk_instances: Dictionary = {}
+var world_events
+var next_endless_event_time := 120.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -102,6 +105,7 @@ func _process(delta: float) -> void:
 	var danger_nearby := _danger_nearby()
 	session.tick(delta, danger_nearby)
 	food_spawner.maintain(delta, session.survival_time)
+	_update_world_events(delta)
 	_update_objectives(delta)
 	_update_endless_difficulty()
 	_keep_player_in_valley()
@@ -635,6 +639,8 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	optional_completed = false
 	endless_round = 0
 	endless_second_timer = 0.0
+	world_events = WORLD_EVENT_SYSTEM.new()
+	next_endless_event_time = 120.0
 	if mode == "adventure":
 		quest_system.start(profile.adventure_quests)
 	else:
@@ -1091,6 +1097,18 @@ func _update_endless_difficulty() -> void:
 	var awareness := 1.0 + minf(session.survival_time / 600.0, 0.75)
 	for predator in predators:
 		predator.awareness_multiplier = awareness
+
+func _update_world_events(delta: float) -> void:
+	if mode != "endless" or world_events == null or food_spawner == null:
+		return
+	if world_events.tick(delta):
+		food_spawner.set_event_plant_bonus(0)
+		hud.show_message("Fresh Growth has faded. The valley returns to normal.")
+	if world_events.active_event_id.is_empty() and session.survival_time >= next_endless_event_time:
+		if world_events.start(WORLD_EVENT_SYSTEM.FRESH_GROWTH, 45.0):
+			food_spawner.set_event_plant_bonus(4)
+			hud.show_message("Fresh Growth! Extra plants have appeared for a short time.")
+			next_endless_event_time += 180.0
 
 func _tick_cooldowns(delta: float) -> void:
 	for ability_id in ability_cooldowns.keys():

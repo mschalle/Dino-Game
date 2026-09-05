@@ -17,6 +17,7 @@ var tier_respawn_cooldowns: Dictionary = {}
 var respawn_gate_factory: Callable
 var persisted_herd_records: Dictionary = {}
 var active_creature_limit := 25
+var event_plant_bonus := 0
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -63,6 +64,9 @@ func set_persisted_herd_records(records: Dictionary) -> void:
 func set_active_creature_limit(limit: int) -> void:
 	active_creature_limit = maxi(1, limit)
 
+func set_event_plant_bonus(amount: int) -> void:
+	event_plant_bonus = clampi(amount, 0, 6)
+
 func set_respawn_cooldown(seconds: float) -> void:
 	habitat_respawn_cooldown = maxf(0.0, seconds)
 
@@ -107,7 +111,7 @@ func _spawn_to_targets(scarcity: int) -> void:
 		var missing := maxi(0, int(tier_targets[nutrition]) - int(tier_counts[nutrition]))
 		for index in mini(missing, _available_creature_slots()):
 			_spawn_prey(int(nutrition))
-	var plant_target := maxi(5, 9 - scarcity)
+	var plant_target := maxi(5, 9 - scarcity) + event_plant_bonus
 	var plant_missing := maxi(0, plant_target - get_tree().get_nodes_in_group("plant_food").size())
 	for index in plant_missing:
 		_spawn_plant()

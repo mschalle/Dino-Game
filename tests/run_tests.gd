@@ -3,6 +3,7 @@ extends SceneTree
 const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 const HABITAT_SPAWN_RULES = preload("res://habitat_spawn_rules.gd")
+const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
 
 var failures := 0
 
@@ -16,6 +17,7 @@ func _run_tests() -> void:
 	_test_all_species_endless_unlocks()
 	_test_endless_progression_all_species()
 	_test_endless_scaling_rules()
+	_test_world_events()
 	_test_release_readiness()
 	_test_windows_export_preset()
 	_test_selection_roster_layout()
@@ -231,6 +233,20 @@ func _test_endless_scaling_rules() -> void:
 	var scarcity_late := mini(int(720.0 / 180.0), 4)
 	_check(scarcity_start == 0 and scarcity_late == 4, "Endless scarcity should increase in bounded steps")
 	_check(maxi(3, 5 - scarcity_late) >= 3, "Endless scarcity should preserve tier-1 food availability")
+
+func _test_world_events() -> void:
+	var events := WORLD_EVENT_SYSTEM.new()
+	_check(events.start(WORLD_EVENT_SYSTEM.FRESH_GROWTH, 45.0), "Fresh Growth should start with a valid duration")
+	_check(events.is_active(WORLD_EVENT_SYSTEM.FRESH_GROWTH), "Fresh Growth should report as active")
+	_check(not events.start(WORLD_EVENT_SYSTEM.FRESH_GROWTH, 45.0), "Overlapping world events should be rejected")
+	_check(not events.tick(44.0), "Fresh Growth should remain active before its duration ends")
+	_check(events.tick(1.0), "Fresh Growth should finish at its duration boundary")
+	var spawner := FoodSpawner.new()
+	spawner.set_event_plant_bonus(4)
+	_check(spawner.event_plant_bonus == 4, "Fresh Growth should add a bounded plant-spawn bonus")
+	spawner.set_event_plant_bonus(99)
+	_check(spawner.event_plant_bonus == 6, "Event plant bonuses should stay bounded")
+	spawner.free()
 
 func _test_windows_export_preset() -> void:
 	_check(FileAccess.file_exists("res://export_presets.cfg"), "Windows export preset should be checked in")
