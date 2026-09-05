@@ -283,6 +283,7 @@ The player and spawned food now follow the authored elevation function with grav
 109. Added cross-species authored-asset and save-isolation validation for the expanded roster.
 110. Added deterministic six-card selection layout coverage for keyboard and gamepad focus navigation.
 111. Added reusable row-wrapping selection navigation rules with keyboard/gamepad regression tests.
+112. Wired explicit focus neighbors into the six Adventure selection buttons and auto-focused the first card.
 
 ## Release Readiness
 
@@ -439,8 +440,79 @@ Add reusable quest templates for reach, follow trail, collect, eat, defeat-and-c
 
 ### Production milestones and gates
 
+### Asset-pack integration execution steps (reviewed September 4, 2026)
+
+Status: inventory and integration planning complete; runtime integration and in-engine acceptance remain pending. Execute the steps below within milestones A–E, starting with A1. These refine Detailed Development Step 5 and the graphics/environment pass; they do not mark existing milestone gates complete or start a separate expansion. Continue the unfinished UI, dinosaur rigging, and playtest work alongside these slices.
+
+#### Reviewed inputs and decisions
+
+| Input in repository | Evidence and intended use | Decision |
+| --- | --- | --- |
+| `KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/` | 105 glTF models; trees, bushes, grass, bare trees, and several rock families. The supplied contents image shows broad, simple silhouettes that fit the friendly dinosaur presentation. `License.txt` identifies CC0. | Primary environment kit for Nest Basin and Ancient Meadow; reuse its rocks and sparse vegetation across other biomes. |
+| `glTF/`, `Textures/`, `FBX/`, `FBX (Unity)/`, `OBJ/` | Quaternius Stylized Nature MegaKit FREE: 68 glTF models, matching the count in `License_Standard.txt` (CC0). Includes `Fern_1`, common/twisted/dead trees, pines, grasses, flowers, pebbles, and rock paths. | Supplement KayKit with forest undergrowth and biome accents. Use glTF plus its referenced buffers/textures; the alternate formats are source alternatives, not extra model sets. Do not assume the paid edition's shaders or models are supplied. |
+| `Sound FX Starter Pack Vol. 1/` | 144 WAV files across 12 categories; includes environment loops, UI sounds, reward stingers, and unsuitable horror/weapon material. A `Royalty-Free License (Link).pdf` is present; its linked terms have not been verified in this review. | Audition a small shortlist and verify the actual license/source before shipping any clip. Filenames alone do not establish child-friendly sound or permission. |
+| `addons/proton_scatter/` | ProtonScatter 4.2.0, MIT, according to local plugin metadata/license. | Optional authoring experiment in B; existing deterministic MultiMesh vegetation remains the baseline. |
+| `addons/terrain_3d/`, `addons/terrabrush/` | Terrain3D 1.0.2 and TerraBrush are MIT terrain tools. Their extension manifests declare minimum Godot versions 4.4 and 4.5 respectively; this is not proof of runtime compatibility. | Evaluate only if authored terrain needs an editor tool. Select at most one after an isolated comparison; no automatic terrain replacement. |
+| `addons/sky_3d/` | Sky3D 2.1, MIT; local README explicitly supports Compatibility rendering and supplies renderer-specific adjustments. Separate shader and texture license files are also present. | Optional fixed-daylight sky trial after the biome art pass; defer the day/night cycle. |
+| `addons/godot_ai/` | Godot AI 3.2.1 describes an MCP server and AI editor tools. | Development tooling, not game content; no runtime dependency or automatic enablement is needed for this plan. |
+| `demo/`, pack samples/previews, `__MACOSX/` | Imported examples and distribution material; demo textures cite ambientCG CC0 sources. | Reference material only. Do not make demo scenes the game's entry scene or ship unused sample/archive content. |
+
+Review validation: parsed all 173 nature glTF files and checked their external buffer/image paths; no missing referenced files were found. This verifies dependency presence, not rendering, scale, collision, animation, or performance. Sound clips were not auditioned. Existing modified dinosaur GLBs and `tests/run_tests.gd` are separate work and were left untouched.
+
+#### A1 — Curate an importable vertical-slice kit
+
+1. Record selected source paths, pack/version, license location, destination, and any material changes in an asset manifest/credits document. Retain supplied notices with the selected assets; inspect secondary shader/texture notices if using add-ons.
+2. Select a small KayKit tree/bush/rock set and Quaternius `Fern_1`, `Grass_Common_Short`, and pebble accents. Compare them beside the T. rex at gameplay distance before expanding selection; unify palette, roughness, scale, and foliage treatment without flattening required texture detail.
+3. Put selected runtime scenery under `assets/models/environment/` with Godot wrapper scenes. Preserve glTF relative buffer/image paths when copying, or deliberately convert and validate self-contained GLBs. Keep source drops intact during curation; exclude unused alternate formats, demos, and archive metadata from import/export through a deliberate packaging pass.
+4. Check origins, meter scale, material surfaces, shadows, transparency, and ground contact in the current `gl_compatibility` renderer. Use simple collision only for trunks, major rocks, and gameplay landmarks; grass and decorative bushes should not obstruct actors.
+5. Add a resource-load check for each selected wrapper and run the existing Godot tests/startup commands. Gate: all selected assets render with complete materials in editor and packaged Windows smoke tests; no gameplay assets or source edits are overwritten.
+
+#### A2 — Dress Nest Basin and Fernwood without changing gameplay
+
+1. Replace selected procedural scenery in `main.gd` and vegetation visuals in `world_chunk_visual.gd`; use biome selection data in `world_chunk_profiles.gd` rather than scattering pack-specific paths through gameplay logic.
+2. Use KayKit canopy/bush/rock silhouettes in Nest Basin and Quaternius common trees, ferns, and restrained grasses in Fernwood. Preserve safe-nest clearance, food visibility, quest-marker sightlines, and existing terrain grounding.
+3. Extend the existing MultiMesh approach with a batch per compatible mesh/material combination. Preserve child mesh transforms and all required surfaces when extracting meshes from imported scenes. Keep significant collision objects separate from decorative batches.
+4. Keep food visuals distinguishable from decorative plants; imported shrubs must not become edible or alter spawn quotas merely because they look like food. Author landmarks separately where the packs lack a recognizable quest prop.
+5. Validate collision and navigation around new obstacles for the largest dinosaur and confirm unload/reload does not duplicate scenery. Gate: T. rex completes the vertical-slice route with readable objectives and stable target frame rate. Do not use visual dressing to change terrain height queries.
+
+#### A3 — Introduce a small, licensed audio set
+
+1. Retrieve and retain the terms referenced by the supplied license PDF, record the publisher/source, and resolve any usage/redistribution uncertainty before accepting clips. Continue visual integration independently if audio clearance is pending.
+2. Audition `UI & Menus/Select.wav`, `Hover Over.wav`, `Achievement.wav`, `Jingles & Stingers/Level Up.wav`, `Success.wav`, and `Area Discovered.wav`. Test `Environment/Grassy Field Loop.wav`, `Rain Forest Loop.wav`, and `Wind Loop.wav` for Basin/Meadow, Fernwood, and Ridge respectively. These are candidates, not approved event mappings.
+3. Add selected samples behind the existing `SoundFeedback` methods in `sound_feedback.gd`, preserving event callers and procedural fallback for unfilled cues. Match perceived loudness and cap simultaneous playback; ambient emitters belong to chunk lifecycles and must fade/stop on unload.
+4. Preserve saved effects-volume behavior; introduce ambience control with backward-compatible defaults and mute tests. Add music controls only when actual music is selected. Verify loops for seams and prevent duplicate ambience at borders.
+5. Exclude distress, horror, gunfire, and harsh realistic impacts from the shortlist. Footsteps, eating, dinosaur calls, and gentle combat cues still need suitable recordings or original synthesis; this pack does not establish those gaps as solved.
+6. Gate: event playback, mute, pause, and chunk cleanup pass targeted checks; a listening review confirms comfortable levels and no frightening content. Keep visual feedback usable with audio muted.
+
+#### B1 — Validate authoring tools before adopting them
+
+1. Test tools in an isolated prototype using the project's Godot version and Compatibility renderer. No editor plugins are currently enabled in `project.godot`; native GDExtensions may still be discovered, so include extension-loading errors in startup validation.
+2. Trial ProtonScatter on one dressed chunk only. Adopt it only if authored output preserves deterministic placement, MultiMesh efficiency, chunk ownership, and reliable reload/export; otherwise keep existing generation.
+3. Compare Terrain3D and TerraBrush only against a concrete terrain-authoring need. Verify Windows extension loading, renderer support, collision/height sampling, navigation baking, chunk borders, export, and measured cost before selecting one. A renderer change requires a separate decision and hardware comparison.
+4. Any terrain migration must replace the visible mesh, collision, and `main.gd` terrain-height consumers together, including food, actors, recovery, and quest markers. Preserve chunk IDs/state and safe routes. Retain the current terrain until this gate passes; the packs themselves supply scenery, not a complete terrain/navigation replacement.
+5. Gate: repeated four-chunk crossings preserve actor/quest state, scenery counts, ground alignment, and the milestone B performance budget. Record the adopted tool/version or the decision to retain current code.
+
+#### C/D — Expand the approved kit across the reserve
+
+| Biome | Asset treatment | Remaining authored work |
+| --- | --- | --- |
+| River Wetlands | Quaternius ferns, grasses, pebbles; selected KayKit rocks/bushes | Readable riverbanks, shallow-water edges, routes and wetland landmark |
+| Sunstone Ridge | KayKit angular rocks; Quaternius rock paths and sparse pines | Traversable switchbacks, skyline arch/overlook, race clearances |
+| Redstone Badlands | Recolored KayKit rock families; sparse Quaternius dead/twisted trees | Terraces, rival arena, safe resting point and navigation |
+| Ancient Meadow | KayKit broad trees and bushes; restrained Quaternius clover/flowers | Nest/herd landmarks and clear food habitats |
+
+Approve one biome at gameplay camera distance before distributing its kit to additional chunks. Preserve the art bible, LOD/visibility limits, saved chunk state, and population budgets. These packs reduce vegetation/rock production; they do not replace dinosaur rigs/animations, UI art, nests/fossils, authored terrain, quests, or water work. Finish all six biome gates and 16 chunk layouts before declaring D complete.
+
+#### E — Presentation and shipping acceptance
+
+1. If needed, trial Sky3D with fixed daylight and reduced cloud motion, using its local Compatibility-renderer guidance. Retain the current environment if readability or frame cost regresses. Test low/medium/high settings before adding a dynamic cycle.
+2. Profile scenery draw calls, foliage overdraw, shadows, texture memory, native add-ons, audio concurrency, and chunk load time on both Windows hardware tiers. Set density and visibility limits from measurements.
+3. Audit exported dependencies and credits: selected model textures/buffers and required notices are included; unused packs, previews, demos, editor-only tooling, and archive metadata are excluded without breaking runtime references.
+4. Run existing automated tests, headless startup, packaged-build route checks, controller/accessibility checks, and the planned Endless soak. Add targeted checks for asset loads, missing-asset fallback, audio settings, and repeated chunk cleanup as each feature lands. Only then mark the corresponding A–E gates complete.
+
 #### Milestone A — Polished vertical slice
 
+- Execute asset steps A1–A3 above: curate imports, dress Nest Basin/Fernwood, and introduce approved audio.
 - Finish the shared UI theme, HUD hierarchy, onboarding, target feedback, and selection screen.
 - Replace placeholder root animations for the T. rex with a proper rig and animation tree.
 - Art-pass Nest Basin and one adjacent biome.
@@ -450,6 +522,7 @@ Gate: a new player can finish the T. rex Adventure without developer guidance; H
 
 #### Milestone B — Scalable world foundation
 
+- Execute asset step B1 above before adopting scatter or terrain tooling.
 - Implement chunk profiles, streaming, navigation-region borders, actor persistence, and loading feedback.
 - Expand from 60×60 meters to a four-chunk 300×300-meter prototype.
 - Convert vegetation to MultiMesh batches and establish LOD/visibility settings.
@@ -458,6 +531,7 @@ Gate: cross all chunk borders repeatedly without visible holes, navigation loss,
 
 #### Milestone C — Existing roster polish
 
+- Apply the approved biome kits using the C/D asset table above for the first four biomes.
 - Finish production models and animations for Velociraptor and Triceratops.
 - Complete their Adventures, finales, tutorials, cosmetics, and Endless unlocks.
 - Complete the first four final-quality biomes.
@@ -466,6 +540,7 @@ Gate: all three Adventures pass clean-save, defeat-recovery, gamepad, and access
 
 #### Milestone D — Expanded roster and full reserve
 
+- Complete the C/D asset rollout across all six biomes and 16 authored chunk layouts.
 - Add Ankylosaurus, Parasaurolophus, and Carnotaurus using data-driven resources.
 - Complete all 16 world chunks and six biomes.
 - Add field-guide discovery, expanded quest templates, and biome population simulation.
@@ -474,6 +549,7 @@ Gate: all six species can complete Adventure; no species-specific central-loop c
 
 #### Milestone E — Release candidate
 
+- Complete asset step E above, including optional sky evaluation, export dependency checks, and license/credits verification.
 - Finalize audio, graphics presets, controller remapping, UI scale, contrast, reduced motion, save migration, credits, and build metadata.
 - Profile CPU, GPU, memory, navigation, draw calls, and shader stutter on at least two Windows hardware tiers.
 - Run family readability sessions and fix the highest-frequency confusion points.

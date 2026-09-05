@@ -25,6 +25,7 @@ var run_root: Node3D
 var food_spawner: FoodSpawner
 var hud: GameHUD
 var selection_screen: CanvasLayer
+var selection_adventure_buttons: Array[Button] = []
 var active_marker: Node3D
 var scent_dots: Array[MeshInstance3D] = []
 var quest_props: Array[Node3D] = []
@@ -309,9 +310,11 @@ func _show_selection() -> void:
 	card_content.custom_minimum_size = Vector2(1280, 820)
 	card_scroll.add_child(card_content)
 	var profiles := PROFILES.all()
+	selection_adventure_buttons.clear()
 	for index in profiles.size():
 		var species_profile: DinosaurProfile = profiles[index]
 		_create_species_card(card_content, species_profile, index)
+	_wire_selection_focus()
 	var footer := Label.new()
 	footer.text = "Adventure unlocks Endless Survival for each dinosaur.   |   F1: How to Play\n%s" % _collection_summary()
 	footer.position = Vector2(290, 625)
@@ -497,6 +500,7 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	_style_selection_button(adventure_button, true)
 	adventure_button.add_theme_font_size_override("font_size", 19)
 	adventure_button.pressed.connect(func() -> void: _start_run(species_profile, "adventure"))
+	selection_adventure_buttons.append(adventure_button)
 	card.add_child(adventure_button)
 	var endless_button := Button.new()
 	var unlocked := save_system.is_endless_unlocked(species_profile.id)
@@ -508,6 +512,16 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	endless_button.add_theme_font_size_override("font_size", 19)
 	endless_button.pressed.connect(func() -> void: _start_run(species_profile, "endless"))
 	card.add_child(endless_button)
+
+func _wire_selection_focus() -> void:
+	for index in selection_adventure_buttons.size():
+		var button := selection_adventure_buttons[index]
+		button.focus_neighbor_left = selection_adventure_buttons[DinosaurProfiles.selection_neighbor(index, "left")].get_path()
+		button.focus_neighbor_right = selection_adventure_buttons[DinosaurProfiles.selection_neighbor(index, "right")].get_path()
+		button.focus_neighbor_top = selection_adventure_buttons[DinosaurProfiles.selection_neighbor(index, "up")].get_path()
+		button.focus_neighbor_bottom = selection_adventure_buttons[DinosaurProfiles.selection_neighbor(index, "down")].get_path()
+	if not selection_adventure_buttons.is_empty():
+		selection_adventure_buttons[0].grab_focus()
 
 func _style_selection_button(button: Button, primary: bool) -> void:
 	button.focus_mode = Control.FOCUS_ALL

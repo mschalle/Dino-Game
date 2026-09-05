@@ -15,6 +15,7 @@ func _run_tests() -> void:
 	_test_species_asset_and_save_isolation()
 	_test_selection_roster_layout()
 	_test_selection_navigation()
+	_test_selection_focus_mapping()
 	_test_world_chunks()
 	_test_habitat_rules()
 	_test_world_streaming()
@@ -126,6 +127,11 @@ func _test_selection_navigation() -> void:
 	_check(DinosaurProfiles.selection_neighbor(0, "left") == 2, "Selection left navigation should wrap the row")
 	_check(DinosaurProfiles.selection_neighbor(0, "down") == 3, "Selection down navigation should move to the next row")
 	_check(DinosaurProfiles.selection_neighbor(3, "up") == 0, "Selection up navigation should return to the prior row")
+
+func _test_selection_focus_mapping() -> void:
+	for index in 6:
+		_check(DinosaurProfiles.selection_neighbor(index, "left") >= 0, "Every selection card should have a left focus target")
+		_check(DinosaurProfiles.selection_neighbor(index, "right") < 6, "Every selection card should have a right focus target")
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
