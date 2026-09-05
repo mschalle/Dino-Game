@@ -17,6 +17,13 @@ $planPath = Join-Path $ProjectPath "PROJECT_PLAN.md"
 if (-not (Test-Path -LiteralPath $validation)) { throw "Validation script was not found: $validation" }
 if (-not (Test-Path -LiteralPath $status)) { throw "Status script was not found: $status" }
 if (-not (Test-Path -LiteralPath $planPath)) { throw "Project plan was not found: $planPath" }
+if ($RequireExportTemplates) {
+    $templateRoot = Join-Path $env:APPDATA "Godot\export_templates\4.7.2.stable"
+    if (-not (Test-Path -LiteralPath (Join-Path $templateRoot "windows_debug_x86_64.exe")) -or
+        -not (Test-Path -LiteralPath (Join-Path $templateRoot "windows_release_x86_64.exe"))) {
+        throw "Windows export templates are required but missing"
+    }
+}
 
 & $status -ProjectPath $ProjectPath | Out-Null
 if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "Roadmap checkpoint integrity preflight failed" }
