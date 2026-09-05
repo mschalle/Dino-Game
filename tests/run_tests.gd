@@ -151,6 +151,8 @@ func _test_all_playable_species() -> void:
 			all_quest_ids[optional_quest.id] = true
 		var previous_unlock_stage := -1
 		for ability in profile.abilities:
+			_check(not ability.display_name.is_empty() and not ability.description.is_empty(), "%s abilities should have readable metadata" % profile.id)
+			_check(ability.cooldown > 0.0, "%s abilities should have positive cooldowns" % profile.id)
 			_check(ability.unlock_stage >= 0 and ability.unlock_stage < profile.growth_thresholds.size(), "%s ability unlock stage should be valid" % profile.id)
 			_check(ability.unlock_stage >= previous_unlock_stage, "%s ability unlock stages should be ordered" % profile.id)
 			previous_unlock_stage = ability.unlock_stage
