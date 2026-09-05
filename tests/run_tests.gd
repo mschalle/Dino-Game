@@ -239,6 +239,11 @@ func _test_world_chunks() -> void:
 		_check(chunk.max_slope_degrees > 0.0 and chunk.max_slope_degrees <= 45.0, "Biome slope must remain traversable")
 		_check(chunk.max_climb > 0.0, "Every biome needs a climb limit")
 		_check(not chunk.neighbor_ids.is_empty() or chunk.chunk_id == "nest_basin", "Chunks should define connected neighbors")
+		var rules := HABITAT_SPAWN_RULES.for_biome(chunk.biome)
+		for tier in chunk.spawn_table.get("prey", []):
+			_check((rules.get("prey_tiers", []) as Array).has(int(tier)), "%s prey tier must match habitat rules" % chunk.chunk_id)
+		for tier in chunk.spawn_table.get("predators", []):
+			_check((rules.get("predator_tiers", []) as Array).has(int(tier)), "%s predator tier must match habitat rules" % chunk.chunk_id)
 		var scene := load(chunk.scene_path) as PackedScene
 		var visual_root := scene.instantiate()
 		root.add_child(visual_root)
