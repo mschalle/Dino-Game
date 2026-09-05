@@ -407,6 +407,7 @@ The player and spawned food now follow the authored elevation function with grav
 233. Added authored-chunk visual and navigation tuning validation for bounded vegetation density, fog density, and positive navigation layers.
 234. Added authored vegetation-density profiles to streamed MultiMesh instance counts and validated runtime scaling per biome.
 235. Added authored ground-palette application to streamed terrain meshes and validated per-biome terrain colors at runtime.
+236. Added authored palette propagation to streamed biome fog and ambient lighting, with runtime environment-color validation.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
