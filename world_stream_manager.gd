@@ -40,6 +40,9 @@ func update_player_chunk(grid_position: Vector2i) -> void:
 func is_active(chunk_id: String) -> bool:
 	return active_ids.has(chunk_id)
 
+func profile_for_chunk(chunk_id: String) -> RefCounted:
+	return _find_chunk(chunk_id)
+
 func active_chunk_ids() -> Array[String]:
 	var result: Array[String] = []
 	for chunk_id in active_ids:
