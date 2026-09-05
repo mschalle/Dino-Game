@@ -122,6 +122,13 @@ func _test_all_playable_species() -> void:
 		session.start(profile, "adventure")
 		_check(session.profile.id == profile.id, "%s Adventure should start with its own profile" % profile.id)
 		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
+		_check(profile.diet == "carnivore" or profile.diet == "herbivore", "%s should use a supported diet" % profile.id)
+		for quest in profile.adventure_quests:
+			if quest.objective_type == "eat":
+				if profile.diet == "carnivore":
+					_check(quest.target_id == "prey", "%s carnivore eating quests should target prey" % profile.id)
+				else:
+					_check(quest.target_id == "plant", "%s herbivore eating quests should target plants" % profile.id)
 		_check(profile.adventure_quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
 		_check(profile.growth_thresholds == [0, 5, 12, 25], "%s should use the four-stage growth curve" % profile.id)
 		var quest_ids := {}
