@@ -34,6 +34,7 @@ func _run_tests() -> void:
 	_test_hud_contrast()
 	_test_runtime_metrics_warning()
 	_test_diagnostics_visibility()
+	_test_flow_signals()
 	_test_frame_sampling()
 	_test_performance_budget()
 	_test_gameplay_integration()
@@ -201,6 +202,18 @@ func _test_diagnostics_visibility() -> void:
 	var hud := preload("res://game_hud.gd").new()
 	hud.set_diagnostics_enabled(false)
 	_check(not hud.diagnostics_enabled, "Diagnostics should be configurable for release builds")
+	hud.free()
+
+func _test_flow_signals() -> void:
+	var hud := GameHUD.new()
+	var events := {"resume": 0, "restart": 0, "selection": 0}
+	hud.resume_requested.connect(func() -> void: events["resume"] += 1)
+	hud.restart_requested.connect(func() -> void: events["restart"] += 1)
+	hud.selection_requested.connect(func() -> void: events["selection"] += 1)
+	hud.resume_requested.emit()
+	hud.restart_requested.emit()
+	hud.selection_requested.emit()
+	_check(events["resume"] == 1 and events["restart"] == 1 and events["selection"] == 1, "Pause flow signals should remain independently triggerable")
 	hud.free()
 
 func _test_frame_sampling() -> void:
