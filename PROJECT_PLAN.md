@@ -628,6 +628,7 @@ The player and spawned food now follow the authored elevation function with grav
 347. Added shared stagger events and brief impact reactions for prey and predator combat presentation.
 348. Added a reproducible Blender hero-valley generator with basin, ridge, wetland, overlook, and biome material regions.
 349. Added an optional authored hero-valley GLB import hook with a safe procedural fallback when the asset is not imported or present.
+350. Added quality-scaled asset-pack dressing with biome metadata and visibility-range LOD behavior for streamed props.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

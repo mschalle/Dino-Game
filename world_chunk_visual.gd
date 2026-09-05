@@ -326,8 +326,12 @@ func _create_asset_pack_dressing(biome: String) -> void:
 		paths = ["res://glTF/Rock_Medium_3.gltf", "res://glTF/DeadTree_3.gltf", "res://glTF/DeadTree_5.gltf", "res://glTF/Rock_Medium_2.gltf"]
 	elif biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
 		paths = ["res://glTF/Fern_1.gltf", "res://glTF/Bush_Common.gltf", "res://glTF/Flower_3_Group.gltf", "res://glTF/CommonTree_1.gltf"]
-	for index in paths.size():
-		var packed := load(paths[index]) as PackedScene
+	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
+	var foliage_scale := float(quality.get("foliage", 1.0))
+	var prop_count := mini(paths.size(), maxi(3, int(ceil(paths.size() * foliage_scale))))
+	for index in prop_count:
+		var path_index := index % paths.size()
+		var packed := load(paths[path_index]) as PackedScene
 		if packed == null:
 			continue
 		var prop := packed.instantiate() as Node3D
@@ -337,8 +341,21 @@ func _create_asset_pack_dressing(biome: String) -> void:
 		prop.position = Vector3(float((index * 11) % 23) - 11.0, 0.0, float((index * 17) % 23) - 11.0)
 		prop.rotation.y = float(index) * 1.4
 		prop.scale = Vector3.ONE * (0.65 + float(index % 2) * 0.18)
+		prop.set_meta("environment_lod", "hero" if index == 0 else "detail")
+		prop.set_meta("biome", biome)
+		_apply_prop_visibility(prop, quality)
 		dressing.add_child(prop)
 	add_child(dressing)
+
+func _apply_prop_visibility(prop: Node3D, quality: Dictionary) -> void:
+	var end_distance := 95.0 * float(quality.get("foliage", 1.0))
+	for node in prop.get_children():
+		var visual := node as GeometryInstance3D
+		if visual == null:
+			continue
+		visual.visibility_range_begin = 0.0
+		visual.visibility_range_end = end_distance
+		visual.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 
 func _create_water(biome: String) -> void:
 	if biome != "River Wetlands" and biome != "Coastal Marsh" and biome != "Cypress Basin":
