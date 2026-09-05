@@ -150,7 +150,10 @@ func _test_all_playable_species() -> void:
 			_check(not all_quest_ids.has(optional_quest.id), "%s optional quest IDs should not collide with main quests" % profile.id)
 			all_quest_ids[optional_quest.id] = true
 		var previous_unlock_stage := -1
+		var ability_ids := {}
 		for ability in profile.abilities:
+			_check(not ability_ids.has(ability.id), "%s ability IDs should be unique" % profile.id)
+			ability_ids[ability.id] = true
 			_check(not ability.display_name.is_empty() and not ability.description.is_empty(), "%s abilities should have readable metadata" % profile.id)
 			_check(ability.cooldown > 0.0, "%s abilities should have positive cooldowns" % profile.id)
 			_check(ability.unlock_stage >= 0 and ability.unlock_stage < profile.growth_thresholds.size(), "%s ability unlock stage should be valid" % profile.id)
