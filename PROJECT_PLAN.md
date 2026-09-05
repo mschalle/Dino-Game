@@ -272,6 +272,7 @@ The player and spawned food now follow the authored elevation function with grav
 98. Added an injectable predator respawn gate so tier cooldowns can control hidden-to-visible recovery.
 99. Connected spawned predators to the stream manager's actual tier readiness callback.
 100. Connected renewable prey instances to the same biome and tier readiness gate.
+101. Added mixed-population integration coverage for independent prey and predator cooldowns across active chunks.
 
 ## Release Readiness
 
