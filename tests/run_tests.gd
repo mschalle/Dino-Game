@@ -259,6 +259,9 @@ func _test_controller_bindings() -> void:
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
+	for chunk in chunks:
+		_check(chunk.max_slope_degrees <= 35.0, "%s required routes must stay within the navigation slope limit" % chunk.chunk_id)
+		_check(chunk.max_climb <= 0.5, "%s required routes must stay within the navigation climb limit" % chunk.chunk_id)
 	var stream := WORLD_STREAM_MANAGER.new()
 	stream.configure(chunks, 1)
 	_check(stream.active_biome_names().is_empty(), "Uninitialized streaming should report no active biomes")
