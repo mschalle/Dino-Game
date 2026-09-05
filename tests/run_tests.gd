@@ -637,6 +637,10 @@ func _test_creature_combat() -> void:
 		_check(is_equal_approx(profile.max_health, expected_health), "%s health should match tier tuning" % profile.id)
 		_check(is_equal_approx(profile.attack_damage, expected_damage), "%s damage should match tier tuning" % profile.id)
 		_check(profile.growth_reward == expected_growth, "%s growth reward should match tier tuning" % profile.id)
+		_check(profile.hunger_reward > 0.0, "%s should provide a positive hunger reward" % profile.id)
+		if profile.tier > 1:
+			var lower_tier_profile = creature_profiles.prey_for_tier(profile.tier - 1) if profile.role == "prey" else creature_profiles.predator_for_tier(profile.tier - 1)
+			_check(profile.growth_reward >= lower_tier_profile.growth_reward, "%s rewards should not decrease at higher tiers" % profile.id)
 		_check(is_equal_approx(profile.respawn_delay, expected_respawn), "%s respawn should match tier tuning" % profile.id)
 		_check(profile.move_speed > 0.0 and profile.flee_speed >= profile.move_speed, "%s movement speeds should be positive and flee-capable" % profile.id)
 		_check(profile.detection_range > 0.0 and profile.attack_range > 0.0 and profile.attack_cooldown > 0.0, "%s combat ranges and cooldown should be valid" % profile.id)
