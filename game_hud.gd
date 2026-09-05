@@ -119,7 +119,7 @@ func update_diagnostics(metrics: Dictionary) -> void:
 	var npc_count := int(metrics.get("npc_count", 0))
 	var average_frame_ms := _average_frame_ms()
 	var performance_warning := "  SLOW" if average_frame_ms > 20.0 else ""
-	diagnostics_label.text = "DEV  Chunks %d  Scenes %d  NPCs %d/25  Budget %.0f%%  %.1fms%s" % [int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0, average_frame_ms, performance_warning]
+	diagnostics_label.text = "DEV  Chunks %d  Scenes %d  Landmarks %d  NPCs %d/25  Budget %.0f%%  %.1fms%s" % [int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), int(metrics.get("loaded_landmarks", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0, average_frame_ms, performance_warning]
 	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 or average_frame_ms > 20.0 else Color("#b8e6ef")
 
 func record_frame_time(delta: float) -> void:

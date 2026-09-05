@@ -129,6 +129,7 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 	return {
 		"active_chunks": active_ids.size(),
 		"loaded_chunk_scenes": scene_instances.size(),
+		"loaded_landmarks": active_landmark_positions().size(),
 		"npc_count": npc_count,
 		"population_budget": total_budget,
 		"population_utilization": float(npc_count) / float(maxi(1, total_budget))
