@@ -35,6 +35,9 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 	var ground := get_node_or_null("Ground") as MeshInstance3D
 	if ground != null and ground.material_override is StandardMaterial3D:
 		(ground.material_override as StandardMaterial3D).albedo_color = profile.ground_color
+	var landmark := get_node_or_null("LandmarkSilhouette") as MeshInstance3D
+	if landmark != null and landmark.material_override is StandardMaterial3D:
+		(landmark.material_override as StandardMaterial3D).albedo_color = profile.ground_color.darkened(0.18)
 
 func apply_chunk_state(state: Dictionary) -> void:
 	chunk_state = state.duplicate(true)

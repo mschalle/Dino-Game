@@ -409,6 +409,7 @@ The player and spawned food now follow the authored elevation function with grav
 235. Added authored ground-palette application to streamed terrain meshes and validated per-biome terrain colors at runtime.
 236. Added authored palette propagation to streamed biome fog and ambient lighting, with runtime environment-color validation.
 237. Added applied fog-density metadata to streamed chunk visuals and validated diagnostics reflect runtime values.
+238. Added authored palette tinting for streamed landmark silhouettes and validated landmark color coherence per biome.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

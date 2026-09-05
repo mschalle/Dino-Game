@@ -432,6 +432,7 @@ func _test_world_chunks() -> void:
 		var silhouette := visual_root.get_node_or_null("LandmarkSilhouette")
 		_check(str(silhouette.get_meta("biome", "")) == chunk.biome, "%s landmark should retain biome identity" % chunk.chunk_id)
 		_check(not str(silhouette.get_meta("landmark_kind", "")).is_empty(), "%s landmark should expose a presentation kind" % chunk.chunk_id)
+		_check(silhouette.material_override.albedo_color.is_equal_approx(chunk.ground_color.darkened(0.18)), "%s landmark palette should follow its ground profile" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		if vegetation != null and vegetation.multimesh != null:
