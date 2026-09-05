@@ -37,7 +37,7 @@ Depends on F.
 
 Gate: automated scenarios verify regrouping, target loss, disengagement, habitat boundaries, and population recovery. A 30-minute session shows no stuck herd, endless chase, duplicate actor, or food collapse.
 
-Evidence: pending — record behavioral test results and the observed session here.
+Evidence: automated coverage passed through checkpoints 315–328, including shared alerts, predator disengagement, streamed herd restoration, creature caps, and a deterministic two-hour ecosystem soak. A live observed session remains pending.
 
 ### Stage H — Habitat events
 
@@ -52,7 +52,7 @@ Depends on G. Enable scheduled events in Endless first.
 
 Gate: deterministic tests cover eligibility, timing, cancellation, resource restoration, and actor caps. Events never obstruct mandatory routes or force combat.
 
-Evidence: pending — record event lifecycle tests and route observations here.
+Evidence: automated lifecycle coverage passed through checkpoints 329–332 for event timing, resource restoration, actor bounds, pause behavior, and clean cancellation. Route observation remains pending.
 
 ### Stage I — Varied Endless challenges
 
@@ -68,7 +68,7 @@ Depends on H.
 
 Gate: all six species receive completable challenges. Tests cover duplicate rewards, target disappearance, chunk unloading, skipping, pause, and defeat recovery.
 
-Evidence: pending — record challenge eligibility/reward tests and six-species play checks here.
+Evidence: automated challenge coverage passed through checkpoints 333–334 for diet/event filtering, no-repeat selection, no-reward skips, gamepad controls, and unavailable-event replacement. Six live species play checks remain pending.
 
 ### Stage J — Discovery and personal progression
 
@@ -83,7 +83,7 @@ Depends on I.
 
 Gate: old and incomplete saves load safely; rewards cannot duplicate; records remain species-specific; menus work with keyboard and gamepad.
 
-Evidence: pending — record save compatibility, reward, and menu navigation results here.
+Evidence: automated persistence coverage passed through checkpoints 335–336 for duplicate-safe discoveries, species-specific records, old-save defaults, and reloads. Interactive menu checks remain pending.
 
 ### Stage K — Balance and expansion acceptance
 
@@ -98,7 +98,7 @@ Depends on J.
 
 Gate: no progression blockers, duplicate rewards, unbounded populations, or critical defects; existing performance targets hold; remaining issues have explicit severity and reproduction evidence.
 
-Evidence: pending — record six-species runs, soak results, observed playtests, hardware/profile results, and packaged-build checks here.
+Evidence: automated six-species 60-minute endurance, two-hour ecosystem soak, and Adventure-finale regression passed in checkpoints 337–338. Outstanding external acceptance work: five observed family-friendly sessions, representative interactive profiling, accessibility review, and a Windows packaged-build test. Packaging is currently blocked because matching Godot 4.7.2 export templates are absent; `tools/windows_export_smoke.ps1` confirmed this on September 5, 2026.
 
 ### Interfaces, validation, and execution rules
 
@@ -617,6 +617,7 @@ The player and spawned food now follow the authored elevation function with grav
 336. Added old-save migration and reload coverage for field-guide defaults and species-isolated challenge progression records.
 337. Added deterministic 60-minute Endless endurance coverage for every playable species and expanded ecosystem soaking to two simulated hours.
 338. Added automated Adventure-route regression coverage that completes every playable dinosaur's quest chain through its Adult finale.
+339. Recorded the completed automated acceptance evidence and the remaining manual and packaging gates without claiming external verification as complete.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
