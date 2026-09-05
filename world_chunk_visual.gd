@@ -268,12 +268,14 @@ func _create_landmark_silhouette(biome: String) -> void:
 	var mesh: PrimitiveMesh = CylinderMesh.new()
 	var silhouette_height := 2.8
 	var landmark_kind := "stone_marker"
+	var landmark_position := Vector3(-10.0, 0.0, -10.0)
 	if biome == "Sunstone Ridge" or biome == "Redstone Badlands":
 		var spire := PrismMesh.new()
 		spire.size = Vector3(3.0, 7.0, 3.0)
 		mesh = spire
 		silhouette_height = 7.0
 		landmark_kind = "ridge_spire"
+		landmark_position = Vector3(10.0, 0.0, -8.0)
 	elif biome == "River Wetlands":
 		var beacon := CylinderMesh.new()
 		beacon.top_radius = 0.2
@@ -281,6 +283,13 @@ func _create_landmark_silhouette(biome: String) -> void:
 		beacon.height = 5.0
 		mesh = beacon
 		landmark_kind = "wetland_beacon"
+		landmark_position = Vector3(7.0, 0.0, 7.0)
+	elif biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Glacier Valley":
+		landmark_position = Vector3(9.0, 0.0, 8.0)
+	elif biome == "Redwood Canyon" or biome == "Cypress Basin":
+		landmark_position = Vector3(-8.0, 0.0, 8.0)
+	elif biome == "Saltwind Dunes" or biome == "Coastal Marsh":
+		landmark_position = Vector3(8.0, 0.0, -8.0)
 	else:
 		var stone := CylinderMesh.new()
 		stone.top_radius = 0.8
@@ -288,7 +297,7 @@ func _create_landmark_silhouette(biome: String) -> void:
 		stone.height = 2.8
 		mesh = stone
 	silhouette.mesh = mesh
-	silhouette.position = Vector3(-10.0, silhouette_height * 0.5, -10.0)
+	silhouette.position = landmark_position + Vector3(0.0, silhouette_height * 0.5, 0.0)
 	silhouette.material_override = _biome_material(biome)
 	silhouette.set_meta("landmark_kind", landmark_kind)
 	silhouette.set_meta("biome", biome)
