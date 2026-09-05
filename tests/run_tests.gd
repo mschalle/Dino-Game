@@ -250,6 +250,7 @@ func _test_world_chunks() -> void:
 		_check(biome_environment != null and biome_environment.environment != null and biome_environment.environment.fog_enabled, "%s should create biome fog" % chunk.chunk_id)
 		if biome_environment != null and biome_environment.environment != null:
 			_check(is_equal_approx(biome_environment.environment.fog_density, chunk.fog_density), "%s fog should match its profile" % chunk.chunk_id)
+			_check(biome_environment.environment.ambient_light_energy > 0.0, "%s should provide child-friendly ambient lighting" % chunk.chunk_id)
 		_check(visual_root.get_node_or_null("LandmarkSilhouette") != null, "%s should create a landmark silhouette" % chunk.chunk_id)
 		var silhouette := visual_root.get_node_or_null("LandmarkSilhouette")
 		_check(str(silhouette.get_meta("biome", "")) == chunk.biome, "%s landmark should retain biome identity" % chunk.chunk_id)
