@@ -235,6 +235,7 @@ func _create_elevation(biome: String) -> void:
 func _create_vegetation(biome: String) -> void:
 	var foliage := MultiMeshInstance3D.new()
 	foliage.name = "Vegetation"
+	foliage.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	foliage.visibility_range_begin = 24.0
 	foliage.visibility_range_end = 120.0
 	foliage.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
@@ -268,6 +269,7 @@ func _create_water(biome: String) -> void:
 		return
 	var water := MeshInstance3D.new()
 	water.name = "WaterSurface"
+	water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	water.visibility_range_begin = 0.0
 	water.visibility_range_end = 140.0
 	water.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED

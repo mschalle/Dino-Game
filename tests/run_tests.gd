@@ -444,6 +444,7 @@ func _test_world_chunks() -> void:
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		if vegetation != null:
 			_check(vegetation.visibility_range_begin > 0.0 and vegetation.visibility_range_end > vegetation.visibility_range_begin, "%s vegetation should define a bounded visibility range" % chunk.chunk_id)
+			_check(vegetation.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s vegetation should cast shadows" % chunk.chunk_id)
 		if vegetation != null and vegetation.multimesh != null:
 			var base_vegetation_count := int(visual_root.get_meta("vegetation_base_count", 0))
 			_check(is_equal_approx(float(visual_root.get_meta("vegetation_density", 0.0)), chunk.vegetation_density), "%s vegetation density should be applied to the visual root" % chunk.chunk_id)
@@ -456,6 +457,7 @@ func _test_world_chunks() -> void:
 		if water != null:
 			_check(water.material_override is StandardMaterial3D and water.material_override.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.18)), "%s water palette should follow its ground profile" % chunk.chunk_id)
 			_check(water.visibility_range_end > water.visibility_range_begin, "%s water surface should define a bounded visibility range" % chunk.chunk_id)
+			_check(water.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "%s water surface should avoid unnecessary shadows" % chunk.chunk_id)
 		var particles := visual_root.get_node_or_null("AmbientParticles") as GPUParticles3D
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		if particles != null:
