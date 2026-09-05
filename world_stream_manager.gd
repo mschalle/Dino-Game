@@ -107,6 +107,16 @@ func capture_population(scene_root: Node) -> void:
 		state["population"] = counts.get(chunk.chunk_id, {"prey": 0, "predator": 0})
 		set_chunk_state(chunk.chunk_id, state)
 
+func active_population_budget() -> Dictionary:
+	var budget: Dictionary = {"prey": 0, "predator": 0}
+	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
+		var population: Dictionary = get_chunk_state(chunk.chunk_id).get("population", {})
+		budget["prey"] = int(budget["prey"]) + int(population.get("prey", 0))
+		budget["predator"] = int(budget["predator"]) + int(population.get("predator", 0))
+	return budget
+
 func _nearest_active_chunk_position(world_position: Vector3) -> Variant:
 	var best: Variant = null
 	var best_distance := INF

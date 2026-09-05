@@ -108,6 +108,7 @@ func _process(delta: float) -> void:
 	_update_world_stream()
 	if food_spawner != null and world_stream != null:
 		food_spawner.set_spawn_plan(world_stream.active_spawn_plan())
+		food_spawner.set_population_budget(world_stream.active_population_budget())
 		world_stream.prune_inactive_actors(self)
 		world_stream.capture_population(self)
 	if active_target != null and is_instance_valid(active_target):

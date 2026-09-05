@@ -11,6 +11,7 @@ var respawn_timer := 0.0
 var endless_mode := false
 var allowed_prey_tiers: Array[int] = [1, 2, 3]
 var population_caps: Dictionary = {1: 5, 2: 3, 3: 2}
+var persisted_population_budget := 0
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -34,6 +35,18 @@ func set_spawn_plan(plan: Array[Dictionary]) -> void:
 		allowed_prey_tiers = tiers
 		for tier in counts:
 			population_caps[int(tier)] = maxi(1, int(counts[tier]) * 4)
+
+func set_population_budget(budget: Dictionary) -> void:
+	var prey_budget := int(budget.get("prey", 0))
+	if prey_budget <= 0 or prey_budget == persisted_population_budget:
+		return
+	persisted_population_budget = prey_budget
+	var total_caps := int(population_caps.get(1, 0)) + int(population_caps.get(2, 0)) + int(population_caps.get(3, 0))
+	if total_caps <= prey_budget:
+		return
+	var scale := float(prey_budget) / float(total_caps)
+	for tier in population_caps:
+		population_caps[tier] = maxi(1, floori(float(population_caps[tier]) * scale))
 
 func maintain(delta: float, survival_time: float) -> void:
 	respawn_timer -= delta

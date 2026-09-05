@@ -262,6 +262,7 @@ The player and spawned food now follow the authored elevation function with grav
 88. Added per-tier population caps derived from the active habitat spawn plan.
 89. Added inactive-habitat NPC pruning so streamed prey and predators release simulation budget cleanly.
 90. Added per-chunk prey and predator population snapshots for stable streaming respawn state.
+91. Added persisted active population budgets to cap renewable prey replenishment after streaming reloads.
 
 ## Release Readiness
 
