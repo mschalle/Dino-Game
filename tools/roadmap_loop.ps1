@@ -10,11 +10,12 @@ $ErrorActionPreference = "Stop"
 if ($MaxIterations -lt 1) { throw "MaxIterations must be at least 1" }
 $validation = Join-Path $ProjectPath "tools\roadmap_validation.ps1"
 $status = Join-Path $ProjectPath "tools\roadmap_status.ps1"
+$planPath = Join-Path $ProjectPath "PROJECT_PLAN.md"
 if (-not (Test-Path -LiteralPath $validation)) { throw "Validation script was not found: $validation" }
 if (-not (Test-Path -LiteralPath $status)) { throw "Status script was not found: $status" }
+if (-not (Test-Path -LiteralPath $planPath)) { throw "Project plan was not found: $planPath" }
 
 function Get-Checkpoint {
-	$planPath = Join-Path $ProjectPath "PROJECT_PLAN.md"
 	$numbers = @(Get-Content -LiteralPath $planPath | ForEach-Object {
 		if ($_ -match '^([0-9]+)\. Added ') { [int]$Matches[1] }
 	})
