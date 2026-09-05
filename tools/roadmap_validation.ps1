@@ -24,9 +24,11 @@ try {
     }
 
     Write-Host "[2/3] Checking headless project startup..."
-    & $Godot --headless --path "." --quit-after 5
+    $startup_output = (& $Godot --headless --path "." --quit-after 5 2>&1 | Out-String)
+    Write-Host $startup_output
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "Godot startup check failed ($exit_code)" }
+    if ($startup_output -match "SCRIPT ERROR|Parse Error") { throw "Godot startup reported a script or parse error" }
 
     Write-Host "[3/3] Checking Git whitespace..."
     git diff --check
