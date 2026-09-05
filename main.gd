@@ -1617,10 +1617,13 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 		if dressing != null:
 			var prop_distance := 95.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
 			for visual in dressing.find_children("*", "GeometryInstance3D", true, false):
-				(visual as GeometryInstance3D).visibility_range_end = prop_distance
+				var prop_visual := visual as GeometryInstance3D
+				prop_visual.visibility_range_end = prop_distance
+				prop_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if ENVIRONMENT_QUALITY.active_id == "low" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		var debris := chunk.get_node_or_null("GroundDebris") as MultiMeshInstance3D
 		if debris != null:
 			debris.visibility_range_end = 85.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
+			debris.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if ENVIRONMENT_QUALITY.active_id == "low" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		var biome_environment := chunk.get_node_or_null("BiomeEnvironment") as WorldEnvironment
 		if biome_environment != null and biome_environment.environment != null:
 			biome_environment.environment.ssao_enabled = ENVIRONMENT_QUALITY.active_id != "low"
