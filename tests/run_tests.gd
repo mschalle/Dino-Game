@@ -831,12 +831,20 @@ func _test_ai_states() -> void:
 	prey.state = "flee"
 	prey._process(1.0)
 	_check(absf(prey.global_position.x) <= PreyDino.VALLEY_LIMIT, "Fleeing prey must stay inside the valley")
+	prey.state = "recover"
+	player.position = Vector3.ZERO
+	prey._process(0.1)
+	_check(prey.state == "wander", "Recovered prey should return to wandering")
 	predator.position = Vector3(26.9, 0, 0)
 	predator.home = Vector3(35, 0, 0)
 	predator.state = "recover"
 	predator._process(1.0)
 	_check(absf(predator.global_position.x) <= ValleyPredator.VALLEY_LIMIT, "Predators must stay inside the valley")
 	_check(absf(predator.home.x) <= ValleyPredator.VALLEY_LIMIT, "Predator recovery targets must stay inside the valley")
+	predator.state = "recover"
+	predator.home = predator.position
+	predator._process(0.1)
+	_check(predator.state == "wander", "Recovered predators should return to wandering")
 	player.free()
 	prey.free()
 	predator.free()

@@ -6,6 +6,113 @@ Roar & Rise is a bright, kid-friendly 3D dinosaur adventure game. Players choose
 
 The initial release targets Windows PC with keyboard/mouse and gamepad support. It is single-player and avoids graphic violence: dinosaurs bump, flee, recover, and respawn at a safe nest.
 
+## Active Roadmap 3.0 — Living Reserve and Endless Adventures
+
+Updated September 5, 2026. Prioritize living ecosystems and Endless replayability within the existing reserve and six playable species before adding maps or dinosaurs. Stages F–K below are pending implementation; completed checkpoints through 313 remain historical evidence, not proof that every release acceptance gate has passed.
+
+### Current milestone: F — Establish the gameplay expansion baseline
+
+Make subsequent improvements measurable and protect the existing game. The next milestone is G — Herds and readable predator behavior.
+
+- [ ] Inventory the current playable roster, connected chunks, Adventure routes, and Endless objective rotation from implementation; reconcile outdated roadmap descriptions.
+- [ ] Record one 20-minute Endless baseline per species: food availability, defeats, encounter frequency, objective completion, frame times, and active actor counts.
+- [ ] Define shared creature behavior states: idle, forage, travel, alert, flee/chase, and recover.
+- [ ] Add deterministic simulation hooks for behavior/event tests; retain existing movement and navigation fallbacks.
+- [ ] Track packaging prerequisites separately so missing templates do not prevent gameplay development. Windows export templates were missing at the September 5 review; recheck before packaging acceptance.
+
+Gate: all six species start both permitted modes correctly; baseline results and existing failures are documented; gameplay tests and headless startup pass.
+
+Evidence: pending — record validation results, six baseline run summaries, and known failures here.
+
+### Stage G — Herds and readable predator behavior
+
+Depends on F.
+
+- [ ] Introduce habitat-local herds of up to four compatible herbivores, using existing actors rather than extra decorative creatures.
+- [ ] Implement loose following, separation, shared threat alerts, flight, and regrouping.
+- [ ] Allow predators to approach and chase eligible NPC prey, followed by disengagement and recovery. Reuse existing combat and non-graphic feedback.
+- [ ] Give NPC-only encounters no player growth, quest progress, or collectible victory tokens. Preserve existing player combat rewards.
+- [ ] Preserve safe-nest exclusions and renewable food floors; ecosystem activity must not exhaust the player's food supply.
+- [ ] Count every participating creature toward the existing 25-actor simulation budget; unloaded habitats retain lightweight population records.
+
+Gate: automated scenarios verify regrouping, target loss, disengagement, habitat boundaries, and population recovery. A 30-minute session shows no stuck herd, endless chase, duplicate actor, or food collapse.
+
+Evidence: pending — record behavioral test results and the observed session here.
+
+### Stage H — Habitat events
+
+Depends on G. Enable scheduled events in Endless first.
+
+- [ ] Implement Herd Journey: an existing herd travels between two reachable habitat points.
+- [ ] Implement Fresh Growth: temporarily increase edible plants within existing spawn limits.
+- [ ] Implement Predator Passage: an existing predator traverses a permitted route, with a readable warning and retreat opportunity.
+- [ ] Allow one event at a time; begin checking after three minutes, with at least three minutes between events. Finish or cancel each event within two minutes.
+- [ ] Select only reachable, eligible active habitats; defer when no valid event exists.
+- [ ] Pause event timers with gameplay. Cancel cleanly on defeat, restart, or owning-chunk unload.
+
+Gate: deterministic tests cover eligibility, timing, cancellation, resource restoration, and actor caps. Events never obstruct mandatory routes or force combat.
+
+Evidence: pending — record event lifecycle tests and route observations here.
+
+### Stage I — Varied Endless challenges
+
+Depends on H.
+
+- [ ] Replace the fixed rotation with four reusable challenge families: forage, discover, observe a herd journey, and evade a predator passage.
+- [ ] Keep one tracked challenge; support skipping without penalty and prevent immediate repetition.
+- [ ] Filter objectives by diet, growth stage, reachable habitats, and active event availability.
+- [ ] Preserve existing survival difficulty scaling initially; events must not add hidden damage or hunger multipliers.
+- [ ] Award three Growth Points once per completed challenge, matching the existing Endless Feast reward. Skipped, cancelled, or repeated completion signals grant nothing.
+- [ ] Fall back to a reachable forage challenge when event content is unavailable.
+- [ ] Add concise objective text, progress, direction, and completion feedback usable with muted audio and a gamepad.
+
+Gate: all six species receive completable challenges. Tests cover duplicate rewards, target disappearance, chunk unloading, skipping, pause, and defeat recovery.
+
+Evidence: pending — record challenge eligibility/reward tests and six-species play checks here.
+
+### Stage J — Discovery and personal progression
+
+Depends on I.
+
+- [ ] Add field-guide discovery for the three event types, with short explanations of observed behavior.
+- [ ] Record per-species challenge completions and best completed-challenge total per run.
+- [ ] Award one badge for discovering all three events and one per-species badge for completing ten challenges cumulatively.
+- [ ] Add no permanent combat advantages, currencies, daily requirements, or online services.
+- [ ] Persist discoveries and records through additive save defaults; preserve existing unlocks, cosmetics, settings, and records.
+- [ ] Continue the current new-run behavior on application restart; resumable runs are outside this expansion.
+
+Gate: old and incomplete saves load safely; rewards cannot duplicate; records remain species-specific; menus work with keyboard and gamepad.
+
+Evidence: pending — record save compatibility, reward, and menu navigation results here.
+
+### Stage K — Balance and expansion acceptance
+
+Depends on J.
+
+- [ ] Playtest 60 minutes of Endless per species and one two-hour soak.
+- [ ] Run Adventure regression routes to ensure ecosystem changes preserve quest targets, food access, and finales.
+- [ ] Conduct five observed family-friendly sessions. Target at least four participants understanding their first challenge without developer explanation.
+- [ ] Profile representative event-heavy routes and optimize measured bottlenecks, following [Godot's profiling guidance](https://docs.godotengine.org/en/latest/tutorials/performance/general_optimization.html).
+- [ ] Check warning readability, input accessibility, muted-audio play, and reduced motion against the [Xbox Accessibility Guidelines](https://learn.microsoft.com/en-us/xbox/accessibility/guidelines).
+- [ ] Complete actual Windows export and interactive packaged-build checks once prerequisites are resolved.
+
+Gate: no progression blockers, duplicate rewards, unbounded populations, or critical defects; existing performance targets hold; remaining issues have explicit severity and reproduction evidence.
+
+Evidence: pending — record six-species runs, soak results, observed playtests, hardware/profile results, and packaged-build checks here.
+
+### Interfaces, validation, and execution rules
+
+- Extend existing creature profiles with optional behavior settings and add shared event/challenge definitions. Keep `main.gd` responsible for coordination rather than species-specific rules. Preserve existing quest callers and save keys.
+- Execute the earliest incomplete stage in focused implementation slices. Require targeted behavioral tests, existing gameplay validation, headless startup, and `git diff --check` for each slice. Tests of fixed constants alone do not constitute a completed gameplay feature.
+- Keep pending work as checkboxes. Record checkpoint 314 only after the first new implementation slice passes validation; continue sequentially thereafter. Preserve the earlier checkpoint log and its automation-compatible format.
+- Distinguish automated checks, observed playtests, and packaged-build verification in each evidence field. Mark a stage complete only when its deliverables and gate pass; document blockers explicitly.
+- Retain existing Windows, accessibility, non-graphic combat, asset licensing, and performance requirements. No new maps, dinosaurs, multiplayer, or automatic publication are included.
+- Retain the manual-trigger development loop and local-commit policy below; this document update does not implement gameplay or create a completion checkpoint.
+
+## Historical roadmap context
+
+The earlier summaries, development steps, and Roadmap 2.0 below preserve production history and reference requirements. Their former current/next labels are superseded by Roadmap 3.0. Unverified release gates remain outstanding rather than being marked complete by this planning update.
+
 ## Core Game Loop
 
 1. Select a playable dinosaur and Adventure or unlocked Endless mode.
@@ -51,7 +158,7 @@ Optional exploration challenges award growth and badges.
 - Persistent color selection with Sunset and Mint unlockable palettes, live selection swatches, and collection totals.
 - Automated gameplay-state checks and headless startup validation.
 
-## Current Milestone: Structured Playtest and Balance
+## Historical Milestone: Structured Playtest and Balance
 
 Goal: make a first Adventure run understandable, forgiving, and enjoyable for children and families.
 
@@ -117,7 +224,7 @@ Goal: make a first Adventure run understandable, forgiving, and enjoyable for ch
 6. Package a Windows build, test it outside the editor, and record the build version.
 7. Commit the verified release, tag it, and publish the tagged build to GitHub.
 
-## Next Milestone: Collection and Family Playtest
+## Historical Milestone: Collection and Family Playtest
 
 Goal: make the single valley feel richer without expanding into a second map.
 
@@ -485,6 +592,7 @@ The player and spawned food now follow the authored elevation function with grav
 311. Added strict-loop template preflight so `-RequireExportTemplates` fails before gameplay validation when release prerequisites are absent.
 312. Added result-path preflight so scheduled runs reject an invalid JSON output directory before validation begins.
 313. Added end-to-end observability evidence covering both valid JSON result output and invalid-directory rejection.
+314. Added deterministic AI recovery-transition coverage for prey and predators, confirming both return from recovery to wandering while preserving valley bounds.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
@@ -495,7 +603,7 @@ The player and spawned food now follow the authored elevation function with grav
 - Confirm no blood, wounds, carcasses, or graphic defeat imagery appears.
 - Package and test a Windows build, then publish a tagged release to GitHub.
 
-## Roadmap 2.0 — From Base Game to Polished Release
+## Historical Roadmap 2.0 — From Base Game to Polished Release
 
 ### Milestone development loop
 
