@@ -427,6 +427,7 @@ The player and spawned food now follow the authored elevation function with grav
 253. Added bounded visibility ranges to legacy valley waterfall layers, with integration coverage for all animated layers.
 254. Added bounded visibility ranges to legacy habitat landmark markers, with integration coverage for marker geometry and labels.
 255. Added an explicit visibility range to the legacy valley ground mesh and validated the integration scene draw-distance budget.
+256. Added visible-color validation for every authored chunk ground palette to protect child-friendly environment contrast.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
