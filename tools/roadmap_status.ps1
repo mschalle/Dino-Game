@@ -23,6 +23,9 @@ $latest = ($checkpointNumbers | Measure-Object -Maximum).Maximum
 $uniqueCount = @($checkpointNumbers | Sort-Object -Unique).Count
 Write-Host "Roadmap checkpoint: $latest"
 Write-Host "Recorded checkpoint entries: $($checkpointNumbers.Count) (unique $uniqueCount)"
+if ($uniqueCount -ne $checkpointNumbers.Count) {
+    throw "Roadmap checkpoint numbers must be unique"
+}
 
 if ($RunValidation) {
     $validator = Join-Path $ProjectPath "tools\roadmap_validation.ps1"
