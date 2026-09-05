@@ -13,6 +13,7 @@ func _run_tests() -> void:
 	_test_profiles()
 	_test_all_playable_species()
 	_test_species_asset_and_save_isolation()
+	_test_selection_roster_layout()
 	_test_world_chunks()
 	_test_habitat_rules()
 	_test_world_streaming()
@@ -106,6 +107,18 @@ func _test_species_asset_and_save_isolation() -> void:
 	_check(records.get("t_rex", {}).get("best_growth_points", 0) == 2, "T. rex record should remain isolated")
 	_check(records.get("carnotaurus", {}).get("best_growth_points", 0) == 2, "Carnotaurus record should remain isolated")
 	save.free()
+
+func _test_selection_roster_layout() -> void:
+	var profiles := DinosaurProfiles.all()
+	var seen: Dictionary = {}
+	for index in profiles.size():
+		var profile = profiles[index]
+		_check(not seen.has(profile.id), "Selection roster IDs must be unique")
+		seen[profile.id] = true
+		var column := index % 3
+		var row := index / 3
+		_check(column >= 0 and column < 3 and row >= 0, "Selection card grid position should be focusable")
+	_check(profiles.size() == 6, "Selection roster should expose six playable dinosaurs")
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
