@@ -445,6 +445,7 @@ func _test_world_chunks() -> void:
 			_check(is_equal_approx(float(visual_root.get_meta("vegetation_density", 0.0)), chunk.vegetation_density), "%s vegetation density should be applied to the visual root" % chunk.chunk_id)
 			_check(vegetation.multimesh.instance_count == maxi(1, int(round(float(base_vegetation_count) * chunk.vegetation_density))), "%s vegetation density should scale batched instances" % chunk.chunk_id)
 			_check(vegetation.multimesh.mesh.material is StandardMaterial3D and vegetation.multimesh.mesh.material.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.12)), "%s vegetation palette should follow its ground profile" % chunk.chunk_id)
+			_check(vegetation.multimesh.instance_count <= 40, "%s vegetation instance budget should remain bounded" % chunk.chunk_id)
 		var water := visual_root.get_node_or_null("WaterSurface")
 		var has_water: bool = chunk.biome == "River Wetlands" or chunk.biome == "Coastal Marsh" or chunk.biome == "Cypress Basin"
 		_check(has_water == (water != null), "%s water surface should match its biome" % chunk.chunk_id)
@@ -457,6 +458,7 @@ func _test_world_chunks() -> void:
 			_check(particles.visibility_range_end > particles.visibility_range_begin, "%s ambient particles should define a bounded visibility range" % chunk.chunk_id)
 		if particles != null and particles.draw_pass_1 is QuadMesh:
 			_check(particles.draw_pass_1.material is StandardMaterial3D and particles.draw_pass_1.material.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.35)), "%s ambient particles should follow its biome palette" % chunk.chunk_id)
+		_check(particles == null or particles.amount <= 10, "%s ambient particle budget should remain bounded" % chunk.chunk_id)
 		var navigation := visual_root.get_node_or_null("NavigationRegion") as NavigationRegion3D
 		_check(navigation != null and navigation.navigation_mesh != null, "%s should create a navigation region" % chunk.chunk_id)
 		if navigation != null and navigation.navigation_mesh != null:
