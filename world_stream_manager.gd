@@ -122,6 +122,12 @@ func set_respawn_cooldown(chunk_id: String, seconds: float) -> void:
 	state["respawn_cooldown"] = maxf(0.0, seconds)
 	set_chunk_state(chunk_id, state)
 
+func start_respawn_cooldown_at(world_position: Vector3, seconds: float) -> String:
+	var chunk_id := chunk_id_at_world_position(world_position)
+	if not chunk_id.is_empty():
+		set_respawn_cooldown(chunk_id, seconds)
+	return chunk_id
+
 func get_respawn_cooldown(chunk_id: String) -> float:
 	return maxf(0.0, float(get_chunk_state(chunk_id).get("respawn_cooldown", 0.0)))
 

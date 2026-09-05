@@ -264,6 +264,7 @@ The player and spawned food now follow the authored elevation function with grav
 90. Added per-chunk prey and predator population snapshots for stable streaming respawn state.
 91. Added persisted active population budgets to cap renewable prey replenishment after streaming reloads.
 92. Added persistent per-chunk respawn cooldown timers with runtime ticking and save-state compatibility.
+93. Connected creature defeat events to chunk respawn cooldowns using each profile's respawn delay.
 
 ## Release Readiness
 

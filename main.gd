@@ -721,6 +721,8 @@ func _claim_food_token(token) -> bool:
 	return true
 
 func _on_creature_defeated(creature: Node3D, creature_profile: RefCounted) -> void:
+	if world_stream != null:
+		world_stream.start_respawn_cooldown_at(creature.global_position, creature_profile.respawn_delay)
 	var token := FOOD_TOKEN.new()
 	token.setup(creature_profile)
 	token.global_position = creature.global_position

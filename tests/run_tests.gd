@@ -167,6 +167,8 @@ func _test_world_streaming() -> void:
 	manager.set_respawn_cooldown("redstone_badlands", 5.0)
 	manager.tick_respawn_cooldowns(2.0)
 	_check(is_equal_approx(manager.get_respawn_cooldown("redstone_badlands"), 3.0), "Chunk respawn cooldown should tick down")
+	_check(manager.start_respawn_cooldown_at(Vector3(120.0, 0.0, 60.0), 7.0) == "redstone_badlands", "Defeat positions should start their chunk cooldown")
+	_check(is_equal_approx(manager.get_respawn_cooldown("redstone_badlands"), 7.0), "Defeat cooldown should use the creature respawn delay")
 	var holder := Node3D.new()
 	root.add_child(holder)
 	manager.instantiate_chunk("nest_basin", holder)
