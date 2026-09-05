@@ -167,6 +167,10 @@ func _on_chunk_activated(chunk_id: String) -> void:
 	var instance: Node3D = world_stream.instantiate_chunk(chunk_id, self)
 	if instance != null:
 		chunk_instances[chunk_id] = instance
+		if game_active and hud != null:
+			var chunk_profile: RefCounted = world_stream.profile_for_chunk(chunk_id)
+			if chunk_profile != null:
+				hud.show_message("Entering %s" % chunk_profile.biome)
 
 func _on_chunk_deactivated(chunk_id: String) -> void:
 	world_stream.release_chunk(chunk_id)

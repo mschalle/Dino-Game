@@ -335,6 +335,7 @@ The player and spawned food now follow the authored elevation function with grav
 161. Hardened the validator to require the explicit gameplay PASS marker and reject reported test failures.
 166. Hardened the validator startup gate to reject script and parse errors while preserving known environment warnings.
 167. Added a shared stream-manager profile lookup for readable biome names in UI and quest systems.
+168. Added readable biome-entry feedback when a new streamed chunk activates during gameplay.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.
