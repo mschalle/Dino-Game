@@ -455,6 +455,7 @@ The player and spawned food now follow the authored elevation function with grav
 281. Added positive-dimension validation for streamed elevation meshes to protect authored hill and ridge geometry.
 282. Added authored ground-palette propagation to streamed elevation meshes and validated hill/ridge color coherence.
 283. Added bounded roughness validation for streamed elevation materials under the shadowed terrain pass.
+284. Added bounded metallic-response validation for streamed elevation materials under directional lighting.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
