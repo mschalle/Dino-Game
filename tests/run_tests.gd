@@ -218,6 +218,7 @@ func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
 	var stream := WORLD_STREAM_MANAGER.new()
 	stream.configure(chunks, 1)
+	_check(stream.active_biome_names().is_empty(), "Uninitialized streaming should report no active biomes")
 	_check(stream.grid_position_at_world_position(Vector3(31.0, 0.0, -29.0)) == Vector2i(1, 0), "World positions should map to streamed chunk grid coordinates")
 	stream.update_player_chunk(Vector2i.ZERO)
 	_check(stream.is_active("nest_basin") and stream.is_active("fernwood"), "Origin chunk should activate adjacent reserve cells")
