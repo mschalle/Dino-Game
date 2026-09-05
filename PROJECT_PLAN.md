@@ -449,6 +449,7 @@ The player and spawned food now follow the authored elevation function with grav
 275. Added bounded lifetime validation for streamed ambient particles to protect effect churn budgets.
 276. Added restrained sky-affect tuning to streamed biome fog and validated bounded atmospheric blending.
 277. Added exact target validation for streamed fog sky-affect application to preserve authored landmark readability.
+278. Added bounded roughness validation for streamed batched vegetation materials.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
