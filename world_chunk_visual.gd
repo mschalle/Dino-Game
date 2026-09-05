@@ -231,6 +231,7 @@ func _create_elevation(biome: String) -> void:
 	var body := StaticBody3D.new()
 	body.name = "ElevationCollision"
 	var collider := CollisionShape3D.new()
+	collider.name = "ElevationShape"
 	var shape := BoxShape3D.new()
 	shape.size = size
 	collider.shape = shape
