@@ -1551,6 +1551,7 @@ func _cycle_environment_quality() -> void:
 	settings["environment_quality"] = next
 	ENVIRONMENT_QUALITY.configure(settings)
 	save_system.save_data()
+	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
 
 func _toggle_weather() -> void:
@@ -1558,7 +1559,19 @@ func _toggle_weather() -> void:
 	settings["weather_enabled"] = not bool(settings.get("weather_enabled", true))
 	ENVIRONMENT_QUALITY.configure(settings)
 	save_system.save_data()
+	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Weather effects: %s (new areas use this setting)" % ("ON" if ENVIRONMENT_QUALITY.weather_enabled else "OFF"))
+
+func _apply_environment_settings_to_loaded_chunks() -> void:
+	for chunk in chunk_instances.values():
+		if not is_instance_valid(chunk):
+			continue
+		var ambient := chunk.get_node_or_null("AmbientParticles") as GPUParticles3D
+		if ambient != null:
+			ambient.emitting = ENVIRONMENT_QUALITY.weather_enabled
+		for child in chunk.get_children():
+			if child is GPUParticles3D and str(child.name).begins_with("BiomeWeather_"):
+				(child as GPUParticles3D).emitting = ENVIRONMENT_QUALITY.weather_enabled
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):

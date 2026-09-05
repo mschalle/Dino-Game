@@ -641,6 +641,7 @@ The player and spawned food now follow the authored elevation function with grav
 360. Reconciled active roadmap language with the naturalistic adventure direction while retaining bounded combat, readability, accessibility, and performance gates.
 361. Added crossfaded biome ambience transitions so streamed chunk changes no longer cut environmental audio abruptly.
 362. Added F4/F5 runtime controls for cycling environment quality and toggling weather effects, with persisted settings and readable feedback.
+363. Made weather toggles apply immediately to all loaded chunk particle systems while preserving persisted settings for future chunks.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
