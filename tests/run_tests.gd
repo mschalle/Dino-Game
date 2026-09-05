@@ -423,6 +423,7 @@ func _test_world_chunks() -> void:
 		var ground := visual_root.get_node_or_null("Ground") as MeshInstance3D
 		_check(ground.material_override.albedo_color.is_equal_approx(chunk.ground_color), "%s ground palette should be applied to the terrain mesh" % chunk.chunk_id)
 		_check(ground.visibility_range_end > ground.visibility_range_begin, "%s ground mesh should define a bounded visibility range" % chunk.chunk_id)
+		_check(ground.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s ground mesh should cast shadows" % chunk.chunk_id)
 		_check(is_equal_approx(float(visual_root.get_meta("fog_density", 0.0)), chunk.fog_density), "%s fog density should be exposed on the visual root" % chunk.chunk_id)
 		var biome_environment := visual_root.get_node_or_null("BiomeEnvironment") as WorldEnvironment
 		_check(biome_environment != null and biome_environment.environment != null and biome_environment.environment.fog_enabled, "%s should create biome fog" % chunk.chunk_id)
@@ -438,6 +439,7 @@ func _test_world_chunks() -> void:
 		_check(not str(silhouette.get_meta("landmark_kind", "")).is_empty(), "%s landmark should expose a presentation kind" % chunk.chunk_id)
 		_check(silhouette.material_override.albedo_color.is_equal_approx(chunk.ground_color.darkened(0.18)), "%s landmark palette should follow its ground profile" % chunk.chunk_id)
 		_check(silhouette.visibility_range_begin > 0.0 and silhouette.visibility_range_end > silhouette.visibility_range_begin, "%s landmark should define a bounded visibility range" % chunk.chunk_id)
+		_check(silhouette.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s landmark should cast shadows" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		if vegetation != null:
@@ -473,6 +475,7 @@ func _test_world_chunks() -> void:
 			var elevation := visual_root.get_node_or_null("Elevation") as MeshInstance3D
 			_check(elevation != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
 			_check(elevation.visibility_range_end > elevation.visibility_range_begin, "%s elevated terrain should define a bounded visibility range" % chunk.chunk_id)
+			_check(elevation.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s elevated terrain should cast shadows" % chunk.chunk_id)
 			_check(visual_root.get_node_or_null("ElevationCollision") != null, "%s should create elevated terrain collision" % chunk.chunk_id)
 		var has_labelled_landmark := false
 		var landmark_label_matches := false

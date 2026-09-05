@@ -144,6 +144,7 @@ func _create_ground(biome: String) -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(60.0, 60.0)
 	ground.mesh = plane
+	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	ground.visibility_range_begin = 0.0
 	ground.visibility_range_end = 220.0
 	ground.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
@@ -214,6 +215,7 @@ func _create_elevation(biome: String) -> void:
 	var mesh := BoxMesh.new()
 	mesh.size = size
 	mound.mesh = mesh
+	mound.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	mound.visibility_range_begin = 0.0
 	mound.visibility_range_end = 220.0
 	mound.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
@@ -387,6 +389,7 @@ func _create_landmark_silhouette(biome: String) -> void:
 		stone.height = 2.8
 		mesh = stone
 	silhouette.mesh = mesh
+	silhouette.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	silhouette.visibility_range_begin = 2.0
 	silhouette.visibility_range_end = 180.0
 	silhouette.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
