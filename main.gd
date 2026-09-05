@@ -619,10 +619,17 @@ func _create_predators() -> void:
 		var predator := PREDATOR.new()
 		predator.setup(int(data[0]), data[1] as Vector3)
 		predator.set_player(player)
+		predator.set_respawn_gate(func() -> bool: return _predator_respawn_ready(predator))
 		predator.bump_attack.connect(_on_predator_attack)
 		predator.creature_defeated.connect(_on_creature_defeated)
 		run_root.add_child(predator)
 		predators.append(predator)
+
+func _predator_respawn_ready(predator: ValleyPredator) -> bool:
+	if world_stream == null or predator.creature_profile == null:
+		return true
+	var chunk_id: String = world_stream.chunk_id_at_world_position(predator.global_position)
+	return not chunk_id.is_empty() and world_stream.tier_respawn_ready(chunk_id, "predator", predator.creature_profile.tier)
 
 func _create_hud() -> void:
 	hud = HUD_SCENE.new()

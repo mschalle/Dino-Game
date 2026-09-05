@@ -24,6 +24,7 @@ func _run_tests() -> void:
 	_test_habitat_food_filter()
 	_test_hud_contrast()
 	_test_gameplay_integration()
+	_test_main_predator_gate_helper()
 	_test_save_recovery()
 	if failures == 0:
 		print("Roar & Rise tests: PASS")
@@ -131,6 +132,11 @@ func _test_predator_respawn_gate() -> void:
 	gate_state[0] = true
 	_check(predator.respawn_gate.call(), "Predator respawn gate should open after cooldown")
 	predator.free()
+
+func _test_main_predator_gate_helper() -> void:
+	var controller := preload("res://main.gd").new()
+	_check(controller != null, "Main controller should remain instantiable with predator gates")
+	controller.free()
 
 func _test_habitat_food_filter() -> void:
 	var spawner := preload("res://food_spawner.gd").new()

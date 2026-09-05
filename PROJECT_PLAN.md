@@ -270,6 +270,7 @@ The player and spawned food now follow the authored elevation function with grav
 96. Connected active tier cooldowns to prey replenishment so only affected tiers pause.
 97. Added role-neutral tier readiness checks for independent predator and prey respawn behavior.
 98. Added an injectable predator respawn gate so tier cooldowns can control hidden-to-visible recovery.
+99. Connected spawned predators to the stream manager's actual tier readiness callback.
 
 ## Release Readiness
 
