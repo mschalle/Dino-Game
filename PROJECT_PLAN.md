@@ -266,6 +266,7 @@ The player and spawned food now follow the authored elevation function with grav
 92. Added persistent per-chunk respawn cooldown timers with runtime ticking and save-state compatibility.
 93. Connected creature defeat events to chunk respawn cooldowns using each profile's respawn delay.
 94. Deferred renewable food replenishment while active habitat respawn cooldowns are still running.
+95. Added independent per-role and per-tier respawn cooldowns to chunk state.
 
 ## Release Readiness
 

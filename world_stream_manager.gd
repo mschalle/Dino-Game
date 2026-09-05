@@ -128,6 +128,17 @@ func start_respawn_cooldown_at(world_position: Vector3, seconds: float) -> Strin
 		set_respawn_cooldown(chunk_id, seconds)
 	return chunk_id
 
+func set_tier_respawn_cooldown(chunk_id: String, role: String, tier: int, seconds: float) -> void:
+	var state := get_chunk_state(chunk_id)
+	var cooldowns: Dictionary = state.get("tier_respawn_cooldowns", {})
+	cooldowns["%s_%d" % [role, tier]] = maxf(0.0, seconds)
+	state["tier_respawn_cooldowns"] = cooldowns
+	set_chunk_state(chunk_id, state)
+
+func get_tier_respawn_cooldown(chunk_id: String, role: String, tier: int) -> float:
+	var cooldowns: Dictionary = get_chunk_state(chunk_id).get("tier_respawn_cooldowns", {})
+	return maxf(0.0, float(cooldowns.get("%s_%d" % [role, tier], 0.0)))
+
 func get_respawn_cooldown(chunk_id: String) -> float:
 	return maxf(0.0, float(get_chunk_state(chunk_id).get("respawn_cooldown", 0.0)))
 
@@ -145,6 +156,10 @@ func tick_respawn_cooldowns(delta: float) -> void:
 			continue
 		var state := get_chunk_state(chunk.chunk_id)
 		state["respawn_cooldown"] = maxf(0.0, cooldown - delta)
+		var tier_cooldowns: Dictionary = state.get("tier_respawn_cooldowns", {})
+		for key in tier_cooldowns:
+			tier_cooldowns[key] = maxf(0.0, float(tier_cooldowns[key]) - delta)
+		state["tier_respawn_cooldowns"] = tier_cooldowns
 		set_chunk_state(chunk.chunk_id, state)
 
 func _nearest_active_chunk_position(world_position: Vector3) -> Variant:

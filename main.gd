@@ -723,7 +723,10 @@ func _claim_food_token(token) -> bool:
 
 func _on_creature_defeated(creature: Node3D, creature_profile: RefCounted) -> void:
 	if world_stream != null:
-		world_stream.start_respawn_cooldown_at(creature.global_position, creature_profile.respawn_delay)
+		var defeated_chunk: String = world_stream.start_respawn_cooldown_at(creature.global_position, creature_profile.respawn_delay)
+		var role := "predator" if creature_profile.role == "predator" else "prey"
+		if not defeated_chunk.is_empty():
+			world_stream.set_tier_respawn_cooldown(defeated_chunk, role, creature_profile.tier, creature_profile.respawn_delay)
 	var token := FOOD_TOKEN.new()
 	token.setup(creature_profile)
 	token.global_position = creature.global_position
