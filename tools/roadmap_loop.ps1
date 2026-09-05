@@ -15,6 +15,9 @@ if (-not (Test-Path -LiteralPath $validation)) { throw "Validation script was no
 if (-not (Test-Path -LiteralPath $status)) { throw "Status script was not found: $status" }
 if (-not (Test-Path -LiteralPath $planPath)) { throw "Project plan was not found: $planPath" }
 
+& $status -ProjectPath $ProjectPath | Out-Null
+if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "Roadmap checkpoint integrity preflight failed" }
+
 function Get-Checkpoint {
 	$numbers = @(Get-Content -LiteralPath $planPath | ForEach-Object {
 		if ($_ -match '^([0-9]+)\. Added ') { [int]$Matches[1] }
