@@ -618,6 +618,7 @@ The player and spawned food now follow the authored elevation function with grav
 337. Added deterministic 60-minute Endless endurance coverage for every playable species and expanded ecosystem soaking to two simulated hours.
 338. Added automated Adventure-route regression coverage that completes every playable dinosaur's quest chain through its Adult finale.
 339. Recorded the completed automated acceptance evidence and the remaining manual and packaging gates without claiming external verification as complete.
+340. Expanded exploration beyond the original valley clamp and added optional asset-pack biome dressing with procedural fallbacks for missing imports.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

@@ -14,7 +14,7 @@ const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
 const ENDLESS_CHALLENGE_SYSTEM = preload("res://endless_challenge_system.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
-const VALLEY_LIMIT := 28.0
+const VALLEY_LIMIT := 210.0
 
 var save_system := SaveSystem.new()
 var session: GameSession

@@ -66,6 +66,7 @@ func _ready() -> void:
 	_create_environment(biome)
 	_create_elevation(biome)
 	_create_vegetation(biome)
+	_create_asset_pack_dressing(biome)
 	_create_water(biome)
 	_create_ambient_particles(biome)
 	_create_navigation()
@@ -271,6 +272,37 @@ func _create_vegetation(biome: String) -> void:
 		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
 	foliage.multimesh = batch
 	add_child(foliage)
+
+func _create_asset_pack_dressing(biome: String) -> void:
+	# Imported asset-pack scenes are optional presentation layers.  The procedural
+	# vegetation above remains the fallback for clean clones or missing imports.
+	var dressing := Node3D.new()
+	dressing.name = "AssetPackDressing"
+	var paths: Array[String] = [
+		"res://glTF/CommonTree_2.gltf",
+		"res://glTF/Fern_1.gltf",
+		"res://glTF/Rock_Medium_1.gltf",
+		"res://glTF/Bush_Common.gltf"
+	]
+	if biome == "Sunstone Ridge" or biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Saltwind Dunes":
+		paths = ["res://glTF/Rock_Medium_1.gltf", "res://glTF/Rock_Medium_2.gltf", "res://glTF/Pine_2.gltf", "res://glTF/DeadTree_2.gltf"]
+	elif biome == "Redstone Badlands" or biome == "Fossil Flats":
+		paths = ["res://glTF/Rock_Medium_3.gltf", "res://glTF/DeadTree_3.gltf", "res://glTF/DeadTree_5.gltf", "res://glTF/Rock_Medium_2.gltf"]
+	elif biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
+		paths = ["res://glTF/Fern_1.gltf", "res://glTF/Bush_Common.gltf", "res://glTF/Flower_3_Group.gltf", "res://glTF/CommonTree_1.gltf"]
+	for index in paths.size():
+		var packed := load(paths[index]) as PackedScene
+		if packed == null:
+			continue
+		var prop := packed.instantiate() as Node3D
+		if prop == null:
+			continue
+		prop.name = "PackProp_%d" % index
+		prop.position = Vector3(float((index * 11) % 23) - 11.0, 0.0, float((index * 17) % 23) - 11.0)
+		prop.rotation.y = float(index) * 1.4
+		prop.scale = Vector3.ONE * (0.65 + float(index % 2) * 0.18)
+		dressing.add_child(prop)
+	add_child(dressing)
 
 func _create_water(biome: String) -> void:
 	if biome != "River Wetlands" and biome != "Coastal Marsh" and biome != "Cypress Basin":

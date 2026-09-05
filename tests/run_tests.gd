@@ -446,6 +446,7 @@ func _test_world_chunks() -> void:
 	_check(cleared_stream.active_biome_names().is_empty(), "Cleared streaming state should report no active biomes")
 	_check(stream.landmark_for_chunk("missing_chunk") == null and stream.landmark_position_for_chunk("missing_chunk") == null, "Unknown landmark lookups should return null")
 	var nest_instance := stream.instantiate_chunk("nest_basin", root)
+	_check(nest_instance != null and nest_instance.get_node_or_null("AssetPackDressing") != null, "Streamed chunks should provide optional asset-pack terrain dressing with a safe fallback root")
 	_check(stream.landmark_for_chunk("nest_basin") != null, "Active chunks should expose their landmark destination")
 	var landmark_position: Variant = stream.landmark_position_for_chunk("nest_basin")
 	_check(landmark_position is Vector3 and is_finite((landmark_position as Vector3).x), "Landmark destination should expose a world-space position")
