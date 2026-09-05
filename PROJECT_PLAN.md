@@ -650,6 +650,7 @@ The player and spawned food now follow the authored elevation function with grav
 369. Added batched biome-tinted ground debris and low-poly stones with no decorative collision overhead.
 370. Extended live F4 quality updates to batched ground debris visibility ranges in already-loaded chunks.
 371. Enabled restrained SSAO on global and biome environments for deeper contact shadows around terrain, props, and creatures.
+372. Integrated SSAO with Low/Medium/High quality presets and made F4 update global and loaded biome environments immediately.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

@@ -1582,6 +1582,10 @@ func _cycle_environment_quality() -> void:
 	var sun := get_node_or_null("ValleySun") as DirectionalLight3D
 	if sun != null:
 		sun.directional_shadow_max_distance = float(ENVIRONMENT_QUALITY.preset({}).get("shadow_distance", 90.0))
+	if valley_environment != null:
+		var ssao_enabled := ENVIRONMENT_QUALITY.active_id != "low"
+		valley_environment.ssao_enabled = ssao_enabled
+		valley_environment.ssao_intensity = 0.7 if ENVIRONMENT_QUALITY.active_id == "medium" else 1.0
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
@@ -1612,6 +1616,10 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 		var debris := chunk.get_node_or_null("GroundDebris") as MultiMeshInstance3D
 		if debris != null:
 			debris.visibility_range_end = 85.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
+		var biome_environment := chunk.get_node_or_null("BiomeEnvironment") as WorldEnvironment
+		if biome_environment != null and biome_environment.environment != null:
+			biome_environment.environment.ssao_enabled = ENVIRONMENT_QUALITY.active_id != "low"
+			biome_environment.environment.ssao_intensity = 0.6 if ENVIRONMENT_QUALITY.active_id == "medium" else 0.9
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):
