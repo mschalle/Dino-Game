@@ -178,6 +178,9 @@ func _on_chunk_deactivated(chunk_id: String) -> void:
 
 func _create_scenery_piece(index: int) -> void:
 	var piece := MeshInstance3D.new()
+	piece.visibility_range_begin = 0.0
+	piece.visibility_range_end = 170.0
+	piece.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	if index % 3 == 0:
 		var tree_mesh := CylinderMesh.new()
 		tree_mesh.top_radius = 0.16
@@ -191,6 +194,9 @@ func _create_scenery_piece(index: int) -> void:
 		crown_mesh.radius = 0.72
 		crown_mesh.height = 1.35
 		crown.mesh = crown_mesh
+		crown.visibility_range_begin = 0.0
+		crown.visibility_range_end = 170.0
+		crown.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 		crown.material_override = _material(Color("#5da86a"))
 		crown.position.y = 1.35
 		piece.add_child(crown)

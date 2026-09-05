@@ -856,6 +856,10 @@ func _test_gameplay_integration() -> void:
 	var main_scene: Variant = load("res://Main.tscn").instantiate()
 	root.add_child(main_scene)
 	_check(main_scene.animated_trees.size() == 10, "The valley should include animated trees")
+	for tree in main_scene.animated_trees:
+		_check(tree.visibility_range_end > tree.visibility_range_begin, "Animated tree trunks should define a bounded visibility range")
+		var crown := tree.get_child(0) as MeshInstance3D
+		_check(crown != null and crown.visibility_range_end > crown.visibility_range_begin, "Animated tree crowns should define a bounded visibility range")
 	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
 	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
