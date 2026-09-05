@@ -5,6 +5,7 @@ var chunk_state: Dictionary = {}
 func apply_chunk_profile(profile: RefCounted) -> void:
 	set_meta("ground_color", profile.ground_color)
 	set_meta("vegetation_density", profile.vegetation_density)
+	set_meta("fog_density", profile.fog_density)
 	set_meta("navigation_layers", profile.navigation_layers)
 	set_meta("agent_radius", profile.agent_radius)
 	set_meta("max_slope_degrees", profile.max_slope_degrees)
