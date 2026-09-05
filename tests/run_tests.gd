@@ -216,6 +216,9 @@ func _test_world_chunks() -> void:
 	var route := WORLD_CHUNK_PROFILES.find_route(chunks, "nest_basin", "redstone_badlands")
 	_check(route.size() >= 2, "Reserve must provide a route between distant biomes")
 	_check(route.front() == "nest_basin" and route.back() == "redstone_badlands", "Biome route endpoints must be correct")
+	for chunk in chunks:
+		var chunk_route := WORLD_CHUNK_PROFILES.find_route(chunks, "nest_basin", chunk.chunk_id)
+		_check(not chunk_route.is_empty(), "%s must be reachable from the safe nest" % chunk.chunk_id)
 	var ids: Dictionary = {}
 	var landmarks: Dictionary = {}
 	var biomes: Dictionary = {}
