@@ -466,6 +466,7 @@ The player and spawned food now follow the authored elevation function with grav
 292. Added an out-of-bounds actor recovery test to verify safe return to an active navigable chunk.
 293. Added landmark-bound validation so streamed destination silhouettes remain inside their 60×60 chunk footprint.
 294. Added readable-distance validation so streamed landmark labels remain visible with their destination markers.
+295. Added vertical-placement validation so streamed landmark labels remain above their marker geometry.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
