@@ -1,6 +1,7 @@
 param(
     [string]$Godot = "F:\GODOT\Godot_v4.7.2-stable_win64.exe",
-    [string]$ProjectPath = (Split-Path -Parent $PSScriptRoot)
+    [string]$ProjectPath = (Split-Path -Parent $PSScriptRoot),
+    [switch]$RequireExportTemplates
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,7 +37,9 @@ try {
     if ($exit_code -ne 0) { throw "git diff --check failed ($exit_code)" }
 
     Write-Host "[4/4] Checking roadmap checkpoint integrity..."
-    & (Join-Path $ProjectPath "tools\roadmap_status.ps1") -ProjectPath $ProjectPath
+    $statusArgs = @{ ProjectPath = $ProjectPath }
+    if ($RequireExportTemplates) { $statusArgs.RequireExportTemplates = $true }
+    & (Join-Path $ProjectPath "tools\roadmap_status.ps1") @statusArgs
     $exit_code = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
     if ($exit_code -ne 0) { throw "Roadmap checkpoint integrity check failed ($exit_code)" }
 
