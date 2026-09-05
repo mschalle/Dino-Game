@@ -47,7 +47,10 @@ func _spawn_to_targets(scarcity: int) -> void:
 	var prey_nodes := get_tree().get_nodes_in_group("prey")
 	var tier_counts: Dictionary = {1: 0, 2: 0, 3: 0}
 	for prey_node in prey_nodes:
-		var nutrition := int(prey_node.get("nutrition"))
+		var nutrition_value: Variant = prey_node.get("nutrition")
+		if nutrition_value == null:
+			continue
+		var nutrition: int = nutrition_value
 		if tier_counts.has(nutrition):
 			tier_counts[nutrition] = int(tier_counts[nutrition]) + 1
 	var tier_targets: Dictionary = {

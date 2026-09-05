@@ -78,6 +78,17 @@ func confine_actor(actor: Node3D, fallback: Vector3) -> bool:
 		actor.global_position = nearest
 	return true
 
+func prune_inactive_actors(scene_root: Node) -> int:
+	var removed := 0
+	for group_name in ["prey", "predator"]:
+		for node in scene_root.get_tree().get_nodes_in_group(group_name):
+			var actor := node as Node3D
+			if actor == null or is_world_position_navigable(actor.global_position):
+				continue
+			actor.queue_free()
+			removed += 1
+	return removed
+
 func _nearest_active_chunk_position(world_position: Vector3) -> Variant:
 	var best: Variant = null
 	var best_distance := INF
