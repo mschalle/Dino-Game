@@ -11,6 +11,7 @@ const FOOD_TOKEN = preload("res://food_token.gd")
 const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
+const ENDLESS_CHALLENGE_SYSTEM = preload("res://endless_challenge_system.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
 const VALLEY_LIMIT := 28.0
@@ -53,6 +54,7 @@ var chunk_instances: Dictionary = {}
 var world_events
 var next_endless_event_time := 120.0
 var endless_event_index := 0
+var endless_challenges
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -103,6 +105,8 @@ func _process(delta: float) -> void:
 		_use_dash()
 	if Input.is_action_just_pressed("special_ability"):
 		_use_special_ability()
+	if Input.is_action_just_pressed("skip_challenge"):
+		_skip_endless_challenge()
 	var danger_nearby := _danger_nearby()
 	session.tick(delta, danger_nearby)
 	food_spawner.maintain(delta, session.survival_time)
@@ -644,6 +648,7 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	world_events = WORLD_EVENT_SYSTEM.new()
 	next_endless_event_time = 180.0
 	endless_event_index = 0
+	endless_challenges = ENDLESS_CHALLENGE_SYSTEM.new()
 	if mode == "adventure":
 		quest_system.start(profile.adventure_quests)
 	else:
@@ -939,10 +944,11 @@ func _update_objectives(delta: float) -> void:
 		elif quest.objective_type == "collect":
 			_collect_nearby_props(quest)
 		elif quest.objective_type == "survive":
-			endless_second_timer += delta
-			while endless_second_timer >= 1.0:
-				endless_second_timer -= 1.0
-				quest_system.record("survive", "", 1)
+			if quest.target_id.is_empty() or (world_events != null and world_events.is_active(quest.target_id)):
+				endless_second_timer += delta
+				while endless_second_timer >= 1.0:
+					endless_second_timer -= 1.0
+					quest_system.record("survive", quest.target_id, 1)
 	if not optional_completed and player.global_position.distance_to(Vector3(19, 0, -4)) < 2.8:
 		optional_completed = true
 		session.growth.add_points(2)
@@ -974,16 +980,20 @@ func _collect_nearby_props(quest: QuestDefinition) -> void:
 			break
 
 func _start_next_endless_quest() -> void:
-	var repeatable: QuestDefinition
-	if endless_round % 3 == 0:
-		var target := "plant" if profile.diet == "herbivore" else "prey"
-		repeatable = QuestDefinition.new("endless_feast_%d" % endless_round, "Endless Feast", "Find renewable food.", "eat", target, 5, 3, 0, Vector3.ZERO)
-	elif endless_round % 3 == 1:
-		var destination := Vector3(randf_range(-21, 21), 0, randf_range(-21, 21))
-		repeatable = QuestDefinition.new("endless_explore_%d" % endless_round, "Trail Discovery", "Reach the glowing landmark.", "reach", "endless_marker", 1, 3, 0, destination)
-	else:
-		repeatable = QuestDefinition.new("endless_survive_%d" % endless_round, "Stand Strong", "Survive for one minute.", "survive", "", 60, 4, 0, Vector3.ZERO)
+	var destination := Vector3(randf_range(-21, 21), 0, randf_range(-21, 21))
+	var active_event_id: String = world_events.active_event_id if world_events != null else ""
+	var repeatable: QuestDefinition = endless_challenges.next(endless_round, profile, active_event_id, destination)
 	quest_system.start([repeatable])
+
+func _skip_endless_challenge() -> void:
+	if mode != "endless" or endless_challenges == null:
+		return
+	var quest := quest_system.current()
+	if quest == null or not endless_challenges.skip(quest.id):
+		return
+	hud.show_message("Challenge skipped. No Growth Points awarded.")
+	endless_round += 1
+	_start_next_endless_quest()
 
 func _complete_adventure() -> void:
 	if not session.growth.is_adult():
@@ -1406,6 +1416,7 @@ func _ensure_default_inputs() -> void:
 	_add_joy_button("special_ability", JOY_BUTTON_Y)
 	_add_joy_button("ui_cancel", JOY_BUTTON_START)
 	_ensure_key_action("help", KEY_F1)
+	_ensure_key_action("skip_challenge", KEY_K)
 	_add_joy_axis("move_left", JOY_AXIS_LEFT_X, -1.0)
 	_add_joy_axis("move_right", JOY_AXIS_LEFT_X, 1.0)
 	_add_joy_axis("move_forward", JOY_AXIS_LEFT_Y, -1.0)

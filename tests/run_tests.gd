@@ -4,6 +4,7 @@ const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 const HABITAT_SPAWN_RULES = preload("res://habitat_spawn_rules.gd")
 const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
+const ENDLESS_CHALLENGE_SYSTEM = preload("res://endless_challenge_system.gd")
 
 var failures := 0
 
@@ -18,6 +19,7 @@ func _run_tests() -> void:
 	_test_endless_progression_all_species()
 	_test_endless_scaling_rules()
 	_test_world_events()
+	_test_endless_challenges()
 	_test_release_readiness()
 	_test_windows_export_preset()
 	_test_selection_roster_layout()
@@ -251,6 +253,19 @@ func _test_world_events() -> void:
 	spawner.set_event_plant_bonus(99)
 	_check(spawner.event_plant_bonus == 6, "Event plant bonuses should stay bounded")
 	spawner.free()
+
+func _test_endless_challenges() -> void:
+	var challenges := ENDLESS_CHALLENGE_SYSTEM.new()
+	var profile := DinosaurProfiles.t_rex()
+	var forage := challenges.next(0, profile, "", Vector3.ZERO)
+	var discover := challenges.next(1, profile, "", Vector3(4.0, 0.0, 2.0))
+	_check(forage.objective_type == "eat" and forage.target_id == "prey", "Carnivore forage challenges should use prey")
+	_check(discover.objective_type == "reach" and discover.marker_position == Vector3(4.0, 0.0, 2.0), "Discovery challenges should use a reachable marker")
+	var observe := challenges.next(2, profile, "herd_journey", Vector3.ZERO)
+	var evade := challenges.next(3, profile, "predator_passage", Vector3.ZERO)
+	_check(observe.target_id == "herd_journey", "Herd events should unlock observation challenges")
+	_check(evade.target_id == "predator_passage", "Predator events should unlock evasion challenges")
+	_check(challenges.skip(forage.id) and not challenges.skip(forage.id), "Skipped challenges should never award or skip twice")
 
 func _test_windows_export_preset() -> void:
 	_check(FileAccess.file_exists("res://export_presets.cfg"), "Windows export preset should be checked in")

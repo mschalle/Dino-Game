@@ -611,6 +611,7 @@ The player and spawned food now follow the authored elevation function with grav
 330. Added Herd Journey events that move an existing compatible herd to a safe destination and return its members to normal wandering after arrival.
 331. Added Predator Passage events with bounded traversal, readable warnings, and an attack-triggered retreat path that preserves kid-friendly combat.
 332. Added event cadence, active-habitat eligibility, pause behavior, and clean cancellation for defeat, restart, selection, and streamed-habitat unloads.
+333. Replaced the fixed Endless rotation with reusable forage, discovery, herd-observation, and predator-evasion challenges plus no-reward skipping and event-aware filtering.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
