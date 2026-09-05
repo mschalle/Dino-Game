@@ -604,6 +604,7 @@ The player and spawned food now follow the authored elevation function with grav
 323. Added a four-member herd-size cap so excess compatible prey seed separate herd anchors.
 324. Added spawn-maintenance coverage confirming tiered prey herds remain capped at four members during replenishment.
 325. Added chunk unload, snapshot, and scene-reactivation coverage for persisted herd records.
+326. Added persisted herd anchors and restoration records so streamed prey reform their saved herd identity and capped formation after an area reload.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

@@ -15,6 +15,7 @@ var persisted_population_budget := 0
 var habitat_respawn_cooldown := 0.0
 var tier_respawn_cooldowns: Dictionary = {}
 var respawn_gate_factory: Callable
+var persisted_herd_records: Dictionary = {}
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -52,6 +53,11 @@ func set_population_budget(budget: Dictionary) -> void:
 	var scale := float(prey_budget) / float(total_caps)
 	for tier in population_caps:
 		population_caps[tier] = maxi(1, floori(float(population_caps[tier]) * scale))
+
+func set_persisted_herd_records(records: Dictionary) -> void:
+	# Records come from streamed chunks.  Keep a private copy so unloading a chunk
+	# cannot mutate a herd while it is being rebuilt by the spawner.
+	persisted_herd_records = records.duplicate(true)
 
 func set_respawn_cooldown(seconds: float) -> void:
 	habitat_respawn_cooldown = maxf(0.0, seconds)
@@ -106,16 +112,19 @@ func _spawn_prey(forced_nutrition: int = 0) -> void:
 	var nutrition := forced_nutrition if forced_nutrition > 0 else randi_range(1, 3)
 	var colors: Array[Color] = [Color("#f3c353"), Color("#f2996b"), Color("#78cfd0"), Color("#c190e8")]
 	prey.setup("Valley Dino", nutrition, colors.pick_random())
-	prey.position = _random_position(nutrition)
+	var restored_herd := _available_persisted_herd(nutrition)
+	prey.position = _restored_herd_position(restored_herd) if not restored_herd.is_empty() else _random_position(nutrition)
 	add_child(prey)
 	_place_on_terrain(prey)
 	var same_tier_count := 0
 	for sibling in get_children():
 		if sibling is PreyDino and (sibling as PreyDino).nutrition == nutrition:
 			same_tier_count += 1
-	var herd_id := "tier_%d_%d" % [nutrition, int(same_tier_count / 4)]
+	var herd_id := str(restored_herd.get("id", "tier_%d_%d" % [nutrition, int(same_tier_count / 4)]))
 	var herd_anchor := prey.position
 	var herd_leader := true
+	if not restored_herd.is_empty():
+		herd_anchor = _record_anchor(restored_herd.get("anchor", prey.position), prey.position)
 	for sibling in get_children():
 		if sibling is PreyDino and sibling != prey and (sibling as PreyDino).nutrition == nutrition and not (sibling as PreyDino).herd_id.is_empty():
 			if (sibling as PreyDino).herd_id == herd_id:
@@ -127,6 +136,42 @@ func _spawn_prey(forced_nutrition: int = 0) -> void:
 		prey.set_respawn_gate(respawn_gate_factory.bind(prey))
 	if player != null:
 		prey.set_player(player)
+
+func _available_persisted_herd(nutrition: int) -> Dictionary:
+	var record_ids: Array = persisted_herd_records.keys()
+	record_ids.sort()
+	for record_id in record_ids:
+		var record: Dictionary = persisted_herd_records[record_id] as Dictionary
+		if int(record.get("tier", 0)) != nutrition:
+			continue
+		var desired_count := clampi(int(record.get("count", 0)), 1, 4)
+		var current_count := 0
+		for sibling in get_children():
+			if sibling is PreyDino and (sibling as PreyDino).herd_id == str(record_id):
+				current_count += 1
+		if current_count < desired_count:
+			var result := record.duplicate(true)
+			result["id"] = str(record_id)
+			result["member_index"] = current_count
+			return result
+	return {}
+
+func _restored_herd_position(record: Dictionary) -> Vector3:
+	var anchor := _record_anchor(record.get("anchor", Vector3.ZERO), Vector3.ZERO)
+	var member_index := int(record.get("member_index", 0))
+	if member_index == 0:
+		return anchor
+	var angle := TAU * float(member_index) / 4.0
+	return anchor + Vector3(cos(angle), 0.0, sin(angle)) * 1.7
+
+func _record_anchor(value: Variant, fallback: Vector3) -> Vector3:
+	if value is Vector3:
+		return value
+	if value is Dictionary:
+		return Vector3(float(value.get("x", fallback.x)), float(value.get("y", fallback.y)), float(value.get("z", fallback.z)))
+	if value is Array and value.size() >= 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return fallback
 
 func _spawn_plant() -> void:
 	var plant := PLANT.new()

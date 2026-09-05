@@ -109,6 +109,7 @@ func prune_inactive_actors(scene_root: Node) -> int:
 func capture_population(scene_root: Node) -> void:
 	var counts: Dictionary = {}
 	var herds: Dictionary = {}
+	var herd_anchors: Dictionary = {}
 	for group_name in ["prey", "predator"]:
 		for node in scene_root.get_tree().get_nodes_in_group(group_name):
 			var actor := node as Node3D
@@ -122,13 +123,21 @@ func capture_population(scene_root: Node) -> void:
 			counts[chunk_id] = role_counts
 			if group_name == "prey" and actor is PreyDino and not (actor as PreyDino).herd_id.is_empty():
 				var chunk_herds: Dictionary = herds.get(chunk_id, {})
+				var chunk_anchors: Dictionary = herd_anchors.get(chunk_id, {})
 				var herd_id := (actor as PreyDino).herd_id
 				chunk_herds[herd_id] = int(chunk_herds.get(herd_id, 0)) + 1
+				if not chunk_anchors.has(herd_id):
+					var anchor := (actor as PreyDino).herd_anchor
+					chunk_anchors[herd_id] = {"x": anchor.x, "y": anchor.y, "z": anchor.z}
 				herds[chunk_id] = chunk_herds
+				herd_anchors[chunk_id] = chunk_anchors
 	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
 		var state := get_chunk_state(chunk.chunk_id)
 		state["population"] = counts.get(chunk.chunk_id, {"prey": 0, "predator": 0})
 		state["herds"] = herds.get(chunk.chunk_id, {})
+		state["herd_anchors"] = herd_anchors.get(chunk.chunk_id, {})
 		set_chunk_state(chunk.chunk_id, state)
 
 func active_population_budget() -> Dictionary:
@@ -151,12 +160,32 @@ func active_herd_budget() -> Dictionary:
 			herds[herd_id] = int(herds.get(herd_id, 0)) + int(saved_herds[herd_id])
 	return herds
 
+func active_herd_records() -> Dictionary:
+	var records: Dictionary = {}
+	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
+		var state := get_chunk_state(chunk.chunk_id)
+		var saved_herds: Dictionary = state.get("herds", {})
+		var saved_anchors: Dictionary = state.get("herd_anchors", {})
+		for herd_id_variant in saved_herds.keys():
+			var herd_id := str(herd_id_variant)
+			var tier_parts := herd_id.split("_")
+			var tier := int(tier_parts[1]) if tier_parts.size() > 1 else 0
+			records[herd_id] = {
+				"count": clampi(int(saved_herds[herd_id_variant]), 1, 4),
+				"tier": tier,
+				"anchor": saved_anchors.get(herd_id_variant, Vector3.ZERO)
+			}
+	return records
+
 func runtime_metrics(scene_root: Node) -> Dictionary:
 	var npc_count := 0
 	for group_name in ["prey", "predator"]:
 		npc_count += scene_root.get_tree().get_nodes_in_group(group_name).size()
 	var budget := active_population_budget()
 	var herd_budget := active_herd_budget()
+	var herd_records := active_herd_records()
 	var total_budget := int(budget.get("prey", 0)) + int(budget.get("predator", 0))
 	var biome_names := active_biome_names()
 	return {
@@ -169,7 +198,8 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 		"population_budget": total_budget,
 		"population_utilization": float(npc_count) / float(maxi(1, total_budget)),
 		"active_herd_count": herd_budget.size(),
-		"herd_budget": herd_budget
+		"herd_budget": herd_budget,
+		"restorable_herd_count": herd_records.size()
 	}
 
 func set_respawn_cooldown(chunk_id: String, seconds: float) -> void:
