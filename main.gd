@@ -92,6 +92,10 @@ func _process(delta: float) -> void:
 		_adjust_effects_volume(-0.1)
 	if game_active and Input.is_action_just_pressed("volume_up"):
 		_adjust_effects_volume(0.1)
+	if game_active and Input.is_action_just_pressed("environment_quality"):
+		_cycle_environment_quality()
+	if game_active and Input.is_action_just_pressed("weather_toggle"):
+		_toggle_weather()
 	if not game_active or get_tree().paused:
 		return
 	_tick_cooldowns(delta)
@@ -1517,6 +1521,8 @@ func _ensure_default_inputs() -> void:
 	_ensure_key_action("special_ability", KEY_R)
 	_ensure_key_action("volume_down", KEY_F2)
 	_ensure_key_action("volume_up", KEY_F3)
+	_ensure_key_action("environment_quality", KEY_F4)
+	_ensure_key_action("weather_toggle", KEY_F5)
 	_add_joy_button("sprint", JOY_BUTTON_LEFT_STICK)
 	_add_joy_button("eat", JOY_BUTTON_X)
 	_add_joy_button("power_bite", JOY_BUTTON_B)
@@ -1538,6 +1544,21 @@ func _adjust_effects_volume(amount: float) -> void:
 	(save_system.data["settings"] as Dictionary)["effects_volume"] = next_volume
 	save_system.save_data()
 	hud.show_message("Effects volume: %d%% (F2/F3)" % roundi(next_volume * 100.0))
+
+func _cycle_environment_quality() -> void:
+	var settings := save_system.data["settings"] as Dictionary
+	var next := ENVIRONMENT_QUALITY.next(str(settings.get("environment_quality", "medium")))
+	settings["environment_quality"] = next
+	ENVIRONMENT_QUALITY.configure(settings)
+	save_system.save_data()
+	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
+
+func _toggle_weather() -> void:
+	var settings := save_system.data["settings"] as Dictionary
+	settings["weather_enabled"] = not bool(settings.get("weather_enabled", true))
+	ENVIRONMENT_QUALITY.configure(settings)
+	save_system.save_data()
+	hud.show_message("Weather effects: %s (new areas use this setting)" % ("ON" if ENVIRONMENT_QUALITY.weather_enabled else "OFF"))
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):

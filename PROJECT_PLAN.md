@@ -640,6 +640,7 @@ The player and spawned food now follow the authored elevation function with grav
 359. Added predator warning and attack audio signals with readable retreat messaging and stronger naturalistic threat feedback.
 360. Reconciled active roadmap language with the naturalistic adventure direction while retaining bounded combat, readability, accessibility, and performance gates.
 361. Added crossfaded biome ambience transitions so streamed chunk changes no longer cut environmental audio abruptly.
+362. Added F4/F5 runtime controls for cycling environment quality and toggling weather effects, with persisted settings and readable feedback.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
