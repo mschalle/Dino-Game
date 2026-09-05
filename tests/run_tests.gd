@@ -441,7 +441,7 @@ func _test_world_chunks() -> void:
 		_check(str(silhouette.get_meta("biome", "")) == chunk.biome, "%s landmark should retain biome identity" % chunk.chunk_id)
 		_check(not str(silhouette.get_meta("landmark_kind", "")).is_empty(), "%s landmark should expose a presentation kind" % chunk.chunk_id)
 		_check(silhouette.material_override.albedo_color.is_equal_approx(chunk.ground_color.darkened(0.18)), "%s landmark palette should follow its ground profile" % chunk.chunk_id)
-		_check(silhouette.visibility_range_begin > 0.0 and silhouette.visibility_range_end > silhouette.visibility_range_begin, "%s landmark should define a bounded visibility range" % chunk.chunk_id)
+		_check(silhouette.visibility_range_begin > 0.0 and silhouette.visibility_range_begin <= 2.0 and silhouette.visibility_range_end >= 180.0 and silhouette.visibility_range_end > silhouette.visibility_range_begin, "%s landmark should remain visible across its authored camera range" % chunk.chunk_id)
 		_check(silhouette.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s landmark should cast shadows" % chunk.chunk_id)
 		_check(silhouette.mesh != null and silhouette.get_aabb().size.x > 0.0 and silhouette.get_aabb().size.y > 0.0 and silhouette.get_aabb().size.z > 0.0, "%s landmark silhouette should have positive visual dimensions" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D

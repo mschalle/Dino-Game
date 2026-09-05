@@ -460,6 +460,7 @@ The player and spawned food now follow the authored elevation function with grav
 286. Added elevation collision-position validation to keep streamed hill physics aligned with visible terrain.
 287. Added explicit ground collision-shape naming and validation that streamed collision covers the visible terrain pad.
 288. Added positive-dimension validation for streamed landmark silhouettes to protect destination geometry.
+289. Added camera-range validation so streamed landmarks remain visible throughout their authored presentation distance.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
