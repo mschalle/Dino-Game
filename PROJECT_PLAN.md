@@ -384,6 +384,7 @@ The player and spawned food now follow the authored elevation function with grav
 210. Added direct mouse-binding validation for left-click Eat and right-click Power Bite controls.
 211. Added playable-ability metadata validation for readable names, descriptions, and positive cooldowns.
 212. Added per-species ability-ID uniqueness validation to prevent skill-state collisions.
+213. Added validation that every playable ability declares a nonempty runtime input action.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
