@@ -288,6 +288,7 @@ The player and spawned food now follow the authored elevation function with grav
 114. Added accessibility validation for large text, high contrast, and focusable HUD controls.
 115. Added pause, restart, and return-to-selection flow signal validation for input recovery paths.
 116. Extended save-recovery validation for settings defaults and chunk state across run transitions.
+117. Added six-species Adventure reward validation proving independent Endless unlock persistence.
 
 ## Release Readiness
 

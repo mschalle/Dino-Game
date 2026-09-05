@@ -13,6 +13,7 @@ func _run_tests() -> void:
 	_test_profiles()
 	_test_all_playable_species()
 	_test_species_asset_and_save_isolation()
+	_test_all_species_endless_unlocks()
 	_test_selection_roster_layout()
 	_test_selection_navigation()
 	_test_selection_focus_mapping()
@@ -110,6 +111,15 @@ func _test_species_asset_and_save_isolation() -> void:
 	var records: Dictionary = save.data.get("records", {})
 	_check(records.get("t_rex", {}).get("best_growth_points", 0) == 2, "T. rex record should remain isolated")
 	_check(records.get("carnotaurus", {}).get("best_growth_points", 0) == 2, "Carnotaurus record should remain isolated")
+	save.free()
+
+func _test_all_species_endless_unlocks() -> void:
+	var save := preload("res://save_system.gd").new()
+	for profile in DinosaurProfiles.all():
+		save.unlock_endless(profile.id)
+		_check(save.is_endless_unlocked(profile.id), "%s should unlock Endless after Adventure completion" % profile.id)
+	for profile in DinosaurProfiles.all():
+		_check(save.is_endless_unlocked(profile.id), "%s Endless unlock should persist independently" % profile.id)
 	save.free()
 
 func _test_selection_roster_layout() -> void:
