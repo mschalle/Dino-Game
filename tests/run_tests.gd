@@ -226,6 +226,9 @@ func _test_release_readiness() -> void:
 	_check(DinosaurProfiles.all().size() == 6, "Release roster should contain six playable species")
 	_check(SaveSystem.SAVE_VERSION >= 1, "Release save schema should be versioned")
 	_check(FileAccess.file_exists("res://tests/run_tests.gd"), "Release validation suite should be packaged with the project")
+	_check(int(ProjectSettings.get_setting("display/window/size/viewport_width", 0)) == 1280, "Release viewport width should remain 1280")
+	_check(int(ProjectSettings.get_setting("display/window/size/viewport_height", 0)) == 720, "Release viewport height should remain 720")
+	_check(str(ProjectSettings.get_setting("display/window/stretch/mode", "")) == "canvas_items", "Release HUD should use canvas-item scaling")
 
 func _test_selection_roster_layout() -> void:
 	var profiles := DinosaurProfiles.all()

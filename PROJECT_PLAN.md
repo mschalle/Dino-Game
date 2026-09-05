@@ -379,6 +379,7 @@ The player and spawned food now follow the authored elevation function with grav
 205. Added a strict `-RequireExportTemplates` roadmap-status flag for release-candidate packaging gates.
 206. Added strict export-template forwarding to the main roadmap validator for one-command release-candidate checks.
 207. Added case-mismatch detection to the Windows export smoke test to protect packaged resource paths.
+208. Added release viewport and HUD-scaling validation for the documented 1280×720 Windows baseline.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
