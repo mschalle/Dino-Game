@@ -237,6 +237,9 @@ func _create_habitat_landmarks() -> void:
 		pillar.bottom_radius = 0.42
 		pillar.height = 2.4
 		marker.mesh = pillar
+		marker.visibility_range_begin = 0.0
+		marker.visibility_range_end = 180.0
+		marker.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 		marker.material_override = _glow_material(landmark[2])
 		var point: Vector3 = landmark[1]
 		marker.position = Vector3(point.x, _terrain_height_at(point.x, point.z) + 1.2, point.z)

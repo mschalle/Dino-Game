@@ -866,6 +866,9 @@ func _test_gameplay_integration() -> void:
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
 	for firefly in main_scene.fireflies:
 		_check(firefly.visibility_range_end > firefly.visibility_range_begin, "Ambient fireflies should define a bounded visibility range")
+	for child in main_scene.get_children():
+		if child is MeshInstance3D and child.get_child_count() > 0 and child.get_child(0) is Label3D:
+			_check(child.visibility_range_end > child.visibility_range_begin, "Habitat landmark markers should define a bounded visibility range")
 	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
 	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
 	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")
