@@ -127,6 +127,9 @@ func _test_habitat_food_filter() -> void:
 	spawner.set_spawn_plan([{"role": "prey", "tier": 1}])
 	_check(spawner.allowed_prey_tiers == [1], "Food spawner should accept active habitat prey tiers")
 	_check(spawner.population_caps[1] == 4, "Food spawner should derive a tier population cap")
+	spawner.set_respawn_cooldown(4.0)
+	spawner.maintain(3.0, 0.0)
+	_check(is_equal_approx(spawner.habitat_respawn_cooldown, 1.0), "Food spawner should tick habitat cooldowns")
 	spawner.free()
 
 func _test_world_streaming() -> void:
@@ -167,6 +170,7 @@ func _test_world_streaming() -> void:
 	manager.set_respawn_cooldown("redstone_badlands", 5.0)
 	manager.tick_respawn_cooldowns(2.0)
 	_check(is_equal_approx(manager.get_respawn_cooldown("redstone_badlands"), 3.0), "Chunk respawn cooldown should tick down")
+	_check(is_equal_approx(manager.active_respawn_cooldown(), 3.0), "Active respawn cooldown should report the highest loaded chunk delay")
 	_check(manager.start_respawn_cooldown_at(Vector3(120.0, 0.0, 60.0), 7.0) == "redstone_badlands", "Defeat positions should start their chunk cooldown")
 	_check(is_equal_approx(manager.get_respawn_cooldown("redstone_badlands"), 7.0), "Defeat cooldown should use the creature respawn delay")
 	var holder := Node3D.new()

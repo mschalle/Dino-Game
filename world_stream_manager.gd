@@ -131,6 +131,13 @@ func start_respawn_cooldown_at(world_position: Vector3, seconds: float) -> Strin
 func get_respawn_cooldown(chunk_id: String) -> float:
 	return maxf(0.0, float(get_chunk_state(chunk_id).get("respawn_cooldown", 0.0)))
 
+func active_respawn_cooldown() -> float:
+	var highest := 0.0
+	for chunk in chunks:
+		if is_active(chunk.chunk_id):
+			highest = maxf(highest, get_respawn_cooldown(chunk.chunk_id))
+	return highest
+
 func tick_respawn_cooldowns(delta: float) -> void:
 	for chunk in chunks:
 		var cooldown := get_respawn_cooldown(chunk.chunk_id)

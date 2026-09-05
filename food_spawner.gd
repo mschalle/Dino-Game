@@ -12,6 +12,7 @@ var endless_mode := false
 var allowed_prey_tiers: Array[int] = [1, 2, 3]
 var population_caps: Dictionary = {1: 5, 2: 3, 3: 2}
 var persisted_population_budget := 0
+var habitat_respawn_cooldown := 0.0
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -48,11 +49,17 @@ func set_population_budget(budget: Dictionary) -> void:
 	for tier in population_caps:
 		population_caps[tier] = maxi(1, floori(float(population_caps[tier]) * scale))
 
+func set_respawn_cooldown(seconds: float) -> void:
+	habitat_respawn_cooldown = maxf(0.0, seconds)
+
 func maintain(delta: float, survival_time: float) -> void:
 	respawn_timer -= delta
+	habitat_respawn_cooldown = maxf(0.0, habitat_respawn_cooldown - delta)
 	if respawn_timer > 0.0:
 		return
 	respawn_timer = 3.0
+	if habitat_respawn_cooldown > 0.0:
+		return
 	var scarcity := mini(int(survival_time / 180.0), 4) if endless_mode else 0
 	_spawn_to_targets(scarcity)
 

@@ -110,6 +110,7 @@ func _process(delta: float) -> void:
 		world_stream.tick_respawn_cooldowns(delta)
 		food_spawner.set_spawn_plan(world_stream.active_spawn_plan())
 		food_spawner.set_population_budget(world_stream.active_population_budget())
+		food_spawner.set_respawn_cooldown(world_stream.active_respawn_cooldown())
 		world_stream.prune_inactive_actors(self)
 		world_stream.capture_population(self)
 	if active_target != null and is_instance_valid(active_target):
