@@ -624,6 +624,14 @@ func _test_creature_combat() -> void:
 		ids[profile.id] = true
 		_check(profile.role == "prey" or profile.role == "predator" or profile.role == "rival", "%s should use a supported NPC role" % profile.id)
 		_check(profile.tier >= 1 and profile.tier <= 4, "%s should use a supported NPC tier" % profile.id)
+		var expected_health: float = [0.0, 30.0, 60.0, 100.0, 160.0][profile.tier]
+		var expected_damage: float = [0.0, 5.0, 10.0, 16.0, 22.0][profile.tier]
+		var expected_growth: int = [0, 1, 3, 6, 10][profile.tier]
+		var expected_respawn: float = [0.0, 20.0, 30.0, 45.0, 0.0][profile.tier]
+		_check(is_equal_approx(profile.max_health, expected_health), "%s health should match tier tuning" % profile.id)
+		_check(is_equal_approx(profile.attack_damage, expected_damage), "%s damage should match tier tuning" % profile.id)
+		_check(profile.growth_reward == expected_growth, "%s growth reward should match tier tuning" % profile.id)
+		_check(is_equal_approx(profile.respawn_delay, expected_respawn), "%s respawn should match tier tuning" % profile.id)
 	var combat := preload("res://combat_component.gd").new()
 	combat.configure(30.0)
 	_check(combat.take_hit(15.0), "A living creature should accept an attack")
