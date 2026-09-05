@@ -9,11 +9,13 @@ const PRESETS := {
 
 static var active_id: String = "medium"
 static var weather_enabled: bool = true
+static var reduced_motion: bool = false
 
 static func configure(settings: Dictionary) -> void:
 	var requested := str(settings.get("environment_quality", "medium"))
 	active_id = requested if PRESETS.has(requested) else "medium"
 	weather_enabled = bool(settings.get("weather_enabled", true))
+	reduced_motion = bool(settings.get("reduced_motion", false))
 
 static func preset(settings: Dictionary) -> Dictionary:
 	var id := active_id if settings.is_empty() else str(settings.get("environment_quality", active_id))

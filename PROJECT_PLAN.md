@@ -663,6 +663,7 @@ The player and spawned food now follow the authored elevation function with grav
 382. Added a Windows packaging gate recheck; `tools/windows_export_smoke.ps1` still reports missing matching Godot 4.7.2 export templates, while gameplay and headless validation remain available.
 383. Added updated Help and control hints describing naturalistic predator behavior, bounded combat feedback, environment quality (F4), and weather (F5).
 384. Added reconciliation of remaining active presentation and audio-plan wording with the naturalistic adventure direction; historical checkpoint notes remain preserved.
+385. Added a persisted reduced-motion accessibility setting and F6 toggle; reduced motion suppresses camera look-ahead, vegetation sway, water/shoreline animation, and weather particles while preserving readable gameplay feedback.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

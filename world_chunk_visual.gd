@@ -6,6 +6,8 @@ var chunk_state: Dictionary = {}
 var visual_time := 0.0
 
 func _process(delta: float) -> void:
+	if ENVIRONMENT_QUALITY.reduced_motion:
+		return
 	visual_time += delta
 	var water := get_node_or_null("WaterSurface") as MeshInstance3D
 	var foam := get_node_or_null("ShorelineFoam") as MeshInstance3D

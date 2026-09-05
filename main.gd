@@ -97,6 +97,8 @@ func _process(delta: float) -> void:
 		_cycle_environment_quality()
 	if game_active and Input.is_action_just_pressed("weather_toggle"):
 		_toggle_weather()
+	if game_active and Input.is_action_just_pressed("reduced_motion"):
+		_toggle_reduced_motion()
 	if not game_active or get_tree().paused:
 		return
 	_tick_cooldowns(delta)
@@ -1387,7 +1389,7 @@ func _update_hud() -> void:
 func _follow_player(delta: float) -> void:
 	var desired := player.global_position + Vector3(0, 5.8, 9.5)
 	camera.global_position = camera.global_position.lerp(desired, minf(delta * 5.0, 1.0))
-	var look_ahead := player.velocity
+	var look_ahead := Vector3.ZERO if ENVIRONMENT_QUALITY.reduced_motion else player.velocity
 	look_ahead.y = 0.0
 	if look_ahead.length() > 0.1:
 		look_ahead = look_ahead.normalized() * 1.3
@@ -1559,6 +1561,7 @@ func _ensure_default_inputs() -> void:
 	_ensure_key_action("volume_up", KEY_F3)
 	_ensure_key_action("environment_quality", KEY_F4)
 	_ensure_key_action("weather_toggle", KEY_F5)
+	_ensure_key_action("reduced_motion", KEY_F6)
 	_add_joy_button("sprint", JOY_BUTTON_LEFT_STICK)
 	_add_joy_button("eat", JOY_BUTTON_X)
 	_add_joy_button("power_bite", JOY_BUTTON_B)
@@ -1612,18 +1615,26 @@ func _toggle_weather() -> void:
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Weather effects: %s (new areas use this setting)" % ("ON" if ENVIRONMENT_QUALITY.weather_enabled else "OFF"))
 
+func _toggle_reduced_motion() -> void:
+	var settings := save_system.data["settings"] as Dictionary
+	settings["reduced_motion"] = not bool(settings.get("reduced_motion", false))
+	ENVIRONMENT_QUALITY.configure(settings)
+	save_system.save_data()
+	_apply_environment_settings_to_loaded_chunks()
+	hud.show_message("Reduced motion: %s" % ("ON" if ENVIRONMENT_QUALITY.reduced_motion else "OFF"))
+
 func _apply_environment_settings_to_loaded_chunks() -> void:
 	for chunk in chunk_instances.values():
 		if not is_instance_valid(chunk):
 			continue
 		var ambient := chunk.get_node_or_null("AmbientParticles") as GPUParticles3D
 		if ambient != null:
-			ambient.emitting = ENVIRONMENT_QUALITY.weather_enabled
+			ambient.emitting = ENVIRONMENT_QUALITY.weather_enabled and not ENVIRONMENT_QUALITY.reduced_motion
 			ambient.amount = maxi(2, int(float(ambient.get_meta("base_particle_count", 7)) * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))))
 		for child in chunk.get_children():
 			if child is GPUParticles3D and str(child.name).begins_with("BiomeWeather_"):
 				var weather_particles := child as GPUParticles3D
-				weather_particles.emitting = ENVIRONMENT_QUALITY.weather_enabled
+				weather_particles.emitting = ENVIRONMENT_QUALITY.weather_enabled and not ENVIRONMENT_QUALITY.reduced_motion
 				weather_particles.amount = maxi(4, int(float(weather_particles.get_meta("base_particle_count", 18)) * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))))
 		var dressing: Node = chunk.get_node_or_null("AssetPackDressing")
 		if dressing != null:
