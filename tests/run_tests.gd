@@ -632,6 +632,8 @@ func _test_creature_combat() -> void:
 		_check(is_equal_approx(profile.attack_damage, expected_damage), "%s damage should match tier tuning" % profile.id)
 		_check(profile.growth_reward == expected_growth, "%s growth reward should match tier tuning" % profile.id)
 		_check(is_equal_approx(profile.respawn_delay, expected_respawn), "%s respawn should match tier tuning" % profile.id)
+		_check(profile.move_speed > 0.0 and profile.flee_speed >= profile.move_speed, "%s movement speeds should be positive and flee-capable" % profile.id)
+		_check(profile.detection_range > 0.0 and profile.attack_range > 0.0 and profile.attack_cooldown > 0.0, "%s combat ranges and cooldown should be valid" % profile.id)
 	var combat := preload("res://combat_component.gd").new()
 	combat.configure(30.0)
 	_check(combat.take_hit(15.0), "A living creature should accept an attack")

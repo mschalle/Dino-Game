@@ -367,6 +367,7 @@ The player and spawned food now follow the authored elevation function with grav
 193. Added chronological ordering for checkpoints 162–165 in the roadmap execution history.
 194. Added ascending-order enforcement for roadmap checkpoints in the status runner.
 195. Added NPC tier-balance validation for health, damage, Growth Point rewards, and respawn delays.
+196. Added NPC movement and sensing validation for positive speeds, flee capability, ranges, and attack cooldowns.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
