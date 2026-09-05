@@ -14,6 +14,7 @@ func _run_tests() -> void:
 	_test_all_playable_species()
 	_test_species_asset_and_save_isolation()
 	_test_all_species_endless_unlocks()
+	_test_endless_progression_all_species()
 	_test_selection_roster_layout()
 	_test_selection_navigation()
 	_test_selection_focus_mapping()
@@ -120,6 +121,22 @@ func _test_all_species_endless_unlocks() -> void:
 		_check(save.is_endless_unlocked(profile.id), "%s should unlock Endless after Adventure completion" % profile.id)
 	for profile in DinosaurProfiles.all():
 		_check(save.is_endless_unlocked(profile.id), "%s Endless unlock should persist independently" % profile.id)
+	save.free()
+
+func _test_endless_progression_all_species() -> void:
+	var save := preload("res://save_system.gd").new()
+	for profile in DinosaurProfiles.all():
+		save.unlock_endless(profile.id)
+		var session := GameSession.new()
+		session.start(profile, "endless")
+		session.tick(45.0, false)
+		session.quests_completed = 2
+		save.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, {"endless_validation": true})
+		_check(session.mode == "endless" and session.survival_time >= 45.0, "%s Endless session should advance survival time" % profile.id)
+	var records: Dictionary = save.data.get("records", {})
+	for profile in DinosaurProfiles.all():
+		_check(float(records.get(profile.id, {}).get("best_survival_seconds", 0.0)) >= 45.0, "%s Endless record should persist" % profile.id)
+		_check(int(records.get(profile.id, {}).get("best_quests", 0)) >= 2, "%s Endless quest record should persist" % profile.id)
 	save.free()
 
 func _test_selection_roster_layout() -> void:
