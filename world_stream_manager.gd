@@ -140,9 +140,11 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 		npc_count += scene_root.get_tree().get_nodes_in_group(group_name).size()
 	var budget := active_population_budget()
 	var total_budget := int(budget.get("prey", 0)) + int(budget.get("predator", 0))
+	var biome_names := active_biome_names()
 	return {
 		"active_chunks": active_ids.size(),
-		"active_biomes": active_biome_names(),
+		"active_biomes": biome_names,
+		"active_biome_count": biome_names.size(),
 		"loaded_chunk_scenes": scene_instances.size(),
 		"loaded_landmarks": active_landmark_positions().size(),
 		"npc_count": npc_count,
