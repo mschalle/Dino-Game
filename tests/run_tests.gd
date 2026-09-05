@@ -39,7 +39,7 @@ func _test_profiles() -> void:
 	_check(sound_feedback.tone_queue.size() == 2, "Food feedback should queue a friendly two-note sound")
 	sound_feedback.free()
 	var profiles := DinosaurProfiles.all()
-	_check(profiles.size() == 3, "Expected three playable profiles")
+	_check(profiles.size() == 6, "Expected six playable profiles")
 	var ids: Dictionary = {}
 	var finale_ids: Dictionary = {}
 	for profile in profiles:

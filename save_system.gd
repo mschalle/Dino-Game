@@ -101,7 +101,10 @@ func _defaults() -> Dictionary:
 		"cosmetics": {
 			"t_rex": ["default"],
 			"velociraptor": ["default"],
-			"triceratops": ["default"]
+			"triceratops": ["default"],
+			"ankylosaurus": ["default"],
+			"parasaurolophus": ["default"],
+			"carnotaurus": ["default"]
 		},
 		"selected_cosmetics": {},
 		"badges": [],

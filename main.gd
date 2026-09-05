@@ -288,10 +288,18 @@ func _show_selection() -> void:
 	title.size = Vector2(700, 100)
 	title.add_theme_font_size_override("font_size", 38)
 	panel.add_child(title)
+	var card_scroll := ScrollContainer.new()
+	card_scroll.position = Vector2(0, 170)
+	card_scroll.size = Vector2(1280, 430)
+	card_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(card_scroll)
+	var card_content := Control.new()
+	card_content.custom_minimum_size = Vector2(1280, 820)
+	card_scroll.add_child(card_content)
 	var profiles := PROFILES.all()
 	for index in profiles.size():
 		var species_profile: DinosaurProfile = profiles[index]
-		_create_species_card(panel, species_profile, index)
+		_create_species_card(card_content, species_profile, index)
 	var footer := Label.new()
 	footer.text = "Adventure unlocks Endless Survival for each dinosaur.   |   F1: How to Play\n%s" % _collection_summary()
 	footer.position = Vector2(290, 625)
@@ -432,10 +440,12 @@ func _action_label(action: String) -> String:
 	return action.replace("_", " ").capitalize()
 
 func _create_species_card(parent: Control, species_profile: DinosaurProfile, index: int) -> void:
-	var x := 105.0 + index * 390.0
+	var column := index % 3
+	var row := index / 3
+	var x := 105.0 + column * 390.0
 	var card := ColorRect.new()
 	card.color = Color(species_profile.body_color, 0.34)
-	card.position = Vector2(x, 190)
+	card.position = Vector2(x, 190.0 + row * 385.0)
 	card.size = Vector2(330, 365)
 	parent.add_child(card)
 	var name_label := Label.new()

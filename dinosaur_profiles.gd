@@ -2,7 +2,7 @@ class_name DinosaurProfiles
 extends RefCounted
 
 static func all() -> Array[DinosaurProfile]:
-	return [t_rex(), velociraptor(), triceratops()]
+	return [t_rex(), velociraptor(), triceratops(), ankylosaurus(), parasaurolophus(), carnotaurus()]
 
 static func by_id(species_id: String) -> DinosaurProfile:
 	for profile in all():
@@ -51,6 +51,48 @@ static func triceratops() -> DinosaurProfile:
 		QuestDefinition.new("trike_finale", "Herd Home", "Reach the herd sanctuary as an Adult.", "finale", "herd_home", 1, 5, 3, Vector3(-17, 0, -17))
 	]
 	return DinosaurProfile.new("triceratops", "Triceratops", "Sturdy garden guardian with a gentle Horn Push.", Color("#d97963"), Color("#fff2c9"), "herbivore", 5.0, 7.0, 2, 130.0, 135.0, 0.28, abilities, quests, _optional_quests(), {"prey": ["plant"], "threats": ["rival"]})
+
+static func ankylosaurus() -> DinosaurProfile:
+	var abilities: Array[AbilityDefinition] = [
+		AbilityDefinition.new("scent", "Garden Scent", "Reveal nearby plants or the active quest.", 0, "scent_trail", 7.0),
+		AbilityDefinition.new("tail_swing", "Tail Swing", "Knock back nearby threats with a friendly thump.", 0, "power_bite", 3.0),
+		AbilityDefinition.new("brace", "Brace", "Reduce danger while standing your ground.", 2, "special_ability", 8.0)
+	]
+	var quests: Array[QuestDefinition] = [
+		QuestDefinition.new("anky_garden", "Shielded Garden", "Find the sheltered fern garden.", "reach", "ancient_meadow", 1, 5, 0, Vector3(-13, 0, 11)),
+		QuestDefinition.new("anky_feast", "Armored Feast", "Eat three nourishing plants.", "eat", "plant", 3, 5, 1, Vector3.ZERO),
+		QuestDefinition.new("anky_bridge", "Clear the Crossing", "Use Tail Swing at the stone crossing.", "ability", "tail_swing", 1, 7, 2, Vector3(14, 0, -4)),
+		QuestDefinition.new("anky_finale", "Safe Herd Path", "Reach the herd sanctuary as an Adult.", "finale", "herd_home", 1, 5, 3, Vector3(-17, 0, -17))
+	]
+	return DinosaurProfile.new("ankylosaurus", "Ankylosaurus", "Armored guardian with a powerful tail swing.", Color("#789b55"), Color("#d6b85e"), "herbivore", 4.5, 6.5, 2, 145.0, 120.0, 0.24, abilities, quests, _optional_quests(), {"prey": ["plant"], "threats": ["rival"]})
+
+static func parasaurolophus() -> DinosaurProfile:
+	var abilities: Array[AbilityDefinition] = [
+		AbilityDefinition.new("scent", "Herd Scent", "Reveal food and safe routes for longer.", 0, "scent_trail", 7.0),
+		AbilityDefinition.new("herd_call", "Herd Call", "Send a friendly signal across the meadow.", 0, "special_ability", 7.0),
+		AbilityDefinition.new("endurance", "Endurance Run", "Sprint farther before tiring.", 2, "dash", 3.0)
+	]
+	var quests: Array[QuestDefinition] = [
+		QuestDefinition.new("para_wetlands", "Call of the Wetlands", "Reach the river wetlands.", "reach", "waterfall", 1, 5, 0, Vector3(19, 0, -4)),
+		QuestDefinition.new("para_feast", "Gentle Grazer", "Eat three nourishing plants.", "eat", "plant", 3, 5, 1, Vector3.ZERO),
+		QuestDefinition.new("para_signal", "Herd Signal", "Use Herd Call at the meadow landmark.", "ability", "herd_call", 1, 7, 2, Vector3(-13, 0, 11)),
+		QuestDefinition.new("para_finale", "Guide the Herd", "Reach the herd sanctuary as an Adult.", "finale", "herd_home", 1, 5, 3, Vector3(-17, 0, -17))
+	]
+	return DinosaurProfile.new("parasaurolophus", "Parasaurolophus", "Friendly herd navigator with a powerful call.", Color("#55a7a0"), Color("#f1ce67"), "herbivore", 6.0, 8.5, 1, 110.0, 125.0, 0.3, abilities, quests, _optional_quests(), {"prey": ["plant"], "threats": ["rival"]})
+
+static func carnotaurus() -> DinosaurProfile:
+	var abilities: Array[AbilityDefinition] = [
+		AbilityDefinition.new("scent", "Hunter Scent", "Reveal prey and the active quest route.", 0, "scent_trail", 7.0),
+		AbilityDefinition.new("charge", "Charge", "Burst forward into a safe bump attack.", 0, "dash", 2.5),
+		AbilityDefinition.new("intimidate", "Intimidate", "Warn nearby predators away from your territory.", 2, "special_ability", 8.0)
+	]
+	var quests: Array[QuestDefinition] = [
+		QuestDefinition.new("carno_ridge", "Badlands Sprint", "Reach the redstone ridge.", "reach", "sunstone", 1, 5, 0, Vector3(14, 0, -12)),
+		QuestDefinition.new("carno_feast", "Hunter's Feast", "Claim three tier-one prey tokens.", "eat", "prey", 3, 5, 1, Vector3.ZERO),
+		QuestDefinition.new("carno_charge", "Break the Chase", "Use Charge at the ridge route.", "ability", "charge", 1, 7, 2, Vector3(0, 0, -18)),
+		QuestDefinition.new("carno_finale", "Ridge Champion", "Reach the rival arena as an Adult.", "finale", "valley_rival", 1, 6, 3, Vector3(16, 0, 16))
+	]
+	return DinosaurProfile.new("carnotaurus", "Carnotaurus", "Burst chaser built for quick valley runs.", Color("#b95d4b"), Color("#f1b45f"), "carnivore", 7.0, 10.5, 2, 105.0, 100.0, 0.38, abilities, quests, _optional_quests(), {"prey": ["small_dino"], "threats": ["rival"]})
 
 static func _optional_quests() -> Array[QuestDefinition]:
 	return [QuestDefinition.new("optional_explorer", "Valley Explorer", "Visit the sparkling waterfall.", "reach", "waterfall", 1, 2, 0, Vector3(19, 0, -4), true)]
