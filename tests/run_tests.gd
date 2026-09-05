@@ -126,6 +126,8 @@ func _test_all_playable_species() -> void:
 		_check(profile.diet == "carnivore" or profile.diet == "herbivore", "%s should use a supported diet" % profile.id)
 		_check(not profile.tagline.is_empty(), "%s should have a readable tagline" % profile.id)
 		_check(profile.body_color != Color.BLACK and profile.accent_color != Color.BLACK, "%s should have visible selection colors" % profile.id)
+		_check(profile.ai_relationships is Dictionary, "%s should expose AI relationships" % profile.id)
+		_check(profile.ai_relationships.has("prey") and profile.ai_relationships.has("threats"), "%s AI relationships should define prey and threats" % profile.id)
 		for quest in profile.adventure_quests:
 			if quest.objective_type == "eat":
 				if profile.diet == "carnivore":
