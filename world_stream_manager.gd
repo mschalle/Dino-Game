@@ -141,6 +141,16 @@ func active_population_budget() -> Dictionary:
 		budget["predator"] = int(budget["predator"]) + int(population.get("predator", 0))
 	return budget
 
+func active_herd_budget() -> Dictionary:
+	var herds: Dictionary = {}
+	for chunk in chunks:
+		if not is_active(chunk.chunk_id):
+			continue
+		var saved_herds: Dictionary = get_chunk_state(chunk.chunk_id).get("herds", {})
+		for herd_id in saved_herds.keys():
+			herds[herd_id] = int(herds.get(herd_id, 0)) + int(saved_herds[herd_id])
+	return herds
+
 func runtime_metrics(scene_root: Node) -> Dictionary:
 	var npc_count := 0
 	for group_name in ["prey", "predator"]:
