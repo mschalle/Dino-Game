@@ -664,6 +664,7 @@ The player and spawned food now follow the authored elevation function with grav
 383. Added updated Help and control hints describing naturalistic predator behavior, bounded combat feedback, environment quality (F4), and weather (F5).
 384. Added reconciliation of remaining active presentation and audio-plan wording with the naturalistic adventure direction; historical checkpoint notes remain preserved.
 385. Added a persisted reduced-motion accessibility setting and F6 toggle; reduced motion suppresses camera look-ahead, vegetation sway, water/shoreline animation, and weather particles while preserving readable gameplay feedback.
+386. Extended reduced-motion coverage to the authored valley: tree sway, waterfall flow, firefly pulses, quest-marker motion, and scent-trail pulsing now pause without hiding objectives or changing gameplay.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

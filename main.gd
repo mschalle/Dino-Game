@@ -386,24 +386,25 @@ func _animate_environment(delta: float) -> void:
 			if valley_environment != null:
 				valley_environment.fog_light_color = Color("#7b6472").lerp(Color("#a9a18e"), arc)
 				valley_environment.fog_density = 0.0062 - arc * 0.002
-	for tree in animated_trees:
-		if is_instance_valid(tree):
-			tree.rotation.z = sin(environment_time * 0.8 + float(tree.get_meta("sway_offset", 0.0))) * 0.045
-	for waterfall in waterfall_layers:
-		if is_instance_valid(waterfall):
-			var flow := sin(environment_time * 3.0 + float(waterfall.get_meta("flow_offset", 0.0)))
-			waterfall.position.y = 2.0 + flow * 0.1
-			waterfall.scale.y = 1.0 + flow * 0.035
-			var material := waterfall.material_override as StandardMaterial3D
-			if material != null:
-				material.emission_energy_multiplier = 1.55 + (flow + 1.0) * 0.25
-	for firefly in fireflies:
-		if is_instance_valid(firefly):
-			var orbit := float(firefly.get_meta("orbit", 0.0))
-			firefly.position.y += sin(environment_time * 1.5 + orbit) * 0.002
-			var glow := 0.7 + (sin(environment_time * 3.0 + orbit) + 1.0) * 0.45
-			firefly.scale = Vector3.ONE * glow
-	if active_marker != null and is_instance_valid(active_marker):
+	if not ENVIRONMENT_QUALITY.reduced_motion:
+		for tree in animated_trees:
+			if is_instance_valid(tree):
+				tree.rotation.z = sin(environment_time * 0.8 + float(tree.get_meta("sway_offset", 0.0))) * 0.045
+		for waterfall in waterfall_layers:
+			if is_instance_valid(waterfall):
+				var flow := sin(environment_time * 3.0 + float(waterfall.get_meta("flow_offset", 0.0)))
+				waterfall.position.y = 2.0 + flow * 0.1
+				waterfall.scale.y = 1.0 + flow * 0.035
+				var material := waterfall.material_override as StandardMaterial3D
+				if material != null:
+					material.emission_energy_multiplier = 1.55 + (flow + 1.0) * 0.25
+		for firefly in fireflies:
+			if is_instance_valid(firefly):
+				var orbit := float(firefly.get_meta("orbit", 0.0))
+				firefly.position.y += sin(environment_time * 1.5 + orbit) * 0.002
+				var glow := 0.7 + (sin(environment_time * 3.0 + orbit) + 1.0) * 0.45
+				firefly.scale = Vector3.ONE * glow
+	if not ENVIRONMENT_QUALITY.reduced_motion and active_marker != null and is_instance_valid(active_marker):
 		active_marker.rotation.y += 0.9 * delta
 		var ring := active_marker.get_child(0) as MeshInstance3D
 		var beacon := active_marker.get_child(1) as MeshInstance3D
@@ -411,10 +412,11 @@ func _animate_environment(delta: float) -> void:
 			ring.position.y = 0.2 + sin(environment_time * 2.0) * 0.06
 		if beacon != null:
 			beacon.position.y = 2.5 + sin(environment_time * 2.0) * 0.2
-	for dot in scent_dots:
-		if is_instance_valid(dot) and dot.visible:
-			var pulse := 0.85 + sin(environment_time * 5.0 + dot.global_position.length()) * 0.15
-			dot.scale = Vector3.ONE * pulse
+	if not ENVIRONMENT_QUALITY.reduced_motion:
+		for dot in scent_dots:
+			if is_instance_valid(dot) and dot.visible:
+				var pulse := 0.85 + sin(environment_time * 5.0 + dot.global_position.length()) * 0.15
+				dot.scale = Vector3.ONE * pulse
 
 func _show_selection() -> void:
 	selection_screen = CanvasLayer.new()
