@@ -647,6 +647,7 @@ The player and spawned food now follow the authored elevation function with grav
 366. Expanded biome asset palettes with additional rocks, flowers, forest props, and meadow ground dressing while retaining missing-asset fallbacks.
 367. Added low-detail distant mountain silhouettes around the expanded reserve to provide a stronger geographic horizon and hide hard world edges.
 368. Added quality-scaled wind sway to imported trees, ferns, bushes, flowers, and pines while keeping rocks and landmarks static.
+369. Added batched biome-tinted ground debris and low-poly stones with no decorative collision overhead.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

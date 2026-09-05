@@ -339,6 +339,35 @@ func _create_vegetation(biome: String) -> void:
 		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
 	foliage.multimesh = batch
 	add_child(foliage)
+	_create_ground_debris(biome, foliage_count)
+
+func _create_ground_debris(biome: String, foliage_count: int) -> void:
+	var debris := MultiMeshInstance3D.new()
+	debris.name = "GroundDebris"
+	debris.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	debris.visibility_range_begin = 0.0
+	debris.visibility_range_end = 85.0
+	debris.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+	var batch := MultiMesh.new()
+	batch.transform_format = MultiMesh.TRANSFORM_3D
+	batch.instance_count = maxi(5, int(foliage_count * 0.7))
+	var rock_mesh := SphereMesh.new()
+	rock_mesh.radius = 0.24
+	rock_mesh.height = 0.18
+	rock_mesh.radial_segments = 6
+	rock_mesh.rings = 3
+	var material := _biome_material(biome)
+	material.albedo_color = material.albedo_color.darkened(0.22)
+	material.roughness = 0.98
+	rock_mesh.material = material
+	batch.mesh = rock_mesh
+	for index in batch.instance_count:
+		var x := float((index * 19) % 31) - 15.0
+		var z := float((index * 23) % 31) - 15.0
+		var scale := 0.55 + float(index % 4) * 0.16
+		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3(scale, 0.65 * scale, scale)), Vector3(x, 0.12, z)))
+	debris.multimesh = batch
+	add_child(debris)
 
 func _create_asset_pack_dressing(biome: String) -> void:
 	# Imported asset-pack scenes are optional presentation layers.  The procedural
