@@ -282,6 +282,7 @@ The player and spawned food now follow the authored elevation function with grav
 108. Added automated six-species Adventure startup, ability/quest coverage, and persistence validation.
 109. Added cross-species authored-asset and save-isolation validation for the expanded roster.
 110. Added deterministic six-card selection layout coverage for keyboard and gamepad focus navigation.
+111. Added reusable row-wrapping selection navigation rules with keyboard/gamepad regression tests.
 
 ## Release Readiness
 

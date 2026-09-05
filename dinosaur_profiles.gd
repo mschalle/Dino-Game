@@ -4,6 +4,18 @@ extends RefCounted
 static func all() -> Array[DinosaurProfile]:
 	return [t_rex(), velociraptor(), triceratops(), ankylosaurus(), parasaurolophus(), carnotaurus()]
 
+static func selection_neighbor(index: int, direction: String, count: int = 6, columns: int = 3) -> int:
+	if count <= 0:
+		return -1
+	var row := index / columns
+	var column := index % columns
+	match direction:
+		"left": column = (column - 1 + columns) % columns
+		"right": column = (column + 1) % columns
+		"up": row = maxi(0, row - 1)
+		"down": row = mini((count - 1) / columns, row + 1)
+	return mini(count - 1, row * columns + column)
+
 static func by_id(species_id: String) -> DinosaurProfile:
 	for profile in all():
 		if profile.id == species_id:

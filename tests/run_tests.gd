@@ -14,6 +14,7 @@ func _run_tests() -> void:
 	_test_all_playable_species()
 	_test_species_asset_and_save_isolation()
 	_test_selection_roster_layout()
+	_test_selection_navigation()
 	_test_world_chunks()
 	_test_habitat_rules()
 	_test_world_streaming()
@@ -119,6 +120,12 @@ func _test_selection_roster_layout() -> void:
 		var row := index / 3
 		_check(column >= 0 and column < 3 and row >= 0, "Selection card grid position should be focusable")
 	_check(profiles.size() == 6, "Selection roster should expose six playable dinosaurs")
+
+func _test_selection_navigation() -> void:
+	_check(DinosaurProfiles.selection_neighbor(0, "right") == 1, "Selection right navigation should advance")
+	_check(DinosaurProfiles.selection_neighbor(0, "left") == 2, "Selection left navigation should wrap the row")
+	_check(DinosaurProfiles.selection_neighbor(0, "down") == 3, "Selection down navigation should move to the next row")
+	_check(DinosaurProfiles.selection_neighbor(3, "up") == 0, "Selection up navigation should return to the prior row")
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
