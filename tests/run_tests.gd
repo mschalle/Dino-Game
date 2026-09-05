@@ -17,6 +17,7 @@ func _run_tests() -> void:
 	_test_endless_progression_all_species()
 	_test_endless_scaling_rules()
 	_test_release_readiness()
+	_test_windows_export_preset()
 	_test_selection_roster_layout()
 	_test_selection_navigation()
 	_test_selection_focus_mapping()
@@ -211,6 +212,12 @@ func _test_endless_scaling_rules() -> void:
 	var scarcity_late := mini(int(720.0 / 180.0), 4)
 	_check(scarcity_start == 0 and scarcity_late == 4, "Endless scarcity should increase in bounded steps")
 	_check(maxi(3, 5 - scarcity_late) >= 3, "Endless scarcity should preserve tier-1 food availability")
+
+func _test_windows_export_preset() -> void:
+	_check(FileAccess.file_exists("res://export_presets.cfg"), "Windows export preset should be checked in")
+	var preset := FileAccess.get_file_as_string("res://export_presets.cfg")
+	_check(preset.contains("platform=\"Windows Desktop\""), "Export preset should target Windows Desktop")
+	_check(preset.contains("runnable=true"), "Windows export preset should be runnable")
 
 func _test_release_readiness() -> void:
 	_check(FileAccess.file_exists("res://project.godot"), "Release build should include project settings")
