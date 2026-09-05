@@ -240,6 +240,8 @@ The player and spawned food now follow the authored elevation function with grav
 66. Added route-finding validation between distant reserve biomes.
 67. Added three expansion playable species through data-driven profiles.
 68. Updated selection layout with scrollable six-species support.
+69. Authored and exported the Ankylosaurus playable GLB through the Blender pack generator.
+70. Added playable-model asset coverage for Ankylosaurus, Parasaurolophus, and Carnotaurus.
 
 ## Release Readiness
 

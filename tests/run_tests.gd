@@ -56,6 +56,8 @@ func _test_profiles() -> void:
 	_check(DinosaurProfiles.t_rex().diet == "carnivore", "T. rex must eat prey")
 	_check(FileAccess.file_exists("res://assets/models/dinosaurs/t_rex.glb"), "The first imported T. rex GLB should be present")
 	_check(FileAccess.file_exists("res://assets/models/dinosaurs/t_rex_hero.glb"), "The higher-resolution T. rex hero GLB should be present")
+	for playable_model_id in ["ankylosaurus", "parasaurolophus", "carnotaurus"]:
+		_check(FileAccess.file_exists("res://assets/models/dinosaurs/%s.glb" % playable_model_id), "%s playable GLB should be present" % playable_model_id)
 	for model_id in ["velociraptor", "triceratops", "psittacosaurus", "dryosaurus", "parasaurolophus", "dilophosaurus", "carnotaurus", "allosaurus"]:
 		_check(FileAccess.file_exists("res://assets/models/dinosaurs/%s.glb" % model_id), "%s GLB should be present" % model_id)
 	for profile in profiles:

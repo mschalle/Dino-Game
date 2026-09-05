@@ -6,6 +6,7 @@ os.makedirs(OUT, exist_ok=True)
 SPECIES = {
     "velociraptor": ((0.25,0.48,0.72), (0.92,0.78,0.30), "biped"),
     "triceratops": ((0.55,0.42,0.28), (0.92,0.78,0.38), "quad"),
+    "ankylosaurus": ((0.35,0.48,0.28), (0.84,0.70,0.30), "quad"),
     "psittacosaurus": ((0.42,0.68,0.34), (0.95,0.72,0.32), "small"),
     "dryosaurus": ((0.36,0.58,0.30), (0.85,0.90,0.42), "small"),
     "parasaurolophus": ((0.40,0.55,0.65), (0.95,0.72,0.35), "large"),
