@@ -376,6 +376,7 @@ The player and spawned food now follow the authored elevation function with grav
 202. Added reserve-wide navigation slope and climb validation to protect accessible quest routes across all authored chunks.
 203. Added a repeatable Windows export smoke-test script and explicit export-filter defaults for the checked-in preset.
 204. Added export-template availability reporting to roadmap status so packaging blockers are visible without obscuring code validation.
+205. Added a strict `-RequireExportTemplates` roadmap-status flag for release-candidate packaging gates.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

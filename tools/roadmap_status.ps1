@@ -1,6 +1,7 @@
 param(
     [string]$ProjectPath = (Split-Path -Parent $PSScriptRoot),
-    [switch]$RunValidation
+    [switch]$RunValidation,
+    [switch]$RequireExportTemplates
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,6 +38,9 @@ if ((Test-Path -LiteralPath $debugTemplate) -and (Test-Path -LiteralPath $releas
     Write-Host "Windows export templates: INSTALLED"
 } else {
     Write-Host "Windows export templates: MISSING (packaging gate pending)"
+    if ($RequireExportTemplates) {
+        throw "Windows export templates are required but missing"
+    }
 }
 
 if ($RunValidation) {
