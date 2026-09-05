@@ -325,6 +325,7 @@ The player and spawned food now follow the authored elevation function with grav
 151. Applied per-profile navigation layers and agent radius after streamed chunk instantiation; slope and climb remain profile metadata for editor baking.
 152. Exposed per-profile slope and climb limits on streamed navigation regions for runtime inspection.
 153. Added spawn-table versus habitat-rule consistency validation for all sixteen chunks.
+154. Added plant-food availability consistency validation for every habitat profile.
 
 ## Release Readiness
 

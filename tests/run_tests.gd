@@ -244,6 +244,7 @@ func _test_world_chunks() -> void:
 			_check((rules.get("prey_tiers", []) as Array).has(int(tier)), "%s prey tier must match habitat rules" % chunk.chunk_id)
 		for tier in chunk.spawn_table.get("predators", []):
 			_check((rules.get("predator_tiers", []) as Array).has(int(tier)), "%s predator tier must match habitat rules" % chunk.chunk_id)
+		_check(bool(chunk.spawn_table.get("plants", false)) == bool(rules.get("plants", false)), "%s plant availability must match habitat rules" % chunk.chunk_id)
 		var scene := load(chunk.scene_path) as PackedScene
 		var visual_root := scene.instantiate()
 		root.add_child(visual_root)
