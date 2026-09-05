@@ -858,6 +858,15 @@ func _test_herd_context() -> void:
 	var context := prey.herd_context()
 	_check(context.get("id", "") == "tier_1" and not bool(context.get("leader", true)), "Prey should expose herd context")
 	_check((context.get("anchor", Vector3.ZERO) as Vector3).x == 2.0, "Herd followers should retain their anchor")
+	var sibling := PreyDino.new()
+	sibling.setup("Herd Sibling", 1, Color.WHITE)
+	root.add_child(sibling)
+	sibling.set_herd_context("tier_1", false, Vector3.ZERO)
+	prey.position = Vector3.ZERO
+	sibling.position = Vector3(2.0, 0.0, 0.0)
+	prey.alert_herd(Vector3(-2.0, 0.0, 0.0))
+	_check(sibling.state == "flee", "Nearby herd members should flee together")
+	sibling.free()
 	prey.free()
 
 func _test_low_level_food_supply() -> void:

@@ -119,6 +119,17 @@ func set_herd_context(id: String, is_leader: bool, anchor: Vector3) -> void:
 func herd_context() -> Dictionary:
 	return {"id": herd_id, "leader": herd_leader, "anchor": herd_anchor}
 
+func alert_herd(threat_position: Vector3) -> void:
+	if herd_id.is_empty():
+		return
+	for sibling in get_tree().get_nodes_in_group("prey"):
+		var other := sibling as PreyDino
+		if other == null or other == self or other.herd_id != herd_id or not other.visible:
+			continue
+		if other.global_position.distance_to(global_position) <= 12.0:
+			other.state = "flee"
+			other.base_position = other.global_position + (other.global_position - threat_position).normalized() * 3.0
+
 func _navigation_direction(target: Vector3) -> Vector3:
 	var direct := target - global_position
 	direct.y = 0.0
@@ -142,6 +153,7 @@ func receive_attack(damage: float, attacker_position: Vector3) -> bool:
 		creature_defeated.emit(self, creature_profile)
 	else:
 		state = "flee"
+		alert_herd(attacker_position)
 	return true
 
 func _wander() -> void:
