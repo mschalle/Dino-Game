@@ -435,6 +435,40 @@ func _create_ambient_particles(biome: String) -> void:
 	process_material.emission_box_extents = Vector3(24.0, 3.0, 24.0)
 	particles.process_material = process_material
 	add_child(particles)
+	_create_weather_particles(biome, effects_scale)
+
+func _create_weather_particles(biome: String, effects_scale: float) -> void:
+	var weather_kind := ""
+	if biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
+		weather_kind = "mist"
+	elif biome == "Glacier Valley":
+		weather_kind = "snow"
+	elif biome == "Redstone Badlands" or biome == "Saltwind Dunes" or biome == "Volcanic Foothills":
+		weather_kind = "dust"
+	if weather_kind.is_empty():
+		return
+	var particles := GPUParticles3D.new()
+	particles.name = "BiomeWeather_%s" % weather_kind
+	particles.amount = maxi(4, int(18.0 * effects_scale))
+	particles.lifetime = 4.0 if weather_kind == "mist" else 2.5
+	particles.visibility_aabb = AABB(Vector3(-30.0, -2.0, -30.0), Vector3(60.0, 14.0, 60.0))
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(0.74, 0.86, 0.92, 0.16) if weather_kind == "mist" else Color(0.9, 0.9, 0.82, 0.3)
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2(0.12, 0.12) if weather_kind != "snow" else Vector2(0.2, 0.2)
+	mesh.material = material
+	particles.draw_pass_1 = mesh
+	var process_material := ParticleProcessMaterial.new()
+	process_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	process_material.emission_box_extents = Vector3(25.0, 5.0, 25.0)
+	process_material.gravity = Vector3(0.0, -0.12 if weather_kind == "snow" else -0.02, 0.0)
+	process_material.initial_velocity_min = 0.1 if weather_kind == "mist" else 0.35
+	process_material.initial_velocity_max = 0.25 if weather_kind == "mist" else 0.7
+	process_material.spread = 45.0
+	particles.process_material = process_material
+	add_child(particles)
 
 func _create_navigation() -> void:
 	var region := NavigationRegion3D.new()
