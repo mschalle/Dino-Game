@@ -17,6 +17,7 @@ func _ready() -> void:
 	_create_ground(biome)
 	_create_elevation(biome)
 	_create_vegetation(biome)
+	_create_water(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -128,3 +129,21 @@ func _create_vegetation(biome: String) -> void:
 		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * (0.8 + float(index % 3) * 0.15)), Vector3(x, 0.35, z)))
 	foliage.multimesh = batch
 	add_child(foliage)
+
+func _create_water(biome: String) -> void:
+	if biome != "River Wetlands":
+		return
+	var water := MeshInstance3D.new()
+	water.name = "WaterSurface"
+	var surface := PlaneMesh.new()
+	surface.size = Vector2(24.0, 18.0)
+	water.mesh = surface
+	water.position = Vector3(6.0, 0.08, 5.0)
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color("#55b9d1")
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color.a = 0.72
+	material.roughness = 0.12
+	material.metallic = 0.05
+	water.material_override = material
+	add_child(water)

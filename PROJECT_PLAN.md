@@ -250,6 +250,7 @@ The player and spawned food now follow the authored elevation function with grav
 76. Added lightweight per-biome ground meshes and static collision to streamed chunk scenes.
 77. Added biome-specific elevated terrain forms with matching collision for ridge, wetlands, meadow, and badlands chunks.
 78. Added deterministic low-cost MultiMesh vegetation batches to every streamed biome chunk.
+79. Added a shallow translucent water surface to the River Wetlands chunk with biome-specific validation.
 
 ## Release Readiness
 
