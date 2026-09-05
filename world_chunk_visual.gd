@@ -214,12 +214,26 @@ func _create_water(biome: String) -> void:
 func _create_ambient_particles(biome: String) -> void:
 	var particles := GPUParticles3D.new()
 	particles.name = "AmbientParticles"
-	particles.amount = 10 if biome == "River Wetlands" else 7
+	var particle_count := 7
+	if biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
+		particle_count = 10
+	elif biome == "Volcanic Foothills":
+		particle_count = 5
+	elif biome == "Glacier Valley" or biome == "Highland Plateau":
+		particle_count = 4
+	particles.amount = particle_count
 	particles.lifetime = 5.0
 	particles.visibility_aabb = AABB(Vector3(-30.0, -1.0, -30.0), Vector3(60.0, 12.0, 60.0))
 	var particle_material := StandardMaterial3D.new()
 	particle_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	particle_material.albedo_color = Color("#d8f1b0") if biome != "Redstone Badlands" else Color("#f5c78c")
+	var particle_color := Color("#d8f1b0")
+	if biome == "Redstone Badlands" or biome == "Volcanic Foothills":
+		particle_color = Color("#f5c78c")
+	elif biome == "Glacier Valley" or biome == "Highland Plateau":
+		particle_color = Color("#d8f4ff")
+	elif biome == "Moonlit Grove":
+		particle_color = Color("#b5d2ff")
+	particle_material.albedo_color = particle_color
 	var particle_mesh := QuadMesh.new()
 	particle_mesh.size = Vector2(0.08, 0.08)
 	particle_mesh.material = particle_material

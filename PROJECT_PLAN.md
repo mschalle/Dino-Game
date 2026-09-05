@@ -314,6 +314,7 @@ The player and spawned food now follow the authored elevation function with grav
 140. Added distinct materials and elevation forms for all ten newly authored biomes.
 141. Added water surfaces to Coastal Marsh and Cypress Basin with biome-specific styling.
 142. Tuned batched vegetation density and scale for sparse, wetland, forest, and highland biomes.
+143. Added restrained biome-specific ambient particle profiles for wetland, volcanic, icy, and moonlit zones.
 
 ## Release Readiness
 
