@@ -615,6 +615,7 @@ The player and spawned food now follow the authored elevation function with grav
 334. Added gamepad challenge skipping, child-friendly on-screen skip guidance, and automatic reachable-challenge replacement when an event target disappears.
 335. Added persistent field-guide discoveries and per-species challenge records, including duplicate-safe event and ten-challenge badges.
 336. Added old-save migration and reload coverage for field-guide defaults and species-isolated challenge progression records.
+337. Added deterministic 60-minute Endless endurance coverage for every playable species and expanded ecosystem soaking to two simulated hours.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

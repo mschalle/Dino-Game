@@ -17,6 +17,7 @@ func _run_tests() -> void:
 	_test_species_asset_and_save_isolation()
 	_test_all_species_endless_unlocks()
 	_test_endless_progression_all_species()
+	_test_stage_k_endless_endurance()
 	_test_endless_scaling_rules()
 	_test_world_events()
 	_test_endless_challenges()
@@ -226,6 +227,19 @@ func _test_endless_progression_all_species() -> void:
 		_check(float(records.get(profile.id, {}).get("best_survival_seconds", 0.0)) >= 45.0, "%s Endless record should persist" % profile.id)
 		_check(int(records.get(profile.id, {}).get("best_quests", 0)) >= 2, "%s Endless quest record should persist" % profile.id)
 	# SaveSystem is RefCounted; allow reference counting to release it naturally.
+
+func _test_stage_k_endless_endurance() -> void:
+	for profile in DinosaurProfiles.all():
+		var session := GameSession.new()
+		session.start(profile, "endless")
+		for second in 3600:
+			session.tick(1.0, false)
+			if second % 35 == 0:
+				session.consume("plant" if profile.diet == "herbivore" else "prey", 1)
+			if session.defeat_in_progress:
+				session.respawn_at_stage_floor()
+		_check(session.survival_time == 3600.0, "%s should complete a deterministic 60-minute Endless endurance run" % profile.id)
+		_check(session.defeat_count == 0, "%s endurance run should retain a recoverable food cadence" % profile.id)
 
 func _test_endless_scaling_rules() -> void:
 	var awareness_start := 1.0 + minf(0.0 / 600.0, 0.75)
@@ -672,7 +686,7 @@ func _test_long_streaming_session() -> void:
 	root.add_child(spawner)
 	spawner.set_active_creature_limit(25)
 	spawner.configure(true)
-	for step in 3600: # 30 minutes at a half-second simulation tick.
+	for step in 14400: # Two hours at a half-second simulation tick.
 		var grid := Vector2i(step % 3, (step / 3) % 3)
 		manager.update_player_chunk(grid)
 		manager.tick_respawn_cooldowns(0.5)
@@ -684,7 +698,7 @@ func _test_long_streaming_session() -> void:
 					break
 		var budget := manager.active_population_budget()
 		_check(int(budget.get("prey", 0)) <= 7, "Long session population budget must remain bounded")
-		_check(spawner.get_children().filter(func(node: Node) -> bool: return node is PreyDino).size() <= 25, "Thirty-minute Endless simulation must stay within the creature limit")
+		_check(spawner.get_children().filter(func(node: Node) -> bool: return node is PreyDino).size() <= 25, "Two-hour Endless simulation must stay within the creature limit")
 	_check(manager.get_tier_respawn_cooldown("fernwood", "predator", 1) <= 0.0, "Long session cooldowns should eventually expire")
 	var tier_one_count := 0
 	var herd_counts: Dictionary = {}
@@ -694,9 +708,9 @@ func _test_long_streaming_session() -> void:
 			if prey.nutrition == 1:
 				tier_one_count += 1
 			herd_counts[prey.herd_id] = int(herd_counts.get(prey.herd_id, 0)) + 1
-	_check(tier_one_count >= 3, "Thirty-minute Endless simulation must retain Hatchling food")
+	_check(tier_one_count >= 3, "Two-hour Endless simulation must retain Hatchling food")
 	for herd_id in herd_counts:
-		_check(int(herd_counts[herd_id]) <= 4, "Thirty-minute Endless simulation must not duplicate herd %s" % herd_id)
+		_check(int(herd_counts[herd_id]) <= 4, "Two-hour Endless simulation must not duplicate herd %s" % herd_id)
 	spawner.free()
 
 func _test_main_predator_gate_helper() -> void:
