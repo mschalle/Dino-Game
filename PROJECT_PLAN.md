@@ -246,6 +246,7 @@ The player and spawned food now follow the authored elevation function with grav
 72. Added regression coverage proving every biome scene instantiates a visible landmark mesh and readable label.
 73. Positioned streamed chunk scenes from their authored grid coordinates to prevent biome overlap.
 74. Applied persisted chunk state when streamed biome scenes are instantiated after reload.
+75. Applied authored navigation constraints to loaded biome scene roots for runtime alignment.
 
 ## Release Readiness
 

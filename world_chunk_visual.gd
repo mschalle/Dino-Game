@@ -2,6 +2,12 @@ extends Node3D
 
 var chunk_state: Dictionary = {}
 
+func apply_chunk_profile(profile: RefCounted) -> void:
+	set_meta("navigation_layers", profile.navigation_layers)
+	set_meta("agent_radius", profile.agent_radius)
+	set_meta("max_slope_degrees", profile.max_slope_degrees)
+	set_meta("max_climb", profile.max_climb)
+
 func apply_chunk_state(state: Dictionary) -> void:
 	chunk_state = state.duplicate(true)
 
