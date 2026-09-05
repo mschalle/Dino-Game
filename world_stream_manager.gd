@@ -139,6 +139,9 @@ func get_tier_respawn_cooldown(chunk_id: String, role: String, tier: int) -> flo
 	var cooldowns: Dictionary = get_chunk_state(chunk_id).get("tier_respawn_cooldowns", {})
 	return maxf(0.0, float(cooldowns.get("%s_%d" % [role, tier], 0.0)))
 
+func tier_respawn_ready(chunk_id: String, role: String, tier: int) -> bool:
+	return get_tier_respawn_cooldown(chunk_id, role, tier) <= 0.0
+
 func get_respawn_cooldown(chunk_id: String) -> float:
 	return maxf(0.0, float(get_chunk_state(chunk_id).get("respawn_cooldown", 0.0)))
 

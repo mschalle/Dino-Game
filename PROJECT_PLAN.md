@@ -268,6 +268,7 @@ The player and spawned food now follow the authored elevation function with grav
 94. Deferred renewable food replenishment while active habitat respawn cooldowns are still running.
 95. Added independent per-role and per-tier respawn cooldowns to chunk state.
 96. Connected active tier cooldowns to prey replenishment so only affected tiers pause.
+97. Added role-neutral tier readiness checks for independent predator and prey respawn behavior.
 
 ## Release Readiness
 

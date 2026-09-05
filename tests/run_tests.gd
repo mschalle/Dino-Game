@@ -179,6 +179,8 @@ func _test_world_streaming() -> void:
 	_check(is_equal_approx(active_tier_cooldowns.get("predator_3", 0.0), 10.0), "Active tier cooldowns should expose persisted values")
 	manager.tick_respawn_cooldowns(1.0)
 	_check(manager.get_tier_respawn_cooldown("redstone_badlands", "predator", 3) > 0.0, "Tier respawn cooldown should tick independently")
+	_check(not manager.tier_respawn_ready("redstone_badlands", "predator", 3), "Predator tier should remain unavailable during cooldown")
+	_check(manager.tier_respawn_ready("redstone_badlands", "prey", 3), "Unaffected prey tier should remain available")
 	var holder := Node3D.new()
 	root.add_child(holder)
 	manager.instantiate_chunk("nest_basin", holder)
