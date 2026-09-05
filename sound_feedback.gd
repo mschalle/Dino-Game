@@ -62,6 +62,17 @@ func play_growth() -> void:
 func play_warning() -> void:
 	_queue_tone(220.0, 0.16, 0.18)
 
+func play_environment_cue(biome: String) -> void:
+	var base := 180.0
+	if biome.find("Wetland") >= 0 or biome.find("Marsh") >= 0:
+		base = 260.0
+	elif biome.find("Ridge") >= 0 or biome.find("Highland") >= 0 or biome.find("Volcanic") >= 0:
+		base = 135.0
+	elif biome.find("Glacier") >= 0:
+		base = 330.0
+	_queue_tone(base, 0.18, 0.08)
+	_queue_tone(base * 1.25, 0.24, 0.06)
+
 func _queue_tone(frequency: float, duration: float, volume: float) -> void:
 	tone_queue.append({"frequency": frequency, "duration": duration, "volume": volume})
 

@@ -133,7 +133,7 @@ func _defaults() -> Dictionary:
 		"event_discoveries": [],
 		"records": {},
 		"chunk_states": {},
-		"settings": {"large_text": true, "ui_scale": 1.0, "high_contrast": false, "reduced_flashes": true, "effects_volume": 0.7}
+		"settings": {"large_text": true, "ui_scale": 1.0, "high_contrast": false, "reduced_flashes": true, "effects_volume": 0.7, "environment_quality": "medium", "weather_enabled": true}
 	}
 
 func _merge_defaults(loaded: Dictionary) -> Dictionary:

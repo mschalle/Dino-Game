@@ -9,6 +9,7 @@ const PROFILES = preload("res://dinosaur_profiles.gd")
 const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
 const FOOD_TOKEN = preload("res://food_token.gd")
 const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
+const ENVIRONMENT_QUALITY = preload("res://environment_quality.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
 const ENDLESS_CHALLENGE_SYSTEM = preload("res://endless_challenge_system.gd")
@@ -63,6 +64,7 @@ func _ready() -> void:
 	randomize()
 	_ensure_default_inputs()
 	save_system.load_data()
+	ENVIRONMENT_QUALITY.configure(save_system.data.get("settings", {}))
 	_apply_saved_bindings()
 	_create_world()
 	world_stream = WORLD_STREAM_MANAGER.new()
@@ -138,25 +140,39 @@ func _create_world() -> void:
 	var environment := WorldEnvironment.new()
 	environment.name = "LegacyEnvironment"
 	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color("#8ed9f6")
+	env.background_mode = Environment.BG_SKY
+	var sky := Sky.new()
+	var sky_material := ProceduralSkyMaterial.new()
+	sky_material.sky_top_color = Color("#263d58")
+	sky_material.sky_horizon_color = Color("#c2b79f")
+	sky_material.ground_bottom_color = Color("#1b242b")
+	sky_material.ground_horizon_color = Color("#8f806c")
+	sky_material.sun_angle_max = 18.0
+	sky.sky_material = sky_material
+	env.sky = sky
+	env.background_color = Color("#8f806c")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("#fff3cd")
-	env.ambient_light_energy = 0.78
+	env.ambient_light_color = Color("#d7d8cb")
+	env.ambient_light_energy = 0.62
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.tonemap_exposure = 1.12
 	env.fog_enabled = true
-	env.fog_light_color = Color("#b9e8f2")
-	env.fog_density = 0.006
-	env.fog_sky_affect = 0.18
+	env.fog_light_color = Color("#a9a18e")
+	env.fog_density = 0.0045
+	env.fog_sky_affect = 0.32
+	env.fog_height = 1.5
+	env.fog_height_density = 0.018
 	environment.environment = env
 	add_child(environment)
 	var light := DirectionalLight3D.new()
 	light.name = "ValleySun"
 	light.rotation_degrees = Vector3(-52, -35, 0)
-	light.light_color = Color("#fff0bd")
-	light.light_energy = 1.2
+	light.light_color = Color("#ffe2b0")
+	light.light_energy = 1.35
 	light.shadow_enabled = true
-	light.directional_shadow_max_distance = 90.0
+	light.directional_shadow_max_distance = float(ENVIRONMENT_QUALITY.preset(save_system.data.get("settings", {})).get("shadow_distance", 90.0))
+	light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	light.light_angular_distance = 1.8
 	add_child(light)
 	var ground := MeshInstance3D.new()
 	ground.name = "LegacyValleyGround"
@@ -170,6 +186,7 @@ func _create_world() -> void:
 	terrain_material.vertex_color_use_as_albedo = true
 	ground.material_override = terrain_material
 	add_child(ground)
+	_add_authored_hero_valley()
 	_create_terrain_collision()
 	_create_navigation_region()
 	for index in 30:
@@ -177,6 +194,20 @@ func _create_world() -> void:
 	_create_habitat_landmarks()
 	_create_waterfall()
 	_create_fireflies()
+
+func _add_authored_hero_valley() -> void:
+	var terrain_path := "res://assets/environment/hero_valley.glb"
+	if not ResourceLoader.exists(terrain_path):
+		return
+	var packed := load(terrain_path) as PackedScene
+	if packed == null:
+		return
+	var authored := packed.instantiate() as Node3D
+	if authored == null:
+		return
+	authored.name = "AuthoredHeroValley"
+	authored.position = Vector3.ZERO
+	add_child(authored)
 
 func _update_world_stream() -> void:
 	if world_stream == null or player == null:
@@ -191,6 +222,8 @@ func _on_chunk_activated(chunk_id: String) -> void:
 			var chunk_profile: RefCounted = world_stream.profile_for_chunk(chunk_id)
 			if chunk_profile != null:
 				hud.show_message("Entering %s" % chunk_profile.biome)
+				if sounds != null:
+					sounds.play_environment_cue(chunk_profile.biome)
 
 func _on_chunk_deactivated(chunk_id: String) -> void:
 	_cancel_world_event("the habitat unloaded")
@@ -763,8 +796,8 @@ func _try_consume(power_bite: bool) -> bool:
 	player.play_combat_animation(power_bite)
 	session.record_attack(damage)
 	sounds.play_ability()
-	var target_profile = target.get("creature_profile")
-	var target_combat = target.get("combat")
+	var target_profile: Variant = target.get("creature_profile")
+	var target_combat: Variant = target.get("combat")
 	active_target = target
 	hud.show_target(target_profile.display_name, target_profile.tier, target_combat.health, target_combat.max_health)
 	_spawn_hit_burst(target.global_position)
@@ -779,13 +812,37 @@ func _spawn_hit_burst(at_position: Vector3) -> void:
 	mesh.radius = 0.18
 	mesh.height = 0.36
 	burst.mesh = mesh
-	burst.material_override = _glow_material(Color("#fff3a6"))
+	burst.material_override = _glow_material(Color("#e8a36e"))
 	burst.global_position = at_position + Vector3.UP * 0.8
 	run_root.add_child(burst)
 	var tween := burst.create_tween()
 	tween.tween_property(burst, "scale", Vector3.ONE * 2.2, 0.16)
 	tween.tween_property(burst, "modulate:a", 0.0, 0.18)
 	tween.tween_callback(burst.queue_free)
+	_spawn_impact_decal(at_position)
+
+func _spawn_impact_decal(at_position: Vector3) -> void:
+	var decal := Decal.new()
+	decal.name = "ImpactMark"
+	decal.size = Vector3(0.55, 0.08, 0.55)
+	decal.position = at_position + Vector3.UP * 0.03
+	decal.modulate = Color(0.42, 0.16, 0.1, 0.48)
+	decal.texture_albedo = _impact_texture()
+	run_root.add_child(decal)
+	var tween := decal.create_tween()
+	tween.tween_interval(1.2)
+	tween.tween_property(decal, "modulate:a", 0.0, 1.0)
+	tween.tween_callback(decal.queue_free)
+
+func _impact_texture() -> Texture2D:
+	var image := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	for y in 16:
+		for x in 16:
+			var dx := float(x - 8) / 8.0
+			var dy := float(y - 8) / 8.0
+			var edge: float = clampf(1.0 - (dx * dx + dy * dy), 0.0, 1.0)
+			image.set_pixel(x, y, Color(0.35, 0.08, 0.03, edge * 0.72))
+	return ImageTexture.create_from_image(image)
 
 func _claim_food_token(token) -> bool:
 	var reward: Dictionary = token.claim()

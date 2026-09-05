@@ -35,6 +35,7 @@ var prey_target: PreyDino
 var passage_target := Vector3.ZERO
 var passage_return_home := Vector3.ZERO
 var passage_active := false
+var impact_timer := 0.0
 
 func setup(new_strength: int, new_position: Vector3) -> void:
 	strength = new_strength
@@ -62,6 +63,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	combat.tick(delta)
+	impact_timer = maxf(0.0, impact_timer - delta)
 	if combat.is_defeated():
 		defeat_timer -= delta
 		if defeat_timer <= 0.0 and creature_profile.respawn_delay > 0.0 and (respawn_gate.is_null() or respawn_gate.call()):
@@ -206,6 +208,7 @@ func _navigation_direction(target: Vector3) -> Vector3:
 func receive_attack(damage: float, attacker_position: Vector3) -> bool:
 	if not combat.take_hit(damage):
 		return false
+	impact_timer = 0.24
 	var away := (global_position - attacker_position).normalized()
 	global_position += Vector3(away.x, 0.0, away.z) * 0.3
 	if passage_active:
@@ -328,6 +331,14 @@ func _add_leg(leg_position: Vector3, material: Material) -> void:
 	leg_meshes.append(leg)
 
 func _animate_visuals(moving: bool) -> void:
+	if impact_timer > 0.0:
+		rotation.z = sin(impact_timer * 42.0) * 0.08
+		if body_mesh != null:
+			body_mesh.modulate = Color(1.0, 0.68, 0.52)
+		return
+	rotation.z = lerpf(rotation.z, 0.0, 0.25)
+	if body_mesh != null:
+		body_mesh.modulate = Color.WHITE
 	if imported_animation_player != null:
 		var desired := "Run" if moving else "Idle"
 		if imported_animation_player.current_animation != desired:

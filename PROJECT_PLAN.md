@@ -619,6 +619,15 @@ The player and spawned food now follow the authored elevation function with grav
 338. Added automated Adventure-route regression coverage that completes every playable dinosaur's quest chain through its Adult finale.
 339. Recorded the completed automated acceptance evidence and the remaining manual and packaging gates without claiming external verification as complete.
 340. Expanded exploration beyond the original valley clamp and added optional asset-pack biome dressing with procedural fallbacks for missing imports.
+341. Added naturalistic procedural sky, filmic exposure, height fog, warmer directional sunlight, and biome-aware atmospheric skies.
+342. Added persisted Low, Medium, and High environment-quality settings plus a weather-enabled toggle with chunk particle scaling.
+343. Replaced streamed chunk emissive terrain treatment with rough, non-metallic natural materials and preserved procedural fallbacks.
+344. Added restrained impact marks, stronger hit bursts, and biome entry audio cues for the naturalistic adventure presentation.
+345. Added visible geological layering accents to ridge, badland, volcanic, fossil, and highland chunk landforms.
+346. Added shallow shoreline foam dressing and quality-scaled ambient particle effects for streamed water biomes.
+347. Added shared stagger events and brief impact reactions for prey and predator combat presentation.
+348. Added a reproducible Blender hero-valley generator with basin, ridge, wetland, overlook, and biome material regions.
+349. Added an optional authored hero-valley GLB import hook with a safe procedural fallback when the asset is not imported or present.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
@@ -626,7 +635,7 @@ The player and spawned food now follow the authored elevation function with grav
 - Test new, valid, corrupt, and older save files.
 - Run extended Endless sessions to confirm food renewal and difficulty scaling.
 - Playtest keyboard/mouse and gamepad with large-text settings enabled.
-- Confirm no blood, wounds, carcasses, or graphic defeat imagery appears.
+- Confirm lightly graphic impact and injury feedback remains bounded without dismemberment, extreme gore, or prolonged suffering.
 - Package and test a Windows build, then publish a tagged release to GitHub.
 
 ## Historical Roadmap 2.0 — From Base Game to Polished Release
@@ -899,7 +908,30 @@ Gate: zero critical/high defects, saves migrate safely, all required text meets 
 - No more than 25 fully simulated roaming creatures and no unbounded token/effect growth.
 - Chunk transition completes without blocking gameplay under the target storage conditions.
 - All Adventures completable using keyboard/mouse or gamepad alone.
-- No blood, wounds, carcasses, dismemberment, or realistic distress audio.
+- Lightly graphic combat remains bounded: no dismemberment, extreme gore, or prolonged suffering.
+
+### Naturalistic environment and presentation milestone
+
+The project now targets a naturalistic adventure presentation rather than a strictly kid-friendly visual treatment. The world should use semi-realistic terrain, weathered materials, stronger ecological contrast, directional lighting, atmospheric depth, and biome-specific environmental audio while retaining the bright readability needed for objectives and gameplay.
+
+Completed foundation:
+
+- Added a procedural sky, filmic exposure, warmer directional sunlight, height fog, and biome-aware atmospheric skies.
+- Added saved Low/Medium/High environment-quality presets and a weather-enabled setting for future scalable effects.
+- Removed emissive toy-like terrain treatment from streamed chunks and switched to rough, non-metallic natural materials.
+- Added restrained impact marks and warmer hit bursts to support the lightly graphic combat direction without gore escalation.
+
+Remaining implementation:
+
+1. Author hero terrain, distant valley silhouettes, and simplified collision/navigation meshes in Blender.
+2. Add layered rock, soil, mud, leaf-litter, root, footprint, fossil, and shoreline materials.
+3. Expand each biome with hero vegetation, ecological props, landmarks, water transitions, and LOD variants.
+4. Add weather transitions, biome ambience, dynamic music layers, reverb/occlusion, and environmental danger cues.
+5. Add stagger, injury, dirt, vocalization, and retreat presentation to dinosaur combat while keeping defeat rewards readable.
+6. Connect quality presets to foliage, shadows, fog, water, weather, and effect budgets; record frame-time and streaming metrics.
+7. Validate every route, save path, biome transition, combat space, fallback asset path, and Windows performance target.
+
+Gate: the reserve reads as a varied, weathered prehistoric environment; every required route remains navigable; lightly graphic combat is readable without extreme gore; missing assets fall back safely; and the baseline Windows target maintains approximately 60 FPS at 1280×720.
 
 ### Research references
 
@@ -919,5 +951,5 @@ Gate: zero critical/high defects, saves migrate safely, all required text meets 
 - Multiplayer or online accounts.
 - Procedural worlds or a second disconnected reserve map.
 - Flying, swimming, or burrowing playable species.
-- Realistic/graphic combat.
+- Dismemberment, extreme gore, and prolonged realistic suffering.
 - Mobile or console-specific releases.

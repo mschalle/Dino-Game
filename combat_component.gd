@@ -4,6 +4,7 @@ extends RefCounted
 signal health_changed(value: float, maximum: float)
 signal attacked(damage: float)
 signal defeated
+signal staggered(damage: float)
 
 var max_health := 1.0
 var health := 1.0
@@ -23,6 +24,8 @@ func take_hit(damage: float) -> bool:
 	invulnerability_timer = 0.18
 	health = maxf(0.0, health - absf(damage))
 	attacked.emit(damage)
+	if health > 0.0:
+		staggered.emit(damage)
 	health_changed.emit(health, max_health)
 	if health <= 0.0:
 		defeated.emit()

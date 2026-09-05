@@ -1,5 +1,7 @@
 extends Node3D
 
+const ENVIRONMENT_QUALITY = preload("res://environment_quality.gd")
+
 var chunk_state: Dictionary = {}
 
 func apply_chunk_profile(profile: RefCounted) -> void:
@@ -96,14 +98,26 @@ func _create_environment(biome: String) -> void:
 	var environment_node := WorldEnvironment.new()
 	environment_node.name = "BiomeEnvironment"
 	var environment := Environment.new()
-	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = _biome_material(biome).albedo_color.lightened(0.45)
+	environment.background_mode = Environment.BG_SKY
+	var sky := Sky.new()
+	var sky_material := ProceduralSkyMaterial.new()
+	var biome_color := _biome_material(biome).albedo_color
+	sky_material.sky_top_color = biome_color.darkened(0.35)
+	sky_material.sky_horizon_color = biome_color.lightened(0.28)
+	sky_material.ground_bottom_color = biome_color.darkened(0.55)
+	sky_material.ground_horizon_color = biome_color.darkened(0.05)
+	sky.sky_material = sky_material
+	environment.sky = sky
+	environment.background_color = biome_color.lightened(0.25)
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = environment.background_color.lightened(0.15)
-	environment.ambient_light_energy = 0.7 if biome != "Moonlit Grove" and biome != "Glacier Valley" else 0.55
+	environment.ambient_light_energy = 0.55 if biome != "Moonlit Grove" and biome != "Glacier Valley" else 0.42
 	environment.fog_enabled = true
-	environment.fog_light_color = environment.background_color
-	environment.fog_density = float(get_meta("fog_density", 0.006))
+	environment.fog_light_color = biome_color.lightened(0.12)
+	environment.fog_density = float(get_meta("fog_density", 0.006)) * 1.15
+	environment.fog_sky_affect = 0.3
+	environment.fog_height = 1.0
+	environment.fog_height_density = 0.02
 	environment_node.environment = environment
 	add_child(environment_node)
 
@@ -141,9 +155,8 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 		color = Color("#587b62")
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
-	material.emission_enabled = true
-	material.emission = color.darkened(0.35)
-	material.emission_energy_multiplier = 0.35
+	material.roughness = 0.86
+	material.metallic = 0.0
 	return material
 
 func _create_ground(biome: String) -> void:
@@ -169,6 +182,27 @@ func _create_ground(biome: String) -> void:
 	collider.position.y = -0.12
 	body.add_child(collider)
 	add_child(body)
+
+func _create_geology_layers(biome: String, mound_size: Vector3, mound_position: Vector3) -> void:
+	var layered := biome == "Sunstone Ridge" or biome == "Redstone Badlands" or biome == "Volcanic Foothills" or biome == "Fossil Flats" or biome == "Highland Plateau"
+	if not layered:
+		return
+	var layer_color := _biome_material(biome).albedo_color.darkened(0.22)
+	for index in 3:
+		var layer := MeshInstance3D.new()
+		layer.name = "GeologyLayer_%d" % index
+		var mesh := BoxMesh.new()
+		var inset := float(index) * 1.8
+		mesh.size = Vector3(maxf(4.0, mound_size.x - inset), 0.18 + float(index) * 0.08, maxf(4.0, mound_size.z - inset))
+		layer.mesh = mesh
+		layer.position = mound_position + Vector3(0.0, -mound_size.y * 0.38 + float(index) * 0.42, 0.0)
+		var material := _biome_material(biome)
+		material.albedo_color = layer_color.lightened(float(index) * 0.12)
+		material.roughness = 0.94
+		layer.material_override = material
+		layer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		layer.visibility_range_end = 180.0
+		add_child(layer)
 
 func _create_elevation(biome: String) -> void:
 	var size := Vector3(18.0, 1.2, 14.0)
@@ -240,6 +274,7 @@ func _create_elevation(biome: String) -> void:
 	collider.position = position
 	body.add_child(collider)
 	add_child(body)
+	_create_geology_layers(biome, size, position)
 
 func _create_vegetation(biome: String) -> void:
 	var foliage := MultiMeshInstance3D.new()
@@ -250,13 +285,14 @@ func _create_vegetation(biome: String) -> void:
 	foliage.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
-	var foliage_count := 16
+	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
+	var foliage_count := int(16.0 * float(quality["foliage"]))
 	if biome == "River Wetlands" or biome == "Coastal Marsh":
-		foliage_count = 10
+		foliage_count = int(10.0 * float(quality["foliage"]))
 	elif biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Glacier Valley" or biome == "Saltwind Dunes":
-		foliage_count = 6
+		foliage_count = int(6.0 * float(quality["foliage"]))
 	elif biome == "Cypress Basin" or biome == "Redwood Canyon":
-		foliage_count = 22
+		foliage_count = int(22.0 * float(quality["foliage"]))
 	batch.instance_count = foliage_count
 	set_meta("vegetation_base_count", foliage_count)
 	var blade := BoxMesh.new()
@@ -325,20 +361,37 @@ func _create_water(biome: String) -> void:
 	material.metallic = 0.05
 	water.material_override = material
 	add_child(water)
+	var shoreline := MeshInstance3D.new()
+	shoreline.name = "ShorelineFoam"
+	var shoreline_mesh := PlaneMesh.new()
+	shoreline_mesh.size = surface.size + Vector2(1.4, 1.4)
+	shoreline.mesh = shoreline_mesh
+	shoreline.position = water.position + Vector3(0.0, -0.035, 0.0)
+	var shore_material := StandardMaterial3D.new()
+	shore_material.albedo_color = Color(0.74, 0.82, 0.69, 0.28)
+	shore_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	shore_material.roughness = 0.95
+	shoreline.material_override = shore_material
+	shoreline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(shoreline)
 
 func _create_ambient_particles(biome: String) -> void:
+	if not ENVIRONMENT_QUALITY.weather_enabled:
+		return
+	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
+	var effects_scale := float(quality.get("effects", 1.0))
 	var particles := GPUParticles3D.new()
 	particles.name = "AmbientParticles"
 	particles.visibility_range_begin = 0.0
 	particles.visibility_range_end = 90.0
 	particles.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-	var particle_count := 7
+	var particle_count := maxi(2, int(7.0 * effects_scale))
 	if biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
-		particle_count = 10
+		particle_count = maxi(3, int(10.0 * effects_scale))
 	elif biome == "Volcanic Foothills":
-		particle_count = 5
+		particle_count = maxi(2, int(5.0 * effects_scale))
 	elif biome == "Glacier Valley" or biome == "Highland Plateau":
-		particle_count = 4
+		particle_count = maxi(2, int(4.0 * effects_scale))
 	particles.amount = particle_count
 	particles.lifetime = 5.0
 	particles.visibility_aabb = AABB(Vector3(-30.0, -1.0, -30.0), Vector3(60.0, 12.0, 60.0))
