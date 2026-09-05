@@ -233,6 +233,12 @@ func landmark_for_chunk(chunk_id: String) -> Node3D:
 		return null
 	return instance.get_node_or_null("LandmarkSilhouette") as Node3D
 
+func landmark_position_for_chunk(chunk_id: String) -> Variant:
+	var landmark := landmark_for_chunk(chunk_id)
+	if landmark == null:
+		return null
+	return landmark.global_position
+
 func release_chunk(chunk_id: String) -> void:
 	_remove_neighbor_links(chunk_id)
 	if not scene_instances.has(chunk_id):

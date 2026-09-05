@@ -198,6 +198,8 @@ func _test_world_chunks() -> void:
 	_check(stream.is_active("nest_basin") and stream.is_active("fernwood"), "Origin chunk should activate adjacent reserve cells")
 	var nest_instance := stream.instantiate_chunk("nest_basin", root)
 	_check(stream.landmark_for_chunk("nest_basin") != null, "Active chunks should expose their landmark destination")
+	var landmark_position: Variant = stream.landmark_position_for_chunk("nest_basin")
+	_check(landmark_position is Vector3 and is_finite((landmark_position as Vector3).x), "Landmark destination should expose a world-space position")
 	if nest_instance != null:
 		stream.release_chunk("nest_basin")
 	stream.update_player_chunk(Vector2i(2, 1))

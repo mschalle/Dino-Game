@@ -300,6 +300,7 @@ The player and spawned food now follow the authored elevation function with grav
 126. Hardened food-spawner and low-level supply validation against stale or non-prey group members.
 127. Removed invalid manual frees of reference-counted save fixtures and hardened the replenishment assertion.
 128. Added a stream-manager landmark lookup API for quest and navigation destination targeting.
+129. Added world-space landmark destination queries for translated streamed chunks.
 
 ## Release Readiness
 
