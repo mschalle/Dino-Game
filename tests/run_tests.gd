@@ -124,6 +124,18 @@ func _test_all_playable_species() -> void:
 		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
 		_check(profile.adventure_quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
 		_check(profile.growth_thresholds == [0, 5, 12, 25], "%s should use the four-stage growth curve" % profile.id)
+		var quest_ids := {}
+		var previous_quest_stage := -1
+		var has_adult_finale := false
+		for quest in profile.adventure_quests:
+			quest_ids[quest.id] = true
+			_check(quest.required_stage >= previous_quest_stage, "%s quest stages should be ordered" % profile.id)
+			_check(quest.required_stage >= 0 and quest.required_stage < profile.growth_thresholds.size(), "%s quest stage should be valid" % profile.id)
+			if quest.objective_type == "finale":
+				has_adult_finale = quest.required_stage == 3
+			previous_quest_stage = quest.required_stage
+		_check(quest_ids.size() == profile.adventure_quests.size(), "%s quest IDs should be unique" % profile.id)
+		_check(has_adult_finale, "%s should have an Adult-stage finale" % profile.id)
 		var previous_unlock_stage := -1
 		for ability in profile.abilities:
 			_check(ability.unlock_stage >= 0 and ability.unlock_stage < profile.growth_thresholds.size(), "%s ability unlock stage should be valid" % profile.id)
