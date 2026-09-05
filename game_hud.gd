@@ -120,7 +120,7 @@ func update_diagnostics(metrics: Dictionary) -> void:
 	var average_frame_ms := _average_frame_ms()
 	var performance_warning := "  SLOW" if average_frame_ms > 20.0 else ""
 	var biome_text := format_active_biomes(metrics.get("active_biomes", []))
-	diagnostics_label.text = "DEV  %s\nChunks %d  Scenes %d  Landmarks %d  NPCs %d/25  Budget %.0f%%  %.1fms%s" % [biome_text, int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), int(metrics.get("loaded_landmarks", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0, average_frame_ms, performance_warning]
+	diagnostics_label.text = "DEV  %s (%d)\nChunks %d  Scenes %d  Landmarks %d  NPCs %d/25  Budget %.0f%%  %.1fms%s" % [biome_text, int(metrics.get("active_biome_count", 0)), int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), int(metrics.get("loaded_landmarks", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0, average_frame_ms, performance_warning]
 	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 or average_frame_ms > 20.0 else Color("#b8e6ef")
 
 func format_active_biomes(raw_biomes: Variant) -> String:

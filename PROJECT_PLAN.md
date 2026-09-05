@@ -349,6 +349,7 @@ The player and spawned food now follow the authored elevation function with grav
 179. Hardened active-biome enumeration to deduplicate profile names before sorting and exposing them to HUD diagnostics.
 180. Added a direct regression case with distinct chunks sharing one biome name to verify diagnostic deduplication.
 181. Added an explicit `active_biome_count` runtime metric with consistency validation against the deduplicated biome list.
+182. Updated the developer HUD to display the exact active-biome count alongside readable biome names.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.
