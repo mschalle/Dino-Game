@@ -1184,6 +1184,15 @@ func _create_marker(target_position: Vector3, color: Color) -> Node3D:
 	beacon.material_override = _glow_material(color)
 	beacon.position.y = 2.5
 	marker.add_child(beacon)
+	var contrast_ring := MeshInstance3D.new()
+	var contrast_mesh := TorusMesh.new()
+	contrast_mesh.inner_radius = 0.82
+	contrast_mesh.outer_radius = 1.22
+	contrast_ring.mesh = contrast_mesh
+	contrast_ring.material_override = _material(Color(0.03, 0.08, 0.1, 0.9))
+	contrast_ring.position.y = 0.16
+	contrast_ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	marker.add_child(contrast_ring)
 	return marker
 
 func _create_scent_dots() -> void:

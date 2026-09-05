@@ -669,6 +669,7 @@ The player and spawned food now follow the authored elevation function with grav
 388. Applied the saved environment-quality budget during hero-valley creation, preventing authored effects from briefly using default visibility before the first runtime quality update.
 389. Added a persisted F7 daylight-cycle toggle with HUD/help guidance, allowing players to opt out of time-of-day motion while retaining the naturalistic lighting presentation.
 390. Added controller/input regression coverage for the F4 quality, F5 weather, F6 reduced-motion, and F7 daylight-cycle actions, including idempotent bootstrap checks.
+391. Added a dark contrast halo behind each active quest marker ring, keeping objective locations readable against weathered terrain, shadowed biomes, and darker lighting presets.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
