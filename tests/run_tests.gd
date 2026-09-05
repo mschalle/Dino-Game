@@ -20,6 +20,7 @@ func _run_tests() -> void:
 	_test_creature_combat()
 	_test_ai_states()
 	_test_low_level_food_supply()
+	_test_habitat_food_filter()
 	_test_hud_contrast()
 	_test_gameplay_integration()
 	_test_save_recovery()
@@ -120,6 +121,12 @@ func _test_habitat_rules() -> void:
 	_check(not HABITAT_SPAWN_RULES.allows_tier("Nest Basin", "prey", 3), "Nest Basin should not support tier-3 prey")
 	_check(HABITAT_SPAWN_RULES.allows_tier("Redstone Badlands", "predator", 3), "Badlands should support tier-3 predators")
 	_check(not HABITAT_SPAWN_RULES.allows_tier("Ancient Meadow", "predator", 2), "Ancient Meadow should not support predators")
+
+func _test_habitat_food_filter() -> void:
+	var spawner := preload("res://food_spawner.gd").new()
+	spawner.set_spawn_plan([{"role": "prey", "tier": 1}])
+	_check(spawner.allowed_prey_tiers == [1], "Food spawner should accept active habitat prey tiers")
+	spawner.free()
 
 func _test_world_streaming() -> void:
 	var manager = WORLD_STREAM_MANAGER.new()

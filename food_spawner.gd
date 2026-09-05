@@ -9,6 +9,7 @@ const PLANT = preload("res://plant_food.gd")
 var player: PlayerDino
 var respawn_timer := 0.0
 var endless_mode := false
+var allowed_prey_tiers: Array[int] = [1, 2, 3]
 
 func configure(is_endless: bool) -> void:
 	endless_mode = is_endless
@@ -18,6 +19,16 @@ func set_player(new_player: PlayerDino) -> void:
 	player = new_player
 	for prey_node in get_tree().get_nodes_in_group("prey"):
 		(prey_node as PreyDino).set_player(player)
+
+func set_spawn_plan(plan: Array[Dictionary]) -> void:
+	var tiers: Array[int] = []
+	for entry in plan:
+		if entry.get("role", "") == "prey":
+			var tier := int(entry.get("tier", 0))
+			if tier > 0 and not tiers.has(tier):
+				tiers.append(tier)
+	if not tiers.is_empty():
+		allowed_prey_tiers = tiers
 
 func maintain(delta: float, survival_time: float) -> void:
 	respawn_timer -= delta
@@ -40,6 +51,8 @@ func _spawn_to_targets(scarcity: int) -> void:
 		3: maxi(0, 2 - scarcity)
 	}
 	for nutrition in tier_targets:
+		if not allowed_prey_tiers.has(int(nutrition)):
+			continue
 		for index in maxi(0, int(tier_targets[nutrition]) - int(tier_counts[nutrition])):
 			_spawn_prey(int(nutrition))
 	var plant_target := maxi(5, 9 - scarcity)
