@@ -643,6 +643,7 @@ The player and spawned food now follow the authored elevation function with grav
 362. Added F4/F5 runtime controls for cycling environment quality and toggling weather effects, with persisted settings and readable feedback.
 363. Made weather toggles apply immediately to all loaded chunk particle systems while preserving persisted settings for future chunks.
 364. Added daylight-linked global fog color and density so atmospheric depth changes coherently with the sky and sun cycle.
+365. Made F4 quality changes update loaded prop visibility and main sun shadow distance immediately, not only future streamed chunks.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

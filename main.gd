@@ -1555,6 +1555,9 @@ func _cycle_environment_quality() -> void:
 	var next := ENVIRONMENT_QUALITY.next(str(settings.get("environment_quality", "medium")))
 	settings["environment_quality"] = next
 	ENVIRONMENT_QUALITY.configure(settings)
+	var sun := get_node_or_null("ValleySun") as DirectionalLight3D
+	if sun != null:
+		sun.directional_shadow_max_distance = float(ENVIRONMENT_QUALITY.preset({}).get("shadow_distance", 90.0))
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
@@ -1577,6 +1580,11 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 		for child in chunk.get_children():
 			if child is GPUParticles3D and str(child.name).begins_with("BiomeWeather_"):
 				(child as GPUParticles3D).emitting = ENVIRONMENT_QUALITY.weather_enabled
+		var dressing: Node = chunk.get_node_or_null("AssetPackDressing")
+		if dressing != null:
+			var prop_distance := 95.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
+			for visual in dressing.find_children("*", "GeometryInstance3D", true, false):
+				(visual as GeometryInstance3D).visibility_range_end = prop_distance
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):
