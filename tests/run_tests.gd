@@ -99,14 +99,16 @@ func _test_profiles() -> void:
 	root.add_child(prey)
 	_check(prey.imported_animation_player != null, "Imported prey should have an animation player")
 	if prey.imported_animation_player != null:
-		_check(prey.imported_animation_player.has_animation("Idle") and prey.imported_animation_player.has_animation("Defeat"), "Imported prey should expose Idle and Defeat animations")
+		for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+			_check(prey.imported_animation_player.has_animation(animation_name), "Imported prey should expose %s animation" % animation_name)
 	prey.free()
 	var predator := ValleyPredator.new()
 	predator.setup(2, Vector3.ZERO)
 	root.add_child(predator)
 	_check(predator.imported_animation_player != null, "Imported predator should have an animation player")
 	if predator.imported_animation_player != null:
-		_check(predator.imported_animation_player.has_animation("Attack") and predator.imported_animation_player.has_animation("Defeat"), "Imported predator should expose Attack and Defeat animations")
+		for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+			_check(predator.imported_animation_player.has_animation(animation_name), "Imported predator should expose %s animation" % animation_name)
 	predator.free()
 
 func _test_all_playable_species() -> void:
