@@ -277,6 +277,7 @@ The player and spawned food now follow the authored elevation function with grav
 103. Added runtime streaming metrics for active chunks, loaded scenes, NPC count, and population utilization.
 104. Added a compact diagnostics HUD with a warning threshold near the 25-NPC performance target.
 105. Added configurable diagnostics visibility for development versus release-style builds.
+106. Added rolling frame-time sampling and a sustained-performance warning to the diagnostics HUD.
 
 ## Release Readiness
 

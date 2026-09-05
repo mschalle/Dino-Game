@@ -69,6 +69,8 @@ func _ready() -> void:
 	_show_selection()
 
 func _process(delta: float) -> void:
+	if hud != null:
+		hud.record_frame_time(delta)
 	environment_time += delta
 	_animate_environment(delta)
 	if Input.is_action_just_pressed("ui_cancel") and game_active:

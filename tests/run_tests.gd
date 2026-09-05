@@ -28,6 +28,7 @@ func _run_tests() -> void:
 	_test_hud_contrast()
 	_test_runtime_metrics_warning()
 	_test_diagnostics_visibility()
+	_test_frame_sampling()
 	_test_gameplay_integration()
 	_test_main_predator_gate_helper()
 	_test_save_recovery()
@@ -137,6 +138,13 @@ func _test_diagnostics_visibility() -> void:
 	var hud := preload("res://game_hud.gd").new()
 	hud.set_diagnostics_enabled(false)
 	_check(not hud.diagnostics_enabled, "Diagnostics should be configurable for release builds")
+	hud.free()
+
+func _test_frame_sampling() -> void:
+	var hud := preload("res://game_hud.gd").new()
+	for index in 40:
+		hud.record_frame_time(0.025)
+	_check(hud.frame_samples.size() == 30, "Frame sampling should retain a bounded rolling window")
 	hud.free()
 
 func _test_predator_respawn_gate() -> void:

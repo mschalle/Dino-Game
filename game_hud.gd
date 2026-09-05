@@ -20,6 +20,7 @@ var target_panel: ColorRect
 var target_label: Label
 var diagnostics_label: Label
 var diagnostics_enabled := true
+var frame_samples: Array[float] = []
 var target_health_bar: ProgressBar
 var target_timer := 0.0
 var large_text_enabled := true
@@ -116,8 +117,23 @@ func update_diagnostics(metrics: Dictionary) -> void:
 	if not diagnostics_enabled:
 		return
 	var npc_count := int(metrics.get("npc_count", 0))
-	diagnostics_label.text = "DEV  Chunks %d  Scenes %d  NPCs %d/25  Budget %.0f%%" % [int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0]
-	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 else Color("#b8e6ef")
+	var average_frame_ms := _average_frame_ms()
+	var performance_warning := "  SLOW" if average_frame_ms > 20.0 else ""
+	diagnostics_label.text = "DEV  Chunks %d  Scenes %d  NPCs %d/25  Budget %.0f%%  %.1fms%s" % [int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0, average_frame_ms, performance_warning]
+	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 or average_frame_ms > 20.0 else Color("#b8e6ef")
+
+func record_frame_time(delta: float) -> void:
+	frame_samples.append(maxf(0.0, delta * 1000.0))
+	if frame_samples.size() > 30:
+		frame_samples.pop_front()
+
+func _average_frame_ms() -> float:
+	if frame_samples.is_empty():
+		return 0.0
+	var total := 0.0
+	for sample in frame_samples:
+		total += sample
+	return total / float(frame_samples.size())
 
 func set_diagnostics_enabled(enabled: bool) -> void:
 	diagnostics_enabled = enabled
