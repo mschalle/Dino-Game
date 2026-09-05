@@ -416,6 +416,7 @@ The player and spawned food now follow the authored elevation function with grav
 242. Added authored palette propagation to streamed fog light colors and validated complete biome environment color coherence.
 243. Added explicit visibility ranges to streamed batched vegetation and validated bounded foliage distance culling.
 244. Added explicit visibility ranges to streamed landmark silhouettes and validated bounded landmark distance culling.
+245. Added explicit visibility ranges to streamed ambient particles and validated bounded atmospheric distance culling.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

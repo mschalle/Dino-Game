@@ -276,6 +276,9 @@ func _create_water(biome: String) -> void:
 func _create_ambient_particles(biome: String) -> void:
 	var particles := GPUParticles3D.new()
 	particles.name = "AmbientParticles"
+	particles.visibility_range_begin = 0.0
+	particles.visibility_range_end = 90.0
+	particles.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var particle_count := 7
 	if biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
 		particle_count = 10
