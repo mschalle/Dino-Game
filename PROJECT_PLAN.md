@@ -420,6 +420,7 @@ The player and spawned food now follow the authored elevation function with grav
 246. Added explicit visibility ranges to streamed water surfaces and validated bounded wetland distance culling.
 247. Added landmark-label visibility-range validation to preserve readable but bounded destination signage.
 248. Added an explicit visibility range to streamed ground meshes and validated controlled terrain draw distance.
+249. Added explicit visibility ranges to streamed elevated terrain features and validated bounded hill/ridge rendering.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

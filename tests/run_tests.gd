@@ -466,7 +466,9 @@ func _test_world_chunks() -> void:
 			_check(is_equal_approx(float(navigation.get_meta("max_climb", 0.0)), chunk.max_climb), "%s climb metadata should match its profile" % chunk.chunk_id)
 		_check(navigation.navigation_mesh.vertices.size() == 4, "%s navigation mesh should cover its ground pad" % chunk.chunk_id)
 		if chunk.biome != "Nest Basin":
-			_check(visual_root.get_node_or_null("Elevation") != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
+			var elevation := visual_root.get_node_or_null("Elevation") as MeshInstance3D
+			_check(elevation != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
+			_check(elevation.visibility_range_end > elevation.visibility_range_begin, "%s elevated terrain should define a bounded visibility range" % chunk.chunk_id)
 			_check(visual_root.get_node_or_null("ElevationCollision") != null, "%s should create elevated terrain collision" % chunk.chunk_id)
 		var has_labelled_landmark := false
 		var landmark_label_matches := false

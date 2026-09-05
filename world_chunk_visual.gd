@@ -214,6 +214,9 @@ func _create_elevation(biome: String) -> void:
 	var mesh := BoxMesh.new()
 	mesh.size = size
 	mound.mesh = mesh
+	mound.visibility_range_begin = 0.0
+	mound.visibility_range_end = 220.0
+	mound.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	mound.position = position
 	mound.material_override = _biome_material(biome).duplicate()
 	add_child(mound)
