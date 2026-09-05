@@ -77,6 +77,7 @@ func _test_world_chunks() -> void:
 		_check(chunk.has_scene(), "Every initial biome chunk should have a loadable scene shell")
 		_check(chunk.vegetation_density > 0.0, "Every biome needs vegetation density")
 		_check(chunk.fog_density > 0.0, "Every biome needs fog guidance")
+		_check(chunk.navigation_layers > 0, "Every biome needs navigation layers")
 		_check(not chunk.neighbor_ids.is_empty() or chunk.chunk_id == "nest_basin", "Chunks should define connected neighbors")
 
 func _test_world_streaming() -> void:

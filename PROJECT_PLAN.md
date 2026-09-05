@@ -231,6 +231,7 @@ The player and spawned food now follow the authored elevation function with grav
 57. Validated chunk runtime loading through automated tests and headless startup.
 58. Added persistent in-memory chunk state for unload/reload continuity.
 59. Added automated preservation checks for chunk food and quest state.
+60. Added per-biome navigation-layer metadata for future actor-size routing.
 
 ## Release Readiness
 
