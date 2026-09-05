@@ -1585,6 +1585,8 @@ func _cycle_environment_quality() -> void:
 	var sun := get_node_or_null("ValleySun") as DirectionalLight3D
 	if sun != null:
 		sun.directional_shadow_max_distance = float(ENVIRONMENT_QUALITY.preset({}).get("shadow_distance", 90.0))
+	if camera != null:
+		camera.far = 220.0 if ENVIRONMENT_QUALITY.active_id == "low" else (340.0 if ENVIRONMENT_QUALITY.active_id == "high" else 280.0)
 	if valley_environment != null:
 		var ssao_enabled := ENVIRONMENT_QUALITY.active_id != "low"
 		valley_environment.ssao_enabled = ssao_enabled

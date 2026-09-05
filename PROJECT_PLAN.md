@@ -658,6 +658,7 @@ The player and spawned food now follow the authored elevation function with grav
 377. Added live decorative-shadow scaling: Low disables asset-pack and debris shadows while Medium/High restore them in loaded chunks.
 378. Extended live decorative-shadow scaling to central valley tree scenery for consistent Low/Medium/High behavior.
 379. Tuned the gameplay camera for the expanded reserve with a 68-degree field of view, near clipping, and a 340-meter far horizon for distant landmarks and mountains.
+380. Added quality-scaled camera far clipping: 220m Low, 280m Medium, and 340m High, applied immediately by F4.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
