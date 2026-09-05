@@ -233,6 +233,7 @@ The player and spawned food now follow the authored elevation function with grav
 59. Added automated preservation checks for chunk food and quest state.
 60. Added per-biome navigation-layer metadata for future actor-size routing.
 61. Added per-biome agent radius, slope, and climb constraints with validation.
+62. Added serializable snapshot and restore support for streamed chunk state.
 
 ## Release Readiness
 

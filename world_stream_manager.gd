@@ -71,3 +71,9 @@ func set_chunk_state(chunk_id: String, state: Dictionary) -> void:
 
 func get_chunk_state(chunk_id: String) -> Dictionary:
 	return (chunk_states.get(chunk_id, {}) as Dictionary).duplicate(true)
+
+func snapshot_state() -> Dictionary:
+	return chunk_states.duplicate(true)
+
+func restore_state(snapshot: Dictionary) -> void:
+	chunk_states = snapshot.duplicate(true)

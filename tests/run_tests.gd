@@ -102,6 +102,11 @@ func _test_world_streaming() -> void:
 	manager.set_chunk_state("fernwood", {"food_claimed": 3, "quest_marker": "trail"})
 	_check(manager.get_chunk_state("fernwood").get("food_claimed", 0) == 3, "Chunk state should survive release")
 	_check(manager.get_chunk_state("fernwood").get("quest_marker", "") == "trail", "Chunk quest state should survive release")
+	var snapshot: Dictionary = manager.snapshot_state()
+	var restored = WORLD_STREAM_MANAGER.new()
+	restored.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	restored.restore_state(snapshot)
+	_check(restored.get_chunk_state("fernwood").get("food_claimed", 0) == 3, "Chunk state should restore from snapshot")
 	holder.queue_free()
 
 func _test_growth() -> void:
