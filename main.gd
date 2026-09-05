@@ -1605,6 +1605,7 @@ func _cycle_environment_quality() -> void:
 	for tree in animated_trees:
 		if is_instance_valid(tree):
 			tree.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if ENVIRONMENT_QUALITY.active_id == "low" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	_apply_authored_environment_quality()
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
@@ -1661,6 +1662,17 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 			var effects_scale := float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))
 			water_material.albedo_color.a = 0.58 + effects_scale * 0.12
 			water_material.roughness = 0.2 - effects_scale * 0.05
+
+func _apply_authored_environment_quality() -> void:
+	var preset := ENVIRONMENT_QUALITY.preset({})
+	var effects_scale := float(preset.get("effects", 1.0))
+	var foliage_scale := float(preset.get("foliage", 1.0))
+	for waterfall in waterfall_layers:
+		if is_instance_valid(waterfall):
+			waterfall.visibility_range_end = 110.0 + effects_scale * 90.0
+	for firefly in fireflies:
+		if is_instance_valid(firefly):
+			firefly.visibility_range_end = 42.0 + foliage_scale * 28.0
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):

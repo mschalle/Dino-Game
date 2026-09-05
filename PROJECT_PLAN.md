@@ -665,6 +665,7 @@ The player and spawned food now follow the authored elevation function with grav
 384. Added reconciliation of remaining active presentation and audio-plan wording with the naturalistic adventure direction; historical checkpoint notes remain preserved.
 385. Added a persisted reduced-motion accessibility setting and F6 toggle; reduced motion suppresses camera look-ahead, vegetation sway, water/shoreline animation, and weather particles while preserving readable gameplay feedback.
 386. Extended reduced-motion coverage to the authored valley: tree sway, waterfall flow, firefly pulses, quest-marker motion, and scent-trail pulsing now pause without hiding objectives or changing gameplay.
+387. Applied the Low/Medium/High environment effects and foliage budgets to authored waterfall and firefly dressing so hero-scene effects match streamed-chunk quality changes at runtime.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
