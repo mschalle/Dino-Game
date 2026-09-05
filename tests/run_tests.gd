@@ -109,7 +109,11 @@ func _test_species_asset_and_save_isolation() -> void:
 	for species_id in ["t_rex", "velociraptor", "triceratops", "ankylosaurus", "parasaurolophus", "carnotaurus"]:
 		var profile = DinosaurProfiles.by_id(species_id)
 		_check(profile != null, "%s should resolve from the selection roster" % species_id)
-		_check(FileAccess.file_exists("res://assets/models/dinosaurs/%s.glb" % species_id), "%s should have an authored GLB or fallback asset" % species_id)
+		var model_path := "res://assets/models/dinosaurs/%s.glb" % species_id
+		_check(FileAccess.file_exists(model_path), "%s should have an authored GLB or fallback asset" % species_id)
+		if FileAccess.file_exists(model_path):
+			_check(ResourceLoader.exists(model_path), "%s GLB should be loadable by Godot" % species_id)
+			_check(load(model_path) != null, "%s GLB resource should instantiate" % species_id)
 		save.record_run(species_id, 10.0, 2, 1, {"species": species_id})
 	var records: Dictionary = save.data.get("records", {})
 	_check(records.get("t_rex", {}).get("best_growth_points", 0) == 2, "T. rex record should remain isolated")

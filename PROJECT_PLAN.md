@@ -333,6 +333,7 @@ The player and spawned food now follow the authored elevation function with grav
 159. Added `tools/roadmap_validation.ps1` as a repeatable three-gate validator for tests, headless startup, and Git whitespace.
 160. Documented the roadmap validator workflow in `README.md` for repeatable milestone handoff.
 161. Hardened the validator to require the explicit gameplay PASS marker and reject reported test failures.
+162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 
 ## Release Readiness
 
