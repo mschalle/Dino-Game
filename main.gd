@@ -58,6 +58,7 @@ func _ready() -> void:
 	_create_world()
 	world_stream = WORLD_STREAM_MANAGER.new()
 	world_stream.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	world_stream.restore_state(save_system.load_chunk_states())
 	world_stream.chunk_activated.connect(_on_chunk_activated)
 	world_stream.chunk_deactivated.connect(_on_chunk_deactivated)
 	world_stream.update_player_chunk(Vector2i.ZERO)
@@ -1166,6 +1167,8 @@ func _return_to_selection() -> void:
 func _record_current_run() -> void:
 	if session != null and profile != null:
 		save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, session.summary())
+	if world_stream != null:
+		save_system.save_chunk_states(world_stream.snapshot_state())
 
 func _run_summary_text() -> String:
 	var defeat_word := "defeat" if session.defeat_count == 1 else "defeats"
