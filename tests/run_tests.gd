@@ -485,7 +485,13 @@ func _test_world_chunks() -> void:
 			_check(is_equal_approx(navigation.navigation_mesh.agent_radius, chunk.agent_radius), "%s navigation radius should match its profile" % chunk.chunk_id)
 			_check(is_equal_approx(float(navigation.get_meta("max_slope_degrees", 0.0)), chunk.max_slope_degrees), "%s slope metadata should match its profile" % chunk.chunk_id)
 			_check(is_equal_approx(float(navigation.get_meta("max_climb", 0.0)), chunk.max_climb), "%s climb metadata should match its profile" % chunk.chunk_id)
-		_check(navigation.navigation_mesh.vertices.size() == 4, "%s navigation mesh should cover its ground pad" % chunk.chunk_id)
+			var nav_vertices := navigation.navigation_mesh.vertices
+			_check(nav_vertices.size() == 4, "%s navigation mesh should cover its ground pad" % chunk.chunk_id)
+			if nav_vertices.size() == 4:
+				var nav_bounds := Rect2(nav_vertices[0].x, nav_vertices[0].z, 0.0, 0.0)
+				for vertex in nav_vertices:
+					nav_bounds = nav_bounds.expand(Vector2(vertex.x, vertex.z))
+				_check(nav_bounds.size.x >= 58.0 and nav_bounds.size.y >= 58.0, "%s navigation mesh should span the visible terrain pad" % chunk.chunk_id)
 		if chunk.biome != "Nest Basin":
 			var elevation := visual_root.get_node_or_null("Elevation") as MeshInstance3D
 			_check(elevation != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
