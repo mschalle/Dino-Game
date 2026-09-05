@@ -862,6 +862,8 @@ func _test_gameplay_integration() -> void:
 		_check(crown != null and crown.visibility_range_end > crown.visibility_range_begin, "Animated tree crowns should define a bounded visibility range")
 	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
+	for firefly in main_scene.fireflies:
+		_check(firefly.visibility_range_end > firefly.visibility_range_begin, "Ambient fireflies should define a bounded visibility range")
 	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
 	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
 	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")

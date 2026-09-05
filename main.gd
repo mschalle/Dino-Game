@@ -257,6 +257,9 @@ func _create_fireflies() -> void:
 		mesh.radius = 0.045
 		mesh.height = 0.09
 		firefly.mesh = mesh
+		firefly.visibility_range_begin = 0.0
+		firefly.visibility_range_end = 70.0
+		firefly.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 		firefly.material_override = _glow_material(Color("#fff3a6"))
 		firefly.position = Vector3(randf_range(-24, 24), randf_range(1.0, 3.5), randf_range(-24, 24))
 		firefly.set_meta("orbit", randf() * TAU)

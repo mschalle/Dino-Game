@@ -423,6 +423,7 @@ The player and spawned food now follow the authored elevation function with grav
 249. Added explicit visibility ranges to streamed elevated terrain features and validated bounded hill/ridge rendering.
 250. Added per-chunk vegetation and ambient-particle budget validation to protect the target roaming-world performance envelope.
 251. Added bounded visibility ranges to legacy valley tree trunks and crowns, with integration coverage for all animated trees.
+252. Added bounded visibility ranges to legacy valley fireflies, with integration coverage for all ambient fireflies.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
