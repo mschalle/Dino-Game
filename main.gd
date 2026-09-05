@@ -131,7 +131,11 @@ func _process(delta: float) -> void:
 		world_stream.prune_inactive_actors(self)
 		world_stream.capture_population(self)
 		food_spawner.set_persisted_herd_records(world_stream.active_herd_records())
-		hud.update_diagnostics(world_stream.runtime_metrics(self))
+		var metrics: Dictionary = world_stream.runtime_metrics(self)
+		metrics["environment_quality"] = ENVIRONMENT_QUALITY.active_id
+		metrics["weather_enabled"] = ENVIRONMENT_QUALITY.weather_enabled
+		metrics["day_cycle_enabled"] = bool((save_system.data.get("settings", {}) as Dictionary).get("day_cycle_enabled", true))
+		hud.update_diagnostics(metrics)
 	if active_target != null and is_instance_valid(active_target):
 		var active_combat = active_target.get("combat")
 		if active_combat != null:
