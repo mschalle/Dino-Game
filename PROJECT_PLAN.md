@@ -463,6 +463,7 @@ The player and spawned food now follow the authored elevation function with grav
 289. Added camera-range validation so streamed landmarks remain visible throughout their authored presentation distance.
 290. Added navigation-span validation so every streamed navigation pad covers the visible terrain footprint.
 291. Added navigation-height validation so streamed walkable surfaces align with ground collision height.
+292. Added an out-of-bounds actor recovery test to verify safe return to an active navigable chunk.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
