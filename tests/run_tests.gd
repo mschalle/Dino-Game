@@ -209,6 +209,11 @@ func _test_world_chunks() -> void:
 	_check(nearest_landmark is Vector3, "Stream manager should select the nearest active landmark")
 	if nest_instance != null:
 		stream.release_chunk("nest_basin")
+	var cloudforest_instance := stream.instantiate_chunk("cloudforest", root)
+	_check(cloudforest_instance != null and cloudforest_instance.position == Vector3(-60.0, 0.0, 60.0), "Non-origin chunks should be placed at their authored grid position")
+	var cloudforest_landmark: Variant = stream.landmark_position_for_chunk("cloudforest")
+	_check(cloudforest_landmark is Vector3 and (cloudforest_landmark as Vector3).x < -50.0, "Translated landmarks should retain chunk world offset")
+	stream.release_chunk("cloudforest")
 	stream.update_player_chunk(Vector2i(2, 1))
 	_check(stream.is_active("redstone_badlands") and not stream.is_active("nest_basin"), "Crossing a chunk boundary should update the active set")
 	_check(chunks.size() == 16, "Reserve should define sixteen initial biome chunks")
