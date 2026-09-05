@@ -256,6 +256,8 @@ func _test_selection_focus_mapping() -> void:
 func _test_controller_bindings() -> void:
 	for action in ["ui_accept", "ui_cancel", "move_forward", "move_back", "move_left", "move_right"]:
 		_check(InputMap.has_action(action), "%s should be available for keyboard/gamepad input" % action)
+	for action in ["eat", "power_bite", "scent_trail", "dash"]:
+		_check(InputMap.has_action(action), "%s should be available for dinosaur abilities" % action)
 	var accept := InputEventJoypadButton.new()
 	accept.button_index = JOY_BUTTON_A
 	_check(accept.button_index == JOY_BUTTON_A, "Controller activation event should be constructible")
