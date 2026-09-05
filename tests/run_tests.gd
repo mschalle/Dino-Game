@@ -444,6 +444,7 @@ func _test_world_chunks() -> void:
 		_check(silhouette.visibility_range_begin > 0.0 and silhouette.visibility_range_begin <= 2.0 and silhouette.visibility_range_end >= 180.0 and silhouette.visibility_range_end > silhouette.visibility_range_begin, "%s landmark should remain visible across its authored camera range" % chunk.chunk_id)
 		_check(silhouette.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s landmark should cast shadows" % chunk.chunk_id)
 		_check(silhouette.mesh != null and silhouette.get_aabb().size.x > 0.0 and silhouette.get_aabb().size.y > 0.0 and silhouette.get_aabb().size.z > 0.0, "%s landmark silhouette should have positive visual dimensions" % chunk.chunk_id)
+		_check(absf(silhouette.position.x) <= 30.0 and absf(silhouette.position.z) <= 30.0, "%s landmark silhouette should remain inside its streamed chunk bounds" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		if vegetation != null:
