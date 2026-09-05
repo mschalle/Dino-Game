@@ -368,6 +368,7 @@ The player and spawned food now follow the authored elevation function with grav
 194. Added ascending-order enforcement for roadmap checkpoints in the status runner.
 195. Added NPC tier-balance validation for health, damage, Growth Point rewards, and respawn delays.
 196. Added NPC movement and sensing validation for positive speeds, flee capability, ranges, and attack cooldowns.
+197. Added NPC role-to-tier validation so prey remains below finale tier and rivals remain tier four.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

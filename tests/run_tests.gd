@@ -624,6 +624,10 @@ func _test_creature_combat() -> void:
 		ids[profile.id] = true
 		_check(profile.role == "prey" or profile.role == "predator" or profile.role == "rival", "%s should use a supported NPC role" % profile.id)
 		_check(profile.tier >= 1 and profile.tier <= 4, "%s should use a supported NPC tier" % profile.id)
+		if profile.role == "prey":
+			_check(profile.tier <= 3, "%s prey should not occupy finale tier" % profile.id)
+		if profile.role == "rival":
+			_check(profile.tier == 4, "%s rival should occupy tier four" % profile.id)
 		var expected_health: float = [0.0, 30.0, 60.0, 100.0, 160.0][profile.tier]
 		var expected_damage: float = [0.0, 5.0, 10.0, 16.0, 22.0][profile.tier]
 		var expected_growth: int = [0, 1, 3, 6, 10][profile.tier]
