@@ -107,7 +107,9 @@ func update_view(session: GameSession, player: PlayerDino, quest_system: QuestSy
 	energy_bar.max_value = player.max_energy
 	energy_bar.value = player.energy
 	growth_bar.value = session.growth.progress_to_next_stage() * 100.0
-	quest_label.text = "MAIN QUEST\n%s" % quest_system.progress_text()
+	var objective_heading := "ENDLESS CHALLENGE" if session.mode == "endless" else "MAIN QUEST"
+	var skip_hint := "\nK / RB: Skip without reward" if session.mode == "endless" else ""
+	quest_label.text = "%s\n%s%s" % [objective_heading, quest_system.progress_text(), skip_hint]
 	abilities_label.text = "%s\n%s" % [session.profile.ability_summary(session.growth.stage_index), cooldown_text]
 
 func update_diagnostics(metrics: Dictionary) -> void:

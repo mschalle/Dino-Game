@@ -1206,8 +1206,21 @@ func _cancel_world_event(reason: String) -> void:
 	for predator in predators:
 		if is_instance_valid(predator):
 			predator.cancel_passage()
+	_replace_unavailable_endless_challenge(cancelled_id)
 	if hud != null:
 		hud.show_message("%s was cancelled because %s." % [cancelled_id.capitalize().replace("_", " "), reason])
+
+func _replace_unavailable_endless_challenge(event_id: String) -> void:
+	if mode != "endless" or endless_challenges == null or quest_system == null:
+		return
+	var quest := quest_system.current()
+	if quest == null or quest.target_id != event_id:
+		return
+	endless_challenges.skip(quest.id)
+	endless_round += 1
+	_start_next_endless_quest()
+	if hud != null:
+		hud.show_message("Event challenge changed to a reachable challenge. No reward was granted.")
 
 func _tick_cooldowns(delta: float) -> void:
 	for ability_id in ability_cooldowns.keys():
@@ -1415,6 +1428,7 @@ func _ensure_default_inputs() -> void:
 	_add_joy_button("dash", JOY_BUTTON_A)
 	_add_joy_button("special_ability", JOY_BUTTON_Y)
 	_add_joy_button("ui_cancel", JOY_BUTTON_START)
+	_add_joy_button("skip_challenge", JOY_BUTTON_RIGHT_SHOULDER)
 	_ensure_key_action("help", KEY_F1)
 	_ensure_key_action("skip_challenge", KEY_K)
 	_add_joy_axis("move_left", JOY_AXIS_LEFT_X, -1.0)

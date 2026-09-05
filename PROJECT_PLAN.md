@@ -612,6 +612,7 @@ The player and spawned food now follow the authored elevation function with grav
 331. Added Predator Passage events with bounded traversal, readable warnings, and an attack-triggered retreat path that preserves kid-friendly combat.
 332. Added event cadence, active-habitat eligibility, pause behavior, and clean cancellation for defeat, restart, selection, and streamed-habitat unloads.
 333. Replaced the fixed Endless rotation with reusable forage, discovery, herd-observation, and predator-evasion challenges plus no-reward skipping and event-aware filtering.
+334. Added gamepad challenge skipping, child-friendly on-screen skip guidance, and automatic reachable-challenge replacement when an event target disappears.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

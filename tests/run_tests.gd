@@ -312,7 +312,7 @@ func _test_controller_bindings() -> void:
 	var input_bootstrap := preload("res://main.gd").new()
 	input_bootstrap._ensure_default_inputs()
 	var binding_counts := {}
-	for action in ["eat", "power_bite", "special_ability", "move_left", "move_right"]:
+	for action in ["eat", "power_bite", "special_ability", "skip_challenge", "move_left", "move_right"]:
 		binding_counts[action] = InputMap.action_get_events(action).size()
 	input_bootstrap._ensure_default_inputs()
 	for action in binding_counts:
@@ -329,8 +329,13 @@ func _test_controller_bindings() -> void:
 	for event in InputMap.action_get_events("power_bite"):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 			bite_mouse_ok = true
+	var skip_gamepad_ok := false
+	for event in InputMap.action_get_events("skip_challenge"):
+		if event is InputEventJoypadButton and event.button_index == JOY_BUTTON_RIGHT_SHOULDER:
+			skip_gamepad_ok = true
 	_check(eat_mouse_ok, "Eat should remain bound to left click")
 	_check(bite_mouse_ok, "Power Bite should remain bound to right click")
+	_check(skip_gamepad_ok, "Right shoulder should bind no-reward challenge skipping")
 	input_bootstrap.free()
 	var accept := InputEventJoypadButton.new()
 	accept.button_index = JOY_BUTTON_A
