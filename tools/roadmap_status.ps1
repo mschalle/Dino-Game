@@ -30,6 +30,14 @@ $sortedCheckpoints = @($checkpointNumbers | Sort-Object)
 if (($sortedCheckpoints -join ",") -ne ($checkpointNumbers -join ",")) {
     throw "Roadmap checkpoint numbers must be in ascending order"
 }
+$templateRoot = Join-Path $env:APPDATA "Godot\export_templates\4.7.2.stable"
+$debugTemplate = Join-Path $templateRoot "windows_debug_x86_64.exe"
+$releaseTemplate = Join-Path $templateRoot "windows_release_x86_64.exe"
+if ((Test-Path -LiteralPath $debugTemplate) -and (Test-Path -LiteralPath $releaseTemplate)) {
+    Write-Host "Windows export templates: INSTALLED"
+} else {
+    Write-Host "Windows export templates: MISSING (packaging gate pending)"
+}
 
 if ($RunValidation) {
     $validator = Join-Path $ProjectPath "tools\roadmap_validation.ps1"
