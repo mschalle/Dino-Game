@@ -316,6 +316,7 @@ The player and spawned food now follow the authored elevation function with grav
 142. Tuned batched vegetation density and scale for sparse, wetland, forest, and highland biomes.
 143. Added restrained biome-specific ambient particle profiles for wetland, volcanic, icy, and moonlit zones.
 144. Assigned distinct landmark offsets by biome so destination silhouettes no longer overlap at one generic corner.
+145. Added reserve uniqueness validation for chunk IDs, biome names, and landmark destinations.
 
 ## Release Readiness
 

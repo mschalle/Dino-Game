@@ -217,10 +217,16 @@ func _test_world_chunks() -> void:
 	_check(route.size() >= 2, "Reserve must provide a route between distant biomes")
 	_check(route.front() == "nest_basin" and route.back() == "redstone_badlands", "Biome route endpoints must be correct")
 	var ids: Dictionary = {}
+	var landmarks: Dictionary = {}
+	var biomes: Dictionary = {}
 	for chunk in chunks:
 		_check(not ids.has(chunk.chunk_id), "Chunk IDs must be unique")
 		ids[chunk.chunk_id] = true
 		_check(not chunk.landmark_name.is_empty(), "Every chunk needs a landmark")
+		_check(not landmarks.has(chunk.landmark_name), "Landmark names must be unique")
+		landmarks[chunk.landmark_name] = true
+		_check(not biomes.has(chunk.biome), "Biome names must be unique")
+		biomes[chunk.biome] = true
 		_check(not chunk.scene_path.is_empty(), "Every chunk needs a scene path")
 		_check(chunk.has_scene(), "Every initial biome chunk should have a loadable scene shell")
 		_check(chunk.vegetation_density > 0.0, "Every biome needs vegetation density")
