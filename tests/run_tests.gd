@@ -357,14 +357,14 @@ func _test_controller_bindings() -> void:
 	var input_bootstrap := preload("res://main.gd").new()
 	input_bootstrap._ensure_default_inputs()
 	var binding_counts := {}
-	for action in ["eat", "power_bite", "special_ability", "skip_challenge", "move_left", "move_right"]:
+	for action in ["eat", "power_bite", "special_ability", "skip_challenge", "move_left", "move_right", "environment_quality", "weather_toggle", "reduced_motion", "day_cycle_toggle"]:
 		binding_counts[action] = InputMap.action_get_events(action).size()
 	input_bootstrap._ensure_default_inputs()
 	for action in binding_counts:
 		_check(InputMap.action_get_events(action).size() == binding_counts[action], "%s input bootstrap should be idempotent" % action)
 	for action in ["ui_accept", "ui_cancel", "move_forward", "move_back", "move_left", "move_right"]:
 		_check(InputMap.has_action(action), "%s should be available for keyboard/gamepad input" % action)
-	for action in ["eat", "power_bite", "scent_trail", "dash", "special_ability"]:
+	for action in ["eat", "power_bite", "scent_trail", "dash", "special_ability", "environment_quality", "weather_toggle", "reduced_motion", "day_cycle_toggle"]:
 		_check(InputMap.has_action(action), "%s should be available for dinosaur abilities" % action)
 	var eat_mouse_ok := false
 	for event in InputMap.action_get_events("eat"):
