@@ -210,9 +210,9 @@ Goal: make a first Adventure run understandable, forgiving, and enjoyable for ch
 
 1. Add small animated plant clusters and cloud layers without obscuring quest markers.
 2. Add friendly landmark props at each quest destination and verify they do not block movement.
-3. Replace procedural tones with original or properly licensed child-friendly audio.
+3. Replace procedural tones with original or properly licensed naturalistic environmental audio.
 4. Add footstep, eating, ability, reward, and ambient audio mix levels.
-5. Capture a short gameplay recording and inspect it for visual clutter, readability, and non-graphic presentation.
+5. Capture a short gameplay recording and inspect it for visual clarity, readability, and bounded-combat presentation.
 
 ### Step 6 — Release validation
 
@@ -233,7 +233,7 @@ Goal: make the single valley feel richer without expanding into a second map.
 - Expand the collection summary into a browsable badges, colors, and records panel.
 - Conduct the structured three-species balance playtest described above.
 - Add reduced-motion and separate music/effects settings.
-- Replace procedural placeholder tones with licensed or original child-friendly audio when assets are available.
+- Replace procedural placeholder tones with licensed or original naturalistic audio when assets are available.
 
 ## Major Milestone: Immersive Dinosaurs, Combat, and Elevated Valley
 
@@ -662,6 +662,7 @@ The player and spawned food now follow the authored elevation function with grav
 381. Added velocity-based camera look-ahead so movement frames upcoming terrain and landmarks while preserving smooth follow behavior.
 382. Rechecked the Windows packaging gate; `tools/windows_export_smoke.ps1` still reports missing matching Godot 4.7.2 export templates, while gameplay and headless validation remain available.
 383. Updated Help and control hints to describe naturalistic predator behavior, bounded combat feedback, environment quality (F4), and weather (F5).
+384. Reconciled remaining active presentation and audio-plan wording with the naturalistic adventure direction; historical checkpoint notes remain preserved.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
@@ -809,7 +810,7 @@ Each species Adventure contains:
 - One food/survival quest at Juvenile.
 - One traversal or ability quest at Young Adult.
 - One story encounter or rescue quest before Adult.
-- One non-graphic Adult finale.
+- One Adult finale with bounded impact presentation.
 - Two optional exploration challenges.
 - One species-specific cosmetic reward and one badge.
 
@@ -827,7 +828,7 @@ Status: inventory and integration planning complete; runtime integration and in-
 | --- | --- | --- |
 | `KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/` | 105 glTF models; trees, bushes, grass, bare trees, and several rock families. The supplied contents image shows broad, simple silhouettes that fit the friendly dinosaur presentation. `License.txt` identifies CC0. | Primary environment kit for Nest Basin and Ancient Meadow; reuse its rocks and sparse vegetation across other biomes. |
 | `glTF/`, `Textures/`, `FBX/`, `FBX (Unity)/`, `OBJ/` | Quaternius Stylized Nature MegaKit FREE: 68 glTF models, matching the count in `License_Standard.txt` (CC0). Includes `Fern_1`, common/twisted/dead trees, pines, grasses, flowers, pebbles, and rock paths. | Supplement KayKit with forest undergrowth and biome accents. Use glTF plus its referenced buffers/textures; the alternate formats are source alternatives, not extra model sets. Do not assume the paid edition's shaders or models are supplied. |
-| `Sound FX Starter Pack Vol. 1/` | 144 WAV files across 12 categories; includes environment loops, UI sounds, reward stingers, and unsuitable horror/weapon material. A `Royalty-Free License (Link).pdf` is present; its linked terms have not been verified in this review. | Audition a small shortlist and verify the actual license/source before shipping any clip. Filenames alone do not establish child-friendly sound or permission. |
+| `Sound FX Starter Pack Vol. 1/` | 144 WAV files across 12 categories; includes environment loops, UI sounds, reward stingers, and unsuitable horror/weapon material. A `Royalty-Free License (Link).pdf` is present; its linked terms have not been verified in this review. | Audition a small shortlist and verify the actual license/source before shipping any clip. Filenames alone do not establish suitability or permission. |
 | `addons/proton_scatter/` | ProtonScatter 4.2.0, MIT, according to local plugin metadata/license. | Optional authoring experiment in B; existing deterministic MultiMesh vegetation remains the baseline. |
 | `addons/terrain_3d/`, `addons/terrabrush/` | Terrain3D 1.0.2 and TerraBrush are MIT terrain tools. Their extension manifests declare minimum Godot versions 4.4 and 4.5 respectively; this is not proof of runtime compatibility. | Evaluate only if authored terrain needs an editor tool. Select at most one after an isolated comparison; no automatic terrain replacement. |
 | `addons/sky_3d/` | Sky3D 2.1, MIT; local README explicitly supports Compatibility rendering and supplies renderer-specific adjustments. Separate shader and texture license files are also present. | Optional fixed-daylight sky trial after the biome art pass; defer the day/night cycle. |
