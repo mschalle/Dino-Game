@@ -263,6 +263,12 @@ func _test_selection_focus_mapping() -> void:
 func _test_controller_bindings() -> void:
 	var input_bootstrap := preload("res://main.gd").new()
 	input_bootstrap._ensure_default_inputs()
+	var binding_counts := {}
+	for action in ["eat", "power_bite", "special_ability", "move_left", "move_right"]:
+		binding_counts[action] = InputMap.action_get_events(action).size()
+	input_bootstrap._ensure_default_inputs()
+	for action in binding_counts:
+		_check(InputMap.action_get_events(action).size() == binding_counts[action], "%s input bootstrap should be idempotent" % action)
 	for action in ["ui_accept", "ui_cancel", "move_forward", "move_back", "move_left", "move_right"]:
 		_check(InputMap.has_action(action), "%s should be available for keyboard/gamepad input" % action)
 	for action in ["eat", "power_bite", "scent_trail", "dash", "special_ability"]:
