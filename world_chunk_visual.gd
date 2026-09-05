@@ -302,6 +302,22 @@ func _create_landmark_silhouette(biome: String) -> void:
 		silhouette_height = 7.0
 		landmark_kind = "ridge_spire"
 		landmark_position = Vector3(10.0, 0.0, -8.0)
+	elif biome == "Volcanic Foothills":
+		var cone := PrismMesh.new()
+		cone.size = Vector3(4.0, 6.0, 4.0)
+		mesh = cone
+		silhouette_height = 6.0
+		landmark_kind = "volcanic_cone"
+		landmark_position = Vector3(9.0, 0.0, 8.0)
+	elif biome == "Glacier Valley" or biome == "Highland Plateau":
+		var ice := CylinderMesh.new()
+		ice.top_radius = 0.35
+		ice.bottom_radius = 1.2
+		ice.height = 4.5
+		mesh = ice
+		silhouette_height = 4.5
+		landmark_kind = "ice_beacon"
+		landmark_position = Vector3(9.0, 0.0, 8.0)
 	elif biome == "River Wetlands":
 		var beacon := CylinderMesh.new()
 		beacon.top_radius = 0.2
