@@ -16,6 +16,7 @@ func _run_tests() -> void:
 	_test_all_species_endless_unlocks()
 	_test_endless_progression_all_species()
 	_test_endless_scaling_rules()
+	_test_release_readiness()
 	_test_selection_roster_layout()
 	_test_selection_navigation()
 	_test_selection_focus_mapping()
@@ -149,6 +150,14 @@ func _test_endless_scaling_rules() -> void:
 	var scarcity_late := mini(int(720.0 / 180.0), 4)
 	_check(scarcity_start == 0 and scarcity_late == 4, "Endless scarcity should increase in bounded steps")
 	_check(maxi(3, 5 - scarcity_late) >= 3, "Endless scarcity should preserve tier-1 food availability")
+
+func _test_release_readiness() -> void:
+	_check(FileAccess.file_exists("res://project.godot"), "Release build should include project settings")
+	_check(FileAccess.file_exists("res://Main.tscn"), "Release build should include the main scene")
+	_check(FileAccess.file_exists("res://save_system.gd"), "Release build should include save recovery")
+	_check(DinosaurProfiles.all().size() == 6, "Release roster should contain six playable species")
+	_check(SaveSystem.SAVE_VERSION >= 1, "Release save schema should be versioned")
+	_check(FileAccess.file_exists("res://tests/run_tests.gd"), "Release validation suite should be packaged with the project")
 
 func _test_selection_roster_layout() -> void:
 	var profiles := DinosaurProfiles.all()
