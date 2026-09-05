@@ -301,4 +301,8 @@ func _test_save_recovery() -> void:
 	_check(reloaded.selected_cosmetic("t_rex") == "sunset", "Valid save must preserve selected cosmetics")
 	var record := reloaded.data["records"].get("t_rex", {}) as Dictionary
 	_check(int((record.get("last_run", {}) as Dictionary).get("food_eaten", 0)) == 7, "Valid save must preserve the latest run summary")
+	reloaded.save_chunk_states({"fernwood": {"food_claimed": 2}})
+	var chunk_reloaded := SaveSystem.new(path)
+	chunk_reloaded.load_data()
+	_check(chunk_reloaded.load_chunk_states().get("fernwood", {}).get("food_claimed", 0) == 2, "Chunk states should persist in save data")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

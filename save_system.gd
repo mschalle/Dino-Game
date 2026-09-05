@@ -87,6 +87,13 @@ func record_run(species_id: String, survival_time: float, growth_points: int, qu
 	records[species_id] = current
 	save_data()
 
+func save_chunk_states(snapshot: Dictionary) -> void:
+	data["chunk_states"] = snapshot.duplicate(true)
+	save_data()
+
+func load_chunk_states() -> Dictionary:
+	return (data.get("chunk_states", {}) as Dictionary).duplicate(true)
+
 func _defaults() -> Dictionary:
 	return {
 		"version": SAVE_VERSION,
@@ -100,6 +107,7 @@ func _defaults() -> Dictionary:
 		"badges": [],
 		"ability_unlocks": {},
 		"records": {},
+		"chunk_states": {},
 		"settings": {"large_text": true, "ui_scale": 1.0, "high_contrast": false, "reduced_flashes": true, "effects_volume": 0.7}
 	}
 
