@@ -45,10 +45,12 @@ func profile_for_chunk(chunk_id: String) -> RefCounted:
 
 func active_biome_names() -> Array[String]:
 	var names: Array[String] = []
+	var seen: Dictionary = {}
 	for chunk_id in active_chunk_ids():
 		var profile := profile_for_chunk(str(chunk_id))
-		if profile != null:
+		if profile != null and not seen.has(profile.biome):
 			names.append(profile.biome)
+			seen[profile.biome] = true
 	names.sort()
 	return names
 

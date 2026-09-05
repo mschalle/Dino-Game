@@ -229,6 +229,10 @@ func _test_world_chunks() -> void:
 	sorted_active_biomes.sort()
 	_check(active_biomes.has("Nest Basin") and active_biomes.has("Fernwood"), "Active biome names should be readable and stable")
 	_check(active_biomes == sorted_active_biomes, "Active biome names should be sorted deterministically")
+	var unique_active_biomes := {}
+	for biome_name in active_biomes:
+		unique_active_biomes[biome_name] = true
+	_check(active_biomes.size() == unique_active_biomes.size(), "Active biome names should not contain duplicates")
 	var cleared_stream := WORLD_STREAM_MANAGER.new()
 	cleared_stream.configure(chunks, 1)
 	cleared_stream.update_player_chunk(Vector2i.ZERO)

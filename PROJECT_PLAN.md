@@ -346,6 +346,7 @@ The player and spawned food now follow the authored elevation function with grav
 176. Added active-biome context to the developer HUD diagnostics, with compact multi-biome display for streamed-world debugging.
 177. Added defensive HUD formatting and automated coverage for empty, malformed, and multi-biome diagnostics payloads.
 178. Validated that clearing the streamed-world configuration resets active-biome diagnostics to a clean empty state.
+179. Hardened active-biome enumeration to deduplicate profile names before sorting and exposing them to HUD diagnostics.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.
