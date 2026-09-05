@@ -1620,6 +1620,12 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 		if biome_environment != null and biome_environment.environment != null:
 			biome_environment.environment.ssao_enabled = ENVIRONMENT_QUALITY.active_id != "low"
 			biome_environment.environment.ssao_intensity = 0.6 if ENVIRONMENT_QUALITY.active_id == "medium" else 0.9
+		var water := chunk.get_node_or_null("WaterSurface") as MeshInstance3D
+		if water != null and water.material_override is StandardMaterial3D:
+			var water_material := water.material_override as StandardMaterial3D
+			var effects_scale := float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))
+			water_material.albedo_color.a = 0.58 + effects_scale * 0.12
+			water_material.roughness = 0.2 - effects_scale * 0.05
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):

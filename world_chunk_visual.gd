@@ -442,10 +442,12 @@ func _create_water(biome: String) -> void:
 	water.mesh = surface
 	water.position = Vector3(6.0, 0.08, 5.0) if biome == "River Wetlands" else Vector3(-4.0, 0.08, 6.0)
 	var material := StandardMaterial3D.new()
+	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
+	var effects_scale := float(quality.get("effects", 1.0))
 	material.albedo_color = Color("#55b9d1") if biome != "Cypress Basin" else Color("#4f9f8b")
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color.a = 0.72
-	material.roughness = 0.12
+	material.albedo_color.a = 0.58 + effects_scale * 0.12
+	material.roughness = 0.2 - effects_scale * 0.05
 	material.metallic = 0.05
 	water.material_override = material
 	add_child(water)
