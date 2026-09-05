@@ -19,6 +19,7 @@ var help_panel: ColorRect
 var target_panel: ColorRect
 var target_label: Label
 var diagnostics_label: Label
+var diagnostics_enabled := true
 var target_health_bar: ProgressBar
 var target_timer := 0.0
 var large_text_enabled := true
@@ -111,9 +112,17 @@ func update_view(session: GameSession, player: PlayerDino, quest_system: QuestSy
 func update_diagnostics(metrics: Dictionary) -> void:
 	if diagnostics_label == null:
 		return
+	diagnostics_label.visible = diagnostics_enabled
+	if not diagnostics_enabled:
+		return
 	var npc_count := int(metrics.get("npc_count", 0))
 	diagnostics_label.text = "DEV  Chunks %d  Scenes %d  NPCs %d/25  Budget %.0f%%" % [int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0]
 	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 else Color("#b8e6ef")
+
+func set_diagnostics_enabled(enabled: bool) -> void:
+	diagnostics_enabled = enabled
+	if diagnostics_label != null:
+		diagnostics_label.visible = enabled
 
 func show_message(text: String) -> void:
 	message_label.text = text

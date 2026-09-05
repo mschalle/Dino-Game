@@ -27,6 +27,7 @@ func _run_tests() -> void:
 	_test_habitat_food_filter()
 	_test_hud_contrast()
 	_test_runtime_metrics_warning()
+	_test_diagnostics_visibility()
 	_test_gameplay_integration()
 	_test_main_predator_gate_helper()
 	_test_save_recovery()
@@ -131,6 +132,12 @@ func _test_habitat_rules() -> void:
 func _test_runtime_metrics_warning() -> void:
 	var metrics := {"npc_count": 22, "population_utilization": 0.88}
 	_check(int(metrics.get("npc_count", 0)) >= 20, "Diagnostics warning threshold should be testable")
+
+func _test_diagnostics_visibility() -> void:
+	var hud := preload("res://game_hud.gd").new()
+	hud.set_diagnostics_enabled(false)
+	_check(not hud.diagnostics_enabled, "Diagnostics should be configurable for release builds")
+	hud.free()
 
 func _test_predator_respawn_gate() -> void:
 	var predator := preload("res://predator.gd").new()
