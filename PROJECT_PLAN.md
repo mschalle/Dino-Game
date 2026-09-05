@@ -397,6 +397,7 @@ The player and spawned food now follow the authored elevation function with grav
 223. Added authored-chunk metadata validation for readable IDs, biome labels, and landmark names.
 224. Added reserve-wide scene-path existence and resource-load validation for every streamed chunk.
 225. Added chunk-neighbor validation for nonempty, non-self string IDs to protect streamed border connectivity.
+226. Added scene-extension validation so streamed chunk profiles reference Godot `.tscn` scenes.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
