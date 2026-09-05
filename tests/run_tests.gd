@@ -211,7 +211,7 @@ func _test_world_chunks() -> void:
 		stream.release_chunk("nest_basin")
 	stream.update_player_chunk(Vector2i(2, 1))
 	_check(stream.is_active("redstone_badlands") and not stream.is_active("nest_basin"), "Crossing a chunk boundary should update the active set")
-	_check(chunks.size() == 14, "Reserve should define fourteen initial biome chunks")
+	_check(chunks.size() == 16, "Reserve should define sixteen initial biome chunks")
 	_check(WORLD_CHUNK_PROFILES.connections_are_symmetric(chunks), "Biome connections must be bidirectional")
 	var route := WORLD_CHUNK_PROFILES.find_route(chunks, "nest_basin", "redstone_badlands")
 	_check(route.size() >= 2, "Reserve must provide a route between distant biomes")
