@@ -113,13 +113,19 @@ func _test_profiles() -> void:
 
 func _test_all_playable_species() -> void:
 	var save := preload("res://save_system.gd").new()
+	var species_ids := {}
+	var species_names := {}
 	for profile in DinosaurProfiles.all():
+		species_ids[profile.id] = true
+		species_names[profile.display_name] = true
 		var session := GameSession.new()
 		session.start(profile, "adventure")
 		_check(session.profile.id == profile.id, "%s Adventure should start with its own profile" % profile.id)
 		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
 		_check(profile.adventure_quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
 		save.record_run(profile.id, 1.0, 1, 0, {"species_validation": true})
+	_check(species_ids.size() == DinosaurProfiles.all().size(), "Playable species IDs should be unique")
+	_check(species_names.size() == DinosaurProfiles.all().size(), "Playable species display names should be unique")
 	var records: Dictionary = save.data.get("records", {})
 	for profile in DinosaurProfiles.all():
 		_check(records.has(profile.id), "%s should persist an independent record" % profile.id)
