@@ -18,3 +18,6 @@ Use `-StopAtCheckpoint N` to stop after a specific checkpoint, and
 `-RequireExportTemplates` when packaging is part of the gate. Windows export
 templates are currently an external packaging prerequisite; normal development
 validation reports their absence without failing.
+
+Use `-ResultPath <file>` for a JSON summary containing the validated checkpoint,
+iteration count, stop reason, and validation result.

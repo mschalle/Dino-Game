@@ -3,6 +3,7 @@ param(
     [string]$Godot = "F:\GODOT\Godot_v4.7.2-stable_win64.exe",
     [int]$MaxIterations = 10,
     [int]$StopAtCheckpoint = 0,
+    [string]$ResultPath = "",
     [switch]$RequireExportTemplates
 )
 
@@ -28,7 +29,10 @@ function Get-Checkpoint {
 }
 
 $previous = Get-Checkpoint
+$iterationsRun = 0
+$stopReason = "iteration_limit"
 for ($iteration = 1; $iteration -le $MaxIterations; $iteration++) {
+    $iterationsRun = $iteration
     Write-Host "[roadmap loop $iteration/$MaxIterations] validating checkpoint $previous"
     $validationArgs = @{ ProjectPath = $ProjectPath; Godot = $Godot }
     if ($RequireExportTemplates) { $validationArgs.RequireExportTemplates = $true }
@@ -38,14 +42,27 @@ for ($iteration = 1; $iteration -le $MaxIterations; $iteration++) {
     $current = Get-Checkpoint
     if ($StopAtCheckpoint -gt 0 -and $current -ge $StopAtCheckpoint) {
         Write-Host "Roadmap loop reached requested checkpoint $current."
+        $stopReason = "requested_checkpoint"
         break
     }
     if ($current -eq $previous) {
         Write-Host "No new checkpoint was recorded; stopping safely for the next development milestone."
+        $stopReason = "no_new_checkpoint"
         break
     }
     if ($current -ne ($previous + 1)) {
         throw "Roadmap checkpoint advanced from $previous to $current; milestones must advance sequentially"
     }
     $previous = $current
+}
+
+if (-not [string]::IsNullOrWhiteSpace($ResultPath)) {
+    $result = [ordered]@{
+        checkpoint = Get-Checkpoint
+        iterations = $iterationsRun
+        stop_reason = $stopReason
+        validation = "pass"
+    }
+    $result | ConvertTo-Json | Set-Content -LiteralPath $ResultPath -Encoding utf8
+    Write-Host "Roadmap loop result written to $ResultPath"
 }
