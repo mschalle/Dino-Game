@@ -297,6 +297,8 @@ The player and spawned food now follow the authored elevation function with grav
 123. Connected active chunk selection to the player's world position instead of a fixed origin chunk.
 124. Added boundary-transition validation for activating adjacent chunks and releasing distant chunks.
 125. Corrected playable-species validation to use the profile's typed adventure quest chain.
+126. Hardened food-spawner and low-level supply validation against stale or non-prey group members.
+127. Removed invalid manual frees of reference-counted save fixtures and hardened the replenishment assertion.
 
 ## Release Readiness
 

@@ -23,7 +23,9 @@ func configure(is_endless: bool) -> void:
 func set_player(new_player: PlayerDino) -> void:
 	player = new_player
 	for prey_node in get_tree().get_nodes_in_group("prey"):
-		(prey_node as PreyDino).set_player(player)
+		var prey := prey_node as PreyDino
+		if prey != null:
+			prey.set_player(player)
 
 func set_spawn_plan(plan: Array[Dictionary]) -> void:
 	var tiers: Array[int] = []

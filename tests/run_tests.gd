@@ -102,7 +102,7 @@ func _test_all_playable_species() -> void:
 	var records: Dictionary = save.data.get("records", {})
 	for profile in DinosaurProfiles.all():
 		_check(records.has(profile.id), "%s should persist an independent record" % profile.id)
-	save.free()
+	# SaveSystem is RefCounted; allow reference counting to release it naturally.
 
 func _test_species_asset_and_save_isolation() -> void:
 	var save := preload("res://save_system.gd").new()
@@ -114,7 +114,7 @@ func _test_species_asset_and_save_isolation() -> void:
 	var records: Dictionary = save.data.get("records", {})
 	_check(records.get("t_rex", {}).get("best_growth_points", 0) == 2, "T. rex record should remain isolated")
 	_check(records.get("carnotaurus", {}).get("best_growth_points", 0) == 2, "Carnotaurus record should remain isolated")
-	save.free()
+	# SaveSystem is RefCounted; allow reference counting to release it naturally.
 
 func _test_all_species_endless_unlocks() -> void:
 	var save := preload("res://save_system.gd").new()
@@ -123,7 +123,7 @@ func _test_all_species_endless_unlocks() -> void:
 		_check(save.is_endless_unlocked(profile.id), "%s should unlock Endless after Adventure completion" % profile.id)
 	for profile in DinosaurProfiles.all():
 		_check(save.is_endless_unlocked(profile.id), "%s Endless unlock should persist independently" % profile.id)
-	save.free()
+	# SaveSystem is RefCounted; allow reference counting to release it naturally.
 
 func _test_endless_progression_all_species() -> void:
 	var save := preload("res://save_system.gd").new()
@@ -139,7 +139,7 @@ func _test_endless_progression_all_species() -> void:
 	for profile in DinosaurProfiles.all():
 		_check(float(records.get(profile.id, {}).get("best_survival_seconds", 0.0)) >= 45.0, "%s Endless record should persist" % profile.id)
 		_check(int(records.get(profile.id, {}).get("best_quests", 0)) >= 2, "%s Endless quest record should persist" % profile.id)
-	save.free()
+	# SaveSystem is RefCounted; allow reference counting to release it naturally.
 
 func _test_endless_scaling_rules() -> void:
 	var awareness_start := 1.0 + minf(0.0 / 600.0, 0.75)
@@ -531,7 +531,10 @@ func _test_low_level_food_supply() -> void:
 	var medium_level_count := 0
 	var high_level_count := 0
 	for prey_node in get_nodes_in_group("prey"):
-		var nutrition := int(prey_node.get("nutrition"))
+		var nutrition_value: Variant = prey_node.get("nutrition")
+		if nutrition_value == null:
+			continue
+		var nutrition := int(nutrition_value)
 		if nutrition == 1:
 			low_level_count += 1
 		elif nutrition == 2:
@@ -543,14 +546,16 @@ func _test_low_level_food_supply() -> void:
 	_check(high_level_count >= 2, "Adventure must supply Adult growth food")
 	var low_prey: Array[Node] = []
 	for prey_node in get_nodes_in_group("prey"):
-		if int(prey_node.get("nutrition")) == 1:
+		var nutrition_value: Variant = prey_node.get("nutrition")
+		if nutrition_value != null and int(nutrition_value) == 1:
 			low_prey.append(prey_node)
 	for index in mini(3, low_prey.size()):
 		low_prey[index].free()
 	spawner.maintain(4.0, 0.0)
 	low_level_count = 0
 	for prey_node in get_nodes_in_group("prey"):
-		if int(prey_node.get("nutrition")) == 1:
+		var nutrition_value: Variant = prey_node.get("nutrition")
+		if nutrition_value != null and int(nutrition_value) == 1:
 			low_level_count += 1
 	_check(low_level_count >= 5, "Consumed low-level dinosaurs must be replenished")
 	spawner.free()
