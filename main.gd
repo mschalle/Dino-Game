@@ -109,6 +109,7 @@ func _process(delta: float) -> void:
 	if food_spawner != null and world_stream != null:
 		food_spawner.set_spawn_plan(world_stream.active_spawn_plan())
 		world_stream.prune_inactive_actors(self)
+		world_stream.capture_population(self)
 	if active_target != null and is_instance_valid(active_target):
 		var active_combat = active_target.get("combat")
 		if active_combat != null:

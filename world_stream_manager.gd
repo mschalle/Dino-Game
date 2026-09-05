@@ -89,6 +89,24 @@ func prune_inactive_actors(scene_root: Node) -> int:
 			removed += 1
 	return removed
 
+func capture_population(scene_root: Node) -> void:
+	var counts: Dictionary = {}
+	for group_name in ["prey", "predator"]:
+		for node in scene_root.get_tree().get_nodes_in_group(group_name):
+			var actor := node as Node3D
+			if actor == null:
+				continue
+			var chunk_id := chunk_id_at_world_position(actor.global_position)
+			if chunk_id.is_empty():
+				continue
+			var role_counts: Dictionary = counts.get(chunk_id, {"prey": 0, "predator": 0})
+			role_counts[group_name] = int(role_counts.get(group_name, 0)) + 1
+			counts[chunk_id] = role_counts
+	for chunk in chunks:
+		var state := get_chunk_state(chunk.chunk_id)
+		state["population"] = counts.get(chunk.chunk_id, {"prey": 0, "predator": 0})
+		set_chunk_state(chunk.chunk_id, state)
+
 func _nearest_active_chunk_position(world_position: Vector3) -> Variant:
 	var best: Variant = null
 	var best_distance := INF
