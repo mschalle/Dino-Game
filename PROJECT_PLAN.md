@@ -320,6 +320,7 @@ The player and spawned food now follow the authored elevation function with grav
 146. Added full-reserve reachability validation from the safe nest across symmetric chunk links.
 147. Added authored-scene validation for non-empty landmark presentation kinds.
 148. Added per-biome streamed environments with fog density and background color derived from chunk profiles.
+149. Added exact profile-to-runtime fog density validation for every authored chunk.
 
 ## Release Readiness
 
