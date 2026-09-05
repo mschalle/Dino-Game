@@ -484,6 +484,7 @@ The player and spawned food now follow the authored elevation function with grav
 310. Added packaging-loop validation evidence confirming the optional gate halts before checkpoint advancement when export templates are missing.
 311. Added strict-loop template preflight so `-RequireExportTemplates` fails before gameplay validation when release prerequisites are absent.
 312. Added result-path preflight so scheduled runs reject an invalid JSON output directory before validation begins.
+313. Added end-to-end observability evidence covering both valid JSON result output and invalid-directory rejection.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
