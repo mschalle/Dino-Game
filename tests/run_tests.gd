@@ -88,6 +88,11 @@ func _test_profiles() -> void:
 		dino.configure(profile)
 		root.add_child(dino)
 		_check((dino.imported_model != null) or (dino.tail_mesh != null and dino.leg_meshes.size() >= 4), "%s needs a complete dinosaur silhouette" % profile.id)
+		if dino.imported_model != null:
+			_check(dino.imported_animation_player != null, "%s imported model should have an animation player" % profile.id)
+			if dino.imported_animation_player != null:
+				for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+					_check(dino.imported_animation_player.has_animation(animation_name), "%s should expose %s animation" % [profile.id, animation_name])
 		dino.free()
 
 func _test_all_playable_species() -> void:

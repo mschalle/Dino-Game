@@ -334,6 +334,7 @@ The player and spawned food now follow the authored elevation function with grav
 160. Documented the roadmap validator workflow in `README.md` for repeatable milestone handoff.
 161. Hardened the validator to require the explicit gameplay PASS marker and reject reported test failures.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
+163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 
 ## Release Readiness
 
