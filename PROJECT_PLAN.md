@@ -654,6 +654,7 @@ The player and spawned food now follow the authored elevation function with grav
 373. Connected water transparency and roughness to environment quality, including immediate updates for loaded wetland chunks.
 374. Added world-scale UV tiling for imported biome textures to prevent stretched surfaces across the expanded reserve.
 375. Made F4 update ambient and biome-weather particle counts live using each effect system's biome-specific base budget.
+376. Added quality-scaled global and biome fog density updates for Low/Medium/High runtime rendering modes.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

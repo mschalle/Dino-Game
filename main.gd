@@ -1586,6 +1586,8 @@ func _cycle_environment_quality() -> void:
 		var ssao_enabled := ENVIRONMENT_QUALITY.active_id != "low"
 		valley_environment.ssao_enabled = ssao_enabled
 		valley_environment.ssao_intensity = 0.7 if ENVIRONMENT_QUALITY.active_id == "medium" else 1.0
+		var fog_scale := 0.8 if ENVIRONMENT_QUALITY.active_id == "low" else (1.15 if ENVIRONMENT_QUALITY.active_id == "high" else 1.0)
+		valley_environment.fog_density = 0.0045 * fog_scale
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())
@@ -1623,6 +1625,8 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 		if biome_environment != null and biome_environment.environment != null:
 			biome_environment.environment.ssao_enabled = ENVIRONMENT_QUALITY.active_id != "low"
 			biome_environment.environment.ssao_intensity = 0.6 if ENVIRONMENT_QUALITY.active_id == "medium" else 0.9
+			var fog_scale := 0.8 if ENVIRONMENT_QUALITY.active_id == "low" else (1.15 if ENVIRONMENT_QUALITY.active_id == "high" else 1.0)
+			biome_environment.environment.fog_density = float(chunk.get_meta("fog_density", 0.006)) * fog_scale
 		var water := chunk.get_node_or_null("WaterSurface") as MeshInstance3D
 		if water != null and water.material_override is StandardMaterial3D:
 			var water_material := water.material_override as StandardMaterial3D
