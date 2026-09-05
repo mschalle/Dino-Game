@@ -227,6 +227,9 @@ func _create_elevation(biome: String) -> void:
 func _create_vegetation(biome: String) -> void:
 	var foliage := MultiMeshInstance3D.new()
 	foliage.name = "Vegetation"
+	foliage.visibility_range_begin = 24.0
+	foliage.visibility_range_end = 120.0
+	foliage.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
 	var foliage_count := 16

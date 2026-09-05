@@ -436,6 +436,8 @@ func _test_world_chunks() -> void:
 		_check(silhouette.material_override.albedo_color.is_equal_approx(chunk.ground_color.darkened(0.18)), "%s landmark palette should follow its ground profile" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
 		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
+		if vegetation != null:
+			_check(vegetation.visibility_range_begin > 0.0 and vegetation.visibility_range_end > vegetation.visibility_range_begin, "%s vegetation should define a bounded visibility range" % chunk.chunk_id)
 		if vegetation != null and vegetation.multimesh != null:
 			var base_vegetation_count := int(visual_root.get_meta("vegetation_base_count", 0))
 			_check(is_equal_approx(float(visual_root.get_meta("vegetation_density", 0.0)), chunk.vegetation_density), "%s vegetation density should be applied to the visual root" % chunk.chunk_id)
