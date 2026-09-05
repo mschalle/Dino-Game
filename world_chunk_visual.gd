@@ -375,6 +375,9 @@ func _create_landmark_silhouette(biome: String) -> void:
 		stone.height = 2.8
 		mesh = stone
 	silhouette.mesh = mesh
+	silhouette.visibility_range_begin = 2.0
+	silhouette.visibility_range_end = 180.0
+	silhouette.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	silhouette.position = landmark_position + Vector3(0.0, silhouette_height * 0.5, 0.0)
 	silhouette.material_override = _biome_material(biome)
 	silhouette.set_meta("landmark_kind", landmark_kind)
