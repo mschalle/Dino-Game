@@ -43,5 +43,8 @@ for ($iteration = 1; $iteration -le $MaxIterations; $iteration++) {
         Write-Host "No new checkpoint was recorded; stopping safely for the next development milestone."
         break
     }
+    if ($current -ne ($previous + 1)) {
+        throw "Roadmap checkpoint advanced from $previous to $current; milestones must advance sequentially"
+    }
     $previous = $current
 }

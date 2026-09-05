@@ -470,6 +470,7 @@ The player and spawned food now follow the authored elevation function with grav
 296. Added `tools/roadmap_loop.ps1`, a bounded validation loop that advances only after a new checkpoint is recorded and stops safely when work is unchanged.
 297. Added roadmap-file preflight validation so the loop refuses to run against a missing or malformed project plan.
 298. Added checkpoint-integrity preflight so the loop rejects duplicate or out-of-order roadmap entries before gameplay validation.
+299. Added sequential-advance enforcement so the roadmap loop cannot skip a milestone between validation passes.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
