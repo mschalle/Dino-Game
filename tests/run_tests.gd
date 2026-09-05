@@ -285,10 +285,15 @@ func _test_world_chunks() -> void:
 			_check(visual_root.get_node_or_null("Elevation") != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
 			_check(visual_root.get_node_or_null("ElevationCollision") != null, "%s should create elevated terrain collision" % chunk.chunk_id)
 		var has_labelled_landmark := false
+		var landmark_label_matches := false
 		for child in visual_root.get_children():
 			if child is MeshInstance3D and child.get_child_count() >= 1:
-				has_labelled_landmark = true
+				for nested in child.get_children():
+					if nested is Label3D:
+						has_labelled_landmark = true
+						landmark_label_matches = nested.text == chunk.landmark_name
 		_check(has_labelled_landmark, "%s landmark should include a readable label" % chunk.chunk_id)
+		_check(landmark_label_matches, "%s landmark label should match its profile" % chunk.chunk_id)
 		visual_root.free()
 
 func _test_habitat_rules() -> void:

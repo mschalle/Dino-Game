@@ -328,6 +328,7 @@ The player and spawned food now follow the authored elevation function with grav
 154. Added plant-food availability consistency validation for every habitat profile.
 155. Added distinct volcanic-cone and ice-beacon landmark geometry for highland reserve zones.
 156. Added translated-chunk placement validation for non-origin terrain and landmarks.
+157. Added validation that visible landmark labels match their authored profile names.
 
 ## Release Readiness
 
