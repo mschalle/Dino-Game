@@ -239,6 +239,14 @@ func landmark_position_for_chunk(chunk_id: String) -> Variant:
 		return null
 	return landmark.global_position
 
+func active_landmark_positions() -> Dictionary:
+	var result: Dictionary = {}
+	for chunk_id in active_ids:
+		var position: Variant = landmark_position_for_chunk(str(chunk_id))
+		if position is Vector3:
+			result[str(chunk_id)] = position
+	return result
+
 func release_chunk(chunk_id: String) -> void:
 	_remove_neighbor_links(chunk_id)
 	if not scene_instances.has(chunk_id):

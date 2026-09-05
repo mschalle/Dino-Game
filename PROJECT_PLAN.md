@@ -301,6 +301,7 @@ The player and spawned food now follow the authored elevation function with grav
 127. Removed invalid manual frees of reference-counted save fixtures and hardened the replenishment assertion.
 128. Added a stream-manager landmark lookup API for quest and navigation destination targeting.
 129. Added world-space landmark destination queries for translated streamed chunks.
+130. Added aggregate active-landmark positions for HUD, quest, and accessibility consumers.
 
 ## Release Readiness
 
