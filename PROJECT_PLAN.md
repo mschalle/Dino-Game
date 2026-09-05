@@ -229,6 +229,8 @@ The player and spawned food now follow the authored elevation function with grav
 55. Added validation for biome presentation metadata.
 56. Connected chunk activation/deactivation signals to runtime scene instances.
 57. Validated chunk runtime loading through automated tests and headless startup.
+58. Added persistent in-memory chunk state for unload/reload continuity.
+59. Added automated preservation checks for chunk food and quest state.
 
 ## Release Readiness
 

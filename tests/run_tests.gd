@@ -95,6 +95,9 @@ func _test_world_streaming() -> void:
 	_check(loaded != null, "Chunk scene should instantiate")
 	_check(manager.instantiate_chunk("fernwood", holder) == loaded, "Chunk should not duplicate instances")
 	manager.release_chunk("fernwood")
+	manager.set_chunk_state("fernwood", {"food_claimed": 3, "quest_marker": "trail"})
+	_check(manager.get_chunk_state("fernwood").get("food_claimed", 0) == 3, "Chunk state should survive release")
+	_check(manager.get_chunk_state("fernwood").get("quest_marker", "") == "trail", "Chunk quest state should survive release")
 	holder.queue_free()
 
 func _test_growth() -> void:

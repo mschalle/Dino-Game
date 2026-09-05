@@ -7,6 +7,7 @@ signal chunk_deactivated(chunk_id: String)
 var chunks: Array = []
 var active_ids: Dictionary = {}
 var scene_instances: Dictionary = {}
+var chunk_states: Dictionary = {}
 var active_radius := 1
 
 func configure(chunk_profiles: Array, radius: int = 1) -> void:
@@ -14,6 +15,7 @@ func configure(chunk_profiles: Array, radius: int = 1) -> void:
 	active_radius = maxi(0, radius)
 	active_ids.clear()
 	scene_instances.clear()
+	chunk_states.clear()
 
 func update_player_chunk(grid_position: Vector2i) -> void:
 	var next_active: Dictionary = {}
@@ -63,3 +65,9 @@ func release_chunk(chunk_id: String) -> void:
 	if is_instance_valid(instance):
 		instance.queue_free()
 	scene_instances.erase(chunk_id)
+
+func set_chunk_state(chunk_id: String, state: Dictionary) -> void:
+	chunk_states[chunk_id] = state.duplicate(true)
+
+func get_chunk_state(chunk_id: String) -> Dictionary:
+	return (chunk_states.get(chunk_id, {}) as Dictionary).duplicate(true)
