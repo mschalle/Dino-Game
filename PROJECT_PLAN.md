@@ -595,6 +595,7 @@ The player and spawned food now follow the authored elevation function with grav
 314. Added deterministic AI recovery-transition coverage for prey and predators, confirming both return from recovery to wandering while preserving valley bounds.
 315. Added reusable prey herd context with tier-local leader/anchor assignment and deterministic follower-context coverage.
 316. Added shared threat alerts so nearby members of the same prey herd enter flee state together after an attack.
+317. Added non-player predator pursuit of eligible NPC prey with warn, chase, disengage, and recover states isolated from player combat rewards.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

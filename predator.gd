@@ -31,6 +31,7 @@ var tail_rest_rotation := Vector3.ZERO
 var imported_model: Node3D
 var imported_animation_player: AnimationPlayer
 var respawn_gate: Callable
+var prey_target: PreyDino
 
 func setup(new_strength: int, new_position: Vector3) -> void:
 	strength = new_strength
@@ -69,8 +70,7 @@ func _process(delta: float) -> void:
 	phase += delta
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	if player == null:
-		_wander()
-		_animate_visuals(false)
+		_process_npc_prey(delta)
 		return
 	var distance := global_position.distance_to(player.global_position)
 	var can_challenge := strength > player.strength
@@ -108,6 +108,51 @@ func scare_away() -> void:
 		home = global_position + (global_position - player.global_position).normalized() * 8.0
 		home.x = clampf(home.x, -VALLEY_LIMIT, VALLEY_LIMIT)
 		home.z = clampf(home.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+
+func _process_npc_prey(delta: float) -> void:
+	if prey_target == null or not is_instance_valid(prey_target) or not prey_target.visible:
+		prey_target = _nearest_prey()
+	if prey_target == null:
+		state = "wander"
+		_wander()
+		_animate_visuals(false)
+		return
+	var distance := global_position.distance_to(prey_target.global_position)
+	if state == "wander" and distance < 11.0:
+		state = "warn"
+		warning_timer = 0.8
+	elif state == "warn":
+		warning_timer -= delta
+		look_at(Vector3(prey_target.global_position.x, global_position.y, prey_target.global_position.z), Vector3.UP)
+		if warning_timer <= 0.0:
+			state = "chase"
+	elif state == "chase":
+		var direction := _navigation_direction(prey_target.global_position)
+		global_position += direction * 3.5 * delta
+		look_at(global_position + direction, Vector3.UP)
+		if distance < 1.7 or distance > 20.0:
+			state = "recover"
+	elif state == "recover":
+		var direction_home := _navigation_direction(home)
+		if direction_home.length() > 1.0:
+			global_position += direction_home * 2.2 * delta
+		else:
+			state = "wander"
+	_clamp_to_valley()
+	_animate_visuals(state == "chase" or state == "recover")
+
+func _nearest_prey() -> PreyDino:
+	var nearest: PreyDino
+	var nearest_distance := 14.0
+	for candidate in get_tree().get_nodes_in_group("prey"):
+		var prey := candidate as PreyDino
+		if prey == null or not prey.visible:
+			continue
+		var distance := global_position.distance_to(prey.global_position)
+		if distance < nearest_distance:
+			nearest = prey
+			nearest_distance = distance
+	return nearest
 
 func _navigation_direction(target: Vector3) -> Vector3:
 	var direct := target - global_position
