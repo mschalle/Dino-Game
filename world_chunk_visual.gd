@@ -260,6 +260,9 @@ func _create_water(biome: String) -> void:
 		return
 	var water := MeshInstance3D.new()
 	water.name = "WaterSurface"
+	water.visibility_range_begin = 0.0
+	water.visibility_range_end = 140.0
+	water.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var surface := PlaneMesh.new()
 	surface.size = Vector2(24.0, 18.0) if biome == "River Wetlands" else Vector2(20.0, 14.0)
 	water.mesh = surface
