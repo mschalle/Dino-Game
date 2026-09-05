@@ -6,12 +6,13 @@ signal event_finished(event_id: String)
 
 const FRESH_GROWTH := "fresh_growth"
 const HERD_JOURNEY := "herd_journey"
+const PREDATOR_PASSAGE := "predator_passage"
 
 var active_event_id := ""
 var remaining_seconds := 0.0
 
 func start(event_id: String, duration_seconds: float) -> bool:
-	if event_id not in [FRESH_GROWTH, HERD_JOURNEY] or duration_seconds <= 0.0 or not active_event_id.is_empty():
+	if event_id not in [FRESH_GROWTH, HERD_JOURNEY, PREDATOR_PASSAGE] or duration_seconds <= 0.0 or not active_event_id.is_empty():
 		return false
 	active_event_id = event_id
 	remaining_seconds = duration_seconds

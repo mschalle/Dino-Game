@@ -1103,17 +1103,21 @@ func _update_endless_difficulty() -> void:
 func _update_world_events(delta: float) -> void:
 	if mode != "endless" or world_events == null or food_spawner == null:
 		return
+	var active_event_before_tick: String = world_events.active_event_id
 	if world_events.tick(delta):
-		food_spawner.set_event_plant_bonus(0)
-		hud.show_message("Fresh Growth has faded. The valley returns to normal.")
+		_finish_world_event(active_event_before_tick)
 	if world_events.active_event_id.is_empty() and session.survival_time >= next_endless_event_time:
-		var event_id := WORLD_EVENT_SYSTEM.FRESH_GROWTH if endless_event_index % 2 == 0 else WORLD_EVENT_SYSTEM.HERD_JOURNEY
+		var event_ids := [WORLD_EVENT_SYSTEM.FRESH_GROWTH, WORLD_EVENT_SYSTEM.HERD_JOURNEY, WORLD_EVENT_SYSTEM.PREDATOR_PASSAGE]
+		var event_id: String = event_ids[endless_event_index % event_ids.size()]
 		if world_events.start(event_id, 45.0):
 			if event_id == WORLD_EVENT_SYSTEM.FRESH_GROWTH:
 				food_spawner.set_event_plant_bonus(4)
 				hud.show_message("Fresh Growth! Extra plants have appeared for a short time.")
 			else:
-				_start_herd_journey()
+				if event_id == WORLD_EVENT_SYSTEM.HERD_JOURNEY:
+					_start_herd_journey()
+				else:
+					_start_predator_passage()
 			next_endless_event_time += 180.0
 			endless_event_index += 1
 
@@ -1134,6 +1138,27 @@ func _start_herd_journey() -> void:
 		if prey != null and prey.herd_id == lead.herd_id:
 			prey.begin_journey(destination)
 	hud.show_message("Herd Journey! Follow the traveling herd to its new meadow.")
+
+func _start_predator_passage() -> void:
+	var traveler: ValleyPredator
+	for predator in predators:
+		if is_instance_valid(predator) and predator.visible and (traveler == null or predator.strength < traveler.strength):
+			traveler = predator
+	if traveler == null:
+		hud.show_message("Predator Passage could not find a nearby traveler.")
+		return
+	var destination := Vector3(-traveler.home.x * 0.55, traveler.home.y, -traveler.home.z * 0.55)
+	traveler.begin_passage(destination)
+	hud.show_message("Predator Passage! Keep your distance or use a safe retreat route.")
+
+func _finish_world_event(finished_id: String) -> void:
+	if finished_id == WORLD_EVENT_SYSTEM.FRESH_GROWTH:
+		food_spawner.set_event_plant_bonus(0)
+		hud.show_message("Fresh Growth has faded. The valley returns to normal.")
+	elif finished_id == WORLD_EVENT_SYSTEM.HERD_JOURNEY:
+		hud.show_message("Herd Journey complete. The herd has settled into a new meadow.")
+	else:
+		hud.show_message("Predator Passage complete. The route is safe again.")
 
 func _tick_cooldowns(delta: float) -> void:
 	for ability_id in ability_cooldowns.keys():

@@ -32,6 +32,9 @@ var imported_model: Node3D
 var imported_animation_player: AnimationPlayer
 var respawn_gate: Callable
 var prey_target: PreyDino
+var passage_target := Vector3.ZERO
+var passage_return_home := Vector3.ZERO
+var passage_active := false
 
 func setup(new_strength: int, new_position: Vector3) -> void:
 	strength = new_strength
@@ -69,6 +72,11 @@ func _process(delta: float) -> void:
 		return
 	phase += delta
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
+	if passage_active:
+		_update_passage(delta)
+		_clamp_to_valley()
+		_animate_visuals(true)
+		return
 	if player == null:
 		_process_npc_prey(delta)
 		return
@@ -103,6 +111,7 @@ func _process(delta: float) -> void:
 	_animate_visuals(state == "chase" or state == "recover")
 
 func scare_away() -> void:
+	passage_active = false
 	state = "recover"
 	if player != null:
 		home = global_position + (global_position - player.global_position).normalized() * 8.0
@@ -154,6 +163,29 @@ func _nearest_prey() -> PreyDino:
 			nearest_distance = distance
 	return nearest
 
+func begin_passage(destination: Vector3) -> void:
+	passage_target = destination
+	passage_target.x = clampf(passage_target.x, -VALLEY_LIMIT, VALLEY_LIMIT)
+	passage_target.z = clampf(passage_target.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	passage_return_home = home
+	passage_active = true
+	state = "passage"
+
+func _update_passage(delta: float) -> void:
+	var direction := _navigation_direction(passage_target)
+	var speed := maxf(2.5, creature_profile.move_speed * 0.7)
+	var distance := global_position.distance_to(passage_target)
+	if distance <= speed * delta:
+		global_position = passage_target
+	else:
+		global_position += direction * speed * delta
+	if direction.length() > 0.01:
+		look_at(global_position + direction, Vector3.UP)
+	if global_position.distance_to(passage_target) <= 0.8:
+		passage_active = false
+		home = passage_return_home
+		state = "recover"
+
 func _navigation_direction(target: Vector3) -> Vector3:
 	var direct := target - global_position
 	direct.y = 0.0
@@ -171,6 +203,11 @@ func receive_attack(damage: float, attacker_position: Vector3) -> bool:
 		return false
 	var away := (global_position - attacker_position).normalized()
 	global_position += Vector3(away.x, 0.0, away.z) * 0.3
+	if passage_active:
+		passage_active = false
+		home = passage_return_home
+		state = "recover"
+		return true
 	if combat.is_defeated():
 		defeat_timer = creature_profile.respawn_delay
 		visible = false

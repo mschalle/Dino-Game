@@ -242,6 +242,8 @@ func _test_world_events() -> void:
 	_check(not events.tick(44.0), "Fresh Growth should remain active before its duration ends")
 	_check(events.tick(1.0), "Fresh Growth should finish at its duration boundary")
 	_check(events.start(WORLD_EVENT_SYSTEM.HERD_JOURNEY, 45.0), "Herd Journey should start after the prior event ends")
+	events.tick(45.0)
+	_check(events.start(WORLD_EVENT_SYSTEM.PREDATOR_PASSAGE, 45.0), "Predator Passage should start after the prior event ends")
 	var spawner := FoodSpawner.new()
 	spawner.set_event_plant_bonus(4)
 	_check(spawner.event_plant_bonus == 4, "Fresh Growth should add a bounded plant-spawn bonus")
@@ -916,6 +918,13 @@ func _test_ai_states() -> void:
 	npc_predator.position = Vector3.ZERO
 	npc_predator._process(0.1)
 	_check(npc_predator.state == "recover", "Predators should disengage from NPC prey beyond territory")
+	npc_predator.position = Vector3.ZERO
+	npc_predator.begin_passage(Vector3(2.0, 0.0, 0.0))
+	npc_predator._process(1.0)
+	_check(not npc_predator.passage_active and npc_predator.state == "recover", "Predator Passage should reach its bounded destination and return home")
+	npc_predator.begin_passage(Vector3(5.0, 0.0, 0.0))
+	_check(npc_predator.receive_attack(1.0, Vector3(-1.0, 0.0, 0.0)), "Players should be able to interrupt a Predator Passage")
+	_check(not npc_predator.passage_active and npc_predator.state == "recover", "Interrupted Predator Passage should offer a clear retreat")
 	npc_predator.free()
 	npc_prey.free()
 	player.free()

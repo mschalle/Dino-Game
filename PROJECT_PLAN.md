@@ -609,6 +609,7 @@ The player and spawned food now follow the authored elevation function with grav
 328. Added a deterministic 30-minute Endless ecosystem soak scenario covering streamed population bounds, creature caps, food recovery, and herd-duplication prevention.
 329. Added the reusable Endless world-event foundation and the Fresh Growth event, which temporarily adds bounded plant resources with automated lifecycle coverage.
 330. Added Herd Journey events that move an existing compatible herd to a safe destination and return its members to normal wandering after arrival.
+331. Added Predator Passage events with bounded traversal, readable warnings, and an attack-triggered retreat path that preserves kid-friendly combat.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
