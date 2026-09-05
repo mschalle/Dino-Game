@@ -228,6 +228,7 @@ func _test_windows_export_preset() -> void:
 func _test_release_readiness() -> void:
 	_check(FileAccess.file_exists("res://project.godot"), "Release build should include project settings")
 	_check(FileAccess.file_exists("res://Main.tscn"), "Release build should include the main scene")
+	_check(str(ProjectSettings.get_setting("application/run/main_scene", "")) == "res://Main.tscn", "Release project should configure Main.tscn as its main scene")
 	_check(FileAccess.file_exists("res://save_system.gd"), "Release build should include save recovery")
 	_check(DinosaurProfiles.all().size() == 6, "Release roster should contain six playable species")
 	_check(SaveSystem.SAVE_VERSION >= 1, "Release save schema should be versioned")

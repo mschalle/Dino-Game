@@ -385,6 +385,7 @@ The player and spawned food now follow the authored elevation function with grav
 211. Added playable-ability metadata validation for readable names, descriptions, and positive cooldowns.
 212. Added per-species ability-ID uniqueness validation to prevent skill-state collisions.
 213. Added validation that every playable ability declares a nonempty runtime input action.
+214. Added release validation for the configured `res://Main.tscn` main scene to prevent launch regressions.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
