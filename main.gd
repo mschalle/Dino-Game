@@ -107,6 +107,7 @@ func _process(delta: float) -> void:
 	_update_hud()
 	_update_world_stream()
 	if food_spawner != null and world_stream != null:
+		world_stream.tick_respawn_cooldowns(delta)
 		food_spawner.set_spawn_plan(world_stream.active_spawn_plan())
 		food_spawner.set_population_budget(world_stream.active_population_budget())
 		world_stream.prune_inactive_actors(self)

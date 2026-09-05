@@ -117,6 +117,23 @@ func active_population_budget() -> Dictionary:
 		budget["predator"] = int(budget["predator"]) + int(population.get("predator", 0))
 	return budget
 
+func set_respawn_cooldown(chunk_id: String, seconds: float) -> void:
+	var state := get_chunk_state(chunk_id)
+	state["respawn_cooldown"] = maxf(0.0, seconds)
+	set_chunk_state(chunk_id, state)
+
+func get_respawn_cooldown(chunk_id: String) -> float:
+	return maxf(0.0, float(get_chunk_state(chunk_id).get("respawn_cooldown", 0.0)))
+
+func tick_respawn_cooldowns(delta: float) -> void:
+	for chunk in chunks:
+		var cooldown := get_respawn_cooldown(chunk.chunk_id)
+		if cooldown <= 0.0:
+			continue
+		var state := get_chunk_state(chunk.chunk_id)
+		state["respawn_cooldown"] = maxf(0.0, cooldown - delta)
+		set_chunk_state(chunk.chunk_id, state)
+
 func _nearest_active_chunk_position(world_position: Vector3) -> Variant:
 	var best: Variant = null
 	var best_distance := INF
