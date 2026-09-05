@@ -333,6 +333,14 @@ func _create_fireflies() -> void:
 		fireflies.append(firefly)
 
 func _animate_environment(delta: float) -> void:
+	var settings: Dictionary = save_system.data.get("settings", {})
+	if bool(settings.get("day_cycle_enabled", true)):
+		var sun := get_node_or_null("ValleySun") as DirectionalLight3D
+		if sun != null:
+			var cycle := fmod(environment_time, 240.0) / 240.0
+			var arc := sin(cycle * TAU) * 0.5 + 0.5
+			sun.rotation_degrees = Vector3(-28.0 - arc * 38.0, -35.0 + cycle * 24.0, 0.0)
+			sun.light_energy = 0.72 + arc * 0.65
 	for tree in animated_trees:
 		if is_instance_valid(tree):
 			tree.rotation.z = sin(environment_time * 0.8 + float(tree.get_meta("sway_offset", 0.0))) * 0.045
