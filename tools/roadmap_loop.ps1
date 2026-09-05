@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 if ($MaxIterations -lt 1) { throw "MaxIterations must be at least 1" }
+if ($MaxIterations -gt 100) { throw "MaxIterations cannot exceed 100" }
 $validation = Join-Path $ProjectPath "tools\roadmap_validation.ps1"
 $status = Join-Path $ProjectPath "tools\roadmap_status.ps1"
 $planPath = Join-Path $ProjectPath "PROJECT_PLAN.md"
