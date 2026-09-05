@@ -553,6 +553,12 @@ func _test_save_recovery() -> void:
 	var save := SaveSystem.new(path)
 	save.load_data()
 	_check(int(save.data.get("version", 0)) == SaveSystem.SAVE_VERSION, "Corrupt save must recover defaults")
+	_check(save.data.has("settings"), "Recovered save should restore settings defaults")
+	_check(save.data.has("chunk_states"), "Recovered save should restore chunk-state defaults")
+	save.save_chunk_states({"nest_basin": {"respawn_cooldown": 4.0}})
+	var chunk_state_reloaded := SaveSystem.new(path)
+	chunk_state_reloaded.load_data()
+	_check(is_equal_approx(float(chunk_state_reloaded.load_chunk_states().get("nest_basin", {}).get("respawn_cooldown", 0.0)), 4.0), "Chunk state should survive flow transitions")
 	file = FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"version": 0, "badges": ["old_badge"]}))
 	file = null

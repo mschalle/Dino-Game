@@ -287,6 +287,7 @@ The player and spawned food now follow the authored elevation function with grav
 113. Added controller-binding regression coverage for selection activation and gameplay movement actions.
 114. Added accessibility validation for large text, high contrast, and focusable HUD controls.
 115. Added pause, restart, and return-to-selection flow signal validation for input recovery paths.
+116. Extended save-recovery validation for settings defaults and chunk state across run transitions.
 
 ## Release Readiness
 
