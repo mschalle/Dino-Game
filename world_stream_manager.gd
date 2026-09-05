@@ -46,6 +46,9 @@ func active_chunk_ids() -> Array[String]:
 		result.append(str(chunk_id))
 	return result
 
+func grid_position_at_world_position(world_position: Vector3) -> Vector2i:
+	return Vector2i(roundi(world_position.x / chunk_world_size), roundi(world_position.z / chunk_world_size))
+
 func active_spawn_plan() -> Array[Dictionary]:
 	var plan: Array[Dictionary] = []
 	for chunk in chunks:
@@ -59,7 +62,7 @@ func active_spawn_plan() -> Array[Dictionary]:
 	return plan
 
 func chunk_id_at_world_position(world_position: Vector3) -> String:
-	var grid := Vector2i(roundi(world_position.x / chunk_world_size), roundi(world_position.z / chunk_world_size))
+	var grid := grid_position_at_world_position(world_position)
 	for chunk in chunks:
 		if chunk.grid_position == grid and is_active(chunk.chunk_id):
 			return chunk.chunk_id

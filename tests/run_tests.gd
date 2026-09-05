@@ -191,6 +191,9 @@ func _test_controller_bindings() -> void:
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
+	var stream := WORLD_STREAM_MANAGER.new()
+	stream.configure(chunks, 1)
+	_check(stream.grid_position_at_world_position(Vector3(31.0, 0.0, -29.0)) == Vector2i(1, 0), "World positions should map to streamed chunk grid coordinates")
 	_check(chunks.size() == 6, "Reserve should define six initial biome chunks")
 	_check(WORLD_CHUNK_PROFILES.connections_are_symmetric(chunks), "Biome connections must be bidirectional")
 	var route := WORLD_CHUNK_PROFILES.find_route(chunks, "nest_basin", "redstone_badlands")

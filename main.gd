@@ -161,9 +161,7 @@ func _create_world() -> void:
 func _update_world_stream() -> void:
 	if world_stream == null or player == null:
 		return
-	# The current 60m valley occupies the first reserve chunk. This mapping
-	# keeps the foundation active without changing current gameplay coordinates.
-	world_stream.update_player_chunk(Vector2i.ZERO)
+	world_stream.update_player_chunk(world_stream.grid_position_at_world_position(player.global_position))
 
 func _on_chunk_activated(chunk_id: String) -> void:
 	var instance: Node3D = world_stream.instantiate_chunk(chunk_id, self)
