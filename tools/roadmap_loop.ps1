@@ -4,6 +4,7 @@ param(
     [int]$MaxIterations = 10,
     [int]$StopAtCheckpoint = 0,
     [string]$ResultPath = "",
+    [switch]$RunPackagingSmoke,
     [switch]$RequireExportTemplates
 )
 
@@ -38,6 +39,11 @@ for ($iteration = 1; $iteration -le $MaxIterations; $iteration++) {
     if ($RequireExportTemplates) { $validationArgs.RequireExportTemplates = $true }
     & $validation @validationArgs
     if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "Roadmap validation failed at checkpoint $previous" }
+    if ($RunPackagingSmoke) {
+        $packaging = Join-Path $ProjectPath "tools\windows_export_smoke.ps1"
+        & $packaging -ProjectPath $ProjectPath -Godot $Godot
+        if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "Windows packaging smoke test failed at checkpoint $previous" }
+    }
 
     $current = Get-Checkpoint
     if ($StopAtCheckpoint -gt 0 -and $current -ge $StopAtCheckpoint) {
