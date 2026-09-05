@@ -227,6 +227,8 @@ The player and spawned food now follow the authored elevation function with grav
 53. Added chunk release handling and automated load/release validation.
 54. Added per-biome ground palette, vegetation density, and fog-direction data.
 55. Added validation for biome presentation metadata.
+56. Connected chunk activation/deactivation signals to runtime scene instances.
+57. Validated chunk runtime loading through automated tests and headless startup.
 
 ## Release Readiness
 

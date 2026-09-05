@@ -46,6 +46,7 @@ var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
 var world_stream
+var chunk_instances: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -57,6 +58,8 @@ func _ready() -> void:
 	_create_world()
 	world_stream = WORLD_STREAM_MANAGER.new()
 	world_stream.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	world_stream.chunk_activated.connect(_on_chunk_activated)
+	world_stream.chunk_deactivated.connect(_on_chunk_deactivated)
 	world_stream.update_player_chunk(Vector2i.ZERO)
 	sounds = SOUND_FEEDBACK.new()
 	add_child(sounds)
@@ -147,6 +150,15 @@ func _update_world_stream() -> void:
 	# The current 60m valley occupies the first reserve chunk. This mapping
 	# keeps the foundation active without changing current gameplay coordinates.
 	world_stream.update_player_chunk(Vector2i.ZERO)
+
+func _on_chunk_activated(chunk_id: String) -> void:
+	var instance: Node3D = world_stream.instantiate_chunk(chunk_id, self)
+	if instance != null:
+		chunk_instances[chunk_id] = instance
+
+func _on_chunk_deactivated(chunk_id: String) -> void:
+	world_stream.release_chunk(chunk_id)
+	chunk_instances.erase(chunk_id)
 
 func _create_scenery_piece(index: int) -> void:
 	var piece := MeshInstance3D.new()
