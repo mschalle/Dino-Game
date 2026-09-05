@@ -32,6 +32,8 @@ Open `project.godot` in Godot 4 and press **F6** or **F5**. All visuals are proc
 
 Run the project headlessly to verify startup, then run `res://tests/run_tests.gd` with Godot's `--script` option for profile, growth, quest, survival, AI, food, and save coverage.
 
+For the complete roadmap gate, run `.\tools\roadmap_validation.ps1`. It runs gameplay tests, headless startup, and `git diff --check` in sequence; it does not stage, commit, or push changes.
+
 ## Next milestones
 
 1. Playtest and tune each Adventure toward the target 25–35 minute session.

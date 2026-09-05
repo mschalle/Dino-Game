@@ -331,6 +331,7 @@ The player and spawned food now follow the authored elevation function with grav
 157. Added validation that visible landmark labels match their authored profile names.
 158. Added runtime validation that every streamed biome derives a visible non-black background palette.
 159. Added `tools/roadmap_validation.ps1` as a repeatable three-gate validator for tests, headless startup, and Git whitespace.
+160. Documented the roadmap validator workflow in `README.md` for repeatable milestone handoff.
 
 ## Release Readiness
 
