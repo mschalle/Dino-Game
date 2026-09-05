@@ -452,6 +452,7 @@ The player and spawned food now follow the authored elevation function with grav
 278. Added bounded roughness validation for streamed batched vegetation materials.
 279. Added bounded metallic-response validation for streamed batched vegetation materials.
 280. Added non-empty visibility-volume validation for streamed ambient particle effects.
+281. Added positive-dimension validation for streamed elevation meshes to protect authored hill and ridge geometry.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
