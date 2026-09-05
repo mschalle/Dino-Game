@@ -477,6 +477,7 @@ The player and spawned food now follow the authored elevation function with grav
 303. Added end-to-end validation evidence for JSON loop reporting, including checkpoint, iteration count, stop reason, and pass status.
 304. Added explicit automation safety documentation: the loop validates authored milestones and never fabricates completion checkpoints.
 305. Added packaging-gate evidence: Windows export templates are missing, and the export smoke test reports case-mismatched imported asset paths that must be normalized before release packaging.
+306. Added packaging diagnosis confirming no direct `res://textures/` references remain in authored source; remaining case warnings originate in imported asset metadata.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
