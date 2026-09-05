@@ -130,6 +130,22 @@ func alert_herd(threat_position: Vector3) -> void:
 			other.state = "flee"
 			other.base_position = other.global_position + (other.global_position - threat_position).normalized() * 3.0
 
+func regroup_herd() -> int:
+	if herd_id.is_empty():
+		return 0
+	var regrouped := 0
+	for sibling in get_tree().get_nodes_in_group("prey"):
+		var other := sibling as PreyDino
+		if other == null or other.herd_id != herd_id or not other.visible:
+			continue
+		var offset := other.global_position - herd_anchor
+		offset.y = 0.0
+		if offset.length() > 4.0:
+			other.base_position = herd_anchor + offset.normalized() * 3.0
+			other.state = "recover"
+			regrouped += 1
+	return regrouped
+
 func _navigation_direction(target: Vector3) -> Vector3:
 	var direct := target - global_position
 	direct.y = 0.0

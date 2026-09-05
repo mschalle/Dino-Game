@@ -883,6 +883,9 @@ func _test_herd_context() -> void:
 	sibling.position = Vector3(2.0, 0.0, 0.0)
 	prey.alert_herd(Vector3(-2.0, 0.0, 0.0))
 	_check(sibling.state == "flee", "Nearby herd members should flee together")
+	sibling.position = Vector3(10.0, 0.0, 0.0)
+	_check(prey.regroup_herd() == 1, "Herd regrouping should recover separated members")
+	_check(sibling.state == "recover", "Separated herd members should recover toward the anchor")
 	sibling.free()
 	prey.free()
 
