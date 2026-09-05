@@ -336,6 +336,7 @@ The player and spawned food now follow the authored elevation function with grav
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.
+165. Updated README asset guidance to distinguish imported GLB models from procedural fallbacks.
 
 ## Release Readiness
 

@@ -26,7 +26,7 @@ Keyboard, mouse, and gamepad are supported. Controls can be remapped from the se
 
 ## Run it
 
-Open `project.godot` in Godot 4 and press **F6** or **F5**. All visuals are procedural, child-friendly placeholder shapes—no external 3D assets are required yet.
+Open `project.godot` in Godot 4 and press **F6** or **F5**. The game uses imported child-friendly GLB dinosaur models when available and falls back to procedural shapes if an asset is missing.
 
 ## Validate
 
@@ -37,4 +37,4 @@ For the complete roadmap gate, run `.\tools\roadmap_validation.ps1`. It runs gam
 ## Next milestones
 
 1. Playtest and tune each Adventure toward the target 25–35 minute session.
-2. Replace procedural placeholders with child-friendly low-poly models and animations.
+2. Continue replacing fallback procedural pieces with authored child-friendly low-poly models and animation polish.
