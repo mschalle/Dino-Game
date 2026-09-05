@@ -88,6 +88,15 @@ func _test_world_chunks() -> void:
 		_check(chunk.max_slope_degrees > 0.0 and chunk.max_slope_degrees <= 45.0, "Biome slope must remain traversable")
 		_check(chunk.max_climb > 0.0, "Every biome needs a climb limit")
 		_check(not chunk.neighbor_ids.is_empty() or chunk.chunk_id == "nest_basin", "Chunks should define connected neighbors")
+		var scene := load(chunk.scene_path) as PackedScene
+		var visual_root := scene.instantiate()
+		root.add_child(visual_root)
+		_check(visual_root.get_child_count() >= 1, "%s should create a visible landmark mesh" % chunk.chunk_id)
+		if visual_root.get_child_count() > 0:
+			var landmark_mesh := visual_root.get_child(0)
+			_check(landmark_mesh is MeshInstance3D, "%s landmark should use a mesh instance" % chunk.chunk_id)
+			_check(landmark_mesh.get_child_count() >= 1, "%s landmark should include a readable label" % chunk.chunk_id)
+		visual_root.free()
 
 func _test_world_streaming() -> void:
 	var manager = WORLD_STREAM_MANAGER.new()
