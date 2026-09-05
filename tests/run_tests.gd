@@ -16,6 +16,7 @@ func _run_tests() -> void:
 	_test_selection_roster_layout()
 	_test_selection_navigation()
 	_test_selection_focus_mapping()
+	_test_controller_bindings()
 	_test_world_chunks()
 	_test_habitat_rules()
 	_test_world_streaming()
@@ -132,6 +133,13 @@ func _test_selection_focus_mapping() -> void:
 	for index in 6:
 		_check(DinosaurProfiles.selection_neighbor(index, "left") >= 0, "Every selection card should have a left focus target")
 		_check(DinosaurProfiles.selection_neighbor(index, "right") < 6, "Every selection card should have a right focus target")
+
+func _test_controller_bindings() -> void:
+	for action in ["ui_accept", "ui_cancel", "move_forward", "move_back", "move_left", "move_right"]:
+		_check(InputMap.has_action(action), "%s should be available for keyboard/gamepad input" % action)
+	var accept := InputEventJoypadButton.new()
+	accept.button_index = JOY_BUTTON_A
+	_check(accept.button_index == JOY_BUTTON_A, "Controller activation event should be constructible")
 
 func _test_world_chunks() -> void:
 	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
