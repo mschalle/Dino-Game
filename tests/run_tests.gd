@@ -861,6 +861,8 @@ func _test_gameplay_integration() -> void:
 		var crown := tree.get_child(0) as MeshInstance3D
 		_check(crown != null and crown.visibility_range_end > crown.visibility_range_begin, "Animated tree crowns should define a bounded visibility range")
 	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
+	for waterfall in main_scene.waterfall_layers:
+		_check(waterfall.visibility_range_end > waterfall.visibility_range_begin, "Waterfall layers should define a bounded visibility range")
 	_check(main_scene.fireflies.size() == 12, "The valley should include ambient fireflies")
 	for firefly in main_scene.fireflies:
 		_check(firefly.visibility_range_end > firefly.visibility_range_begin, "Ambient fireflies should define a bounded visibility range")

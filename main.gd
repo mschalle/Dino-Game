@@ -219,6 +219,9 @@ func _create_waterfall() -> void:
 		var mesh := BoxMesh.new()
 		mesh.size = Vector3(0.68, 4.0 - index * 0.25, 0.18)
 		waterfall.mesh = mesh
+		waterfall.visibility_range_begin = 0.0
+		waterfall.visibility_range_end = 150.0
+		waterfall.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 		waterfall.material_override = _glow_material(Color("#72d8f2").lightened(index * 0.04))
 		waterfall.position = Vector3(18.3 + index * 0.72, 2.0 - index * 0.12, -4)
 		waterfall.set_meta("flow_offset", float(index) * 1.7)
