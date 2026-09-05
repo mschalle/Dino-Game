@@ -402,6 +402,7 @@ The player and spawned food now follow the authored elevation function with grav
 228. Added grid-position uniqueness validation to prevent overlapping streamed chunks.
 229. Added habitat spawn-table validation so every authored chunk declares at least one population category.
 230. Added spawn-table key validation for the supported prey, predator, and plant habitat categories.
+231. Added habitat spawn-tier validation to keep prey and predator entries within supported tiers 1–4.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

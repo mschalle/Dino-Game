@@ -308,6 +308,9 @@ func _test_world_chunks() -> void:
 		_check(chunk.spawn_table is Dictionary and not chunk.spawn_table.is_empty(), "%s should declare habitat spawn categories" % chunk.chunk_id)
 		for spawn_key in chunk.spawn_table.keys():
 			_check(spawn_key == "prey" or spawn_key == "predators" or spawn_key == "plants", "%s should use supported habitat spawn categories" % chunk.chunk_id)
+			if spawn_key == "prey" or spawn_key == "predators":
+				for spawn_tier in chunk.spawn_table[spawn_key]:
+					_check(int(spawn_tier) == spawn_tier and int(spawn_tier) >= 1 and int(spawn_tier) <= 4, "%s spawn tiers should be valid" % chunk.chunk_id)
 		_check(not grid_positions.has(chunk.grid_position), "%s should not overlap another chunk grid position" % chunk.chunk_id)
 		grid_positions[chunk.grid_position] = true
 		_check(abs(chunk.grid_position.x) <= 4 and abs(chunk.grid_position.y) <= 4, "%s grid position should remain inside the authored reserve" % chunk.chunk_id)
