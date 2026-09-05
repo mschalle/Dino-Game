@@ -165,14 +165,13 @@ func active_tier_respawn_cooldowns() -> Dictionary:
 func tick_respawn_cooldowns(delta: float) -> void:
 	for chunk in chunks:
 		var cooldown := get_respawn_cooldown(chunk.chunk_id)
-		if cooldown <= 0.0:
-			continue
 		var state := get_chunk_state(chunk.chunk_id)
-		state["respawn_cooldown"] = maxf(0.0, cooldown - delta)
 		var tier_cooldowns: Dictionary = state.get("tier_respawn_cooldowns", {})
 		for key in tier_cooldowns:
 			tier_cooldowns[key] = maxf(0.0, float(tier_cooldowns[key]) - delta)
 		state["tier_respawn_cooldowns"] = tier_cooldowns
+		if cooldown > 0.0:
+			state["respawn_cooldown"] = maxf(0.0, cooldown - delta)
 		set_chunk_state(chunk.chunk_id, state)
 
 func _nearest_active_chunk_position(world_position: Vector3) -> Variant:

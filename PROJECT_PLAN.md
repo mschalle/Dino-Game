@@ -273,6 +273,7 @@ The player and spawned food now follow the authored elevation function with grav
 99. Connected spawned predators to the stream manager's actual tier readiness callback.
 100. Connected renewable prey instances to the same biome and tier readiness gate.
 101. Added mixed-population integration coverage for independent prey and predator cooldowns across active chunks.
+102. Added a 600-step streaming-session validation for bounded populations and cooldown expiry.
 
 ## Release Readiness
 

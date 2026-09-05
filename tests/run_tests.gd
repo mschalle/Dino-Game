@@ -21,6 +21,7 @@ func _run_tests() -> void:
 	_test_predator_respawn_gate()
 	_test_prey_respawn_gate()
 	_test_mixed_population_cooldowns()
+	_test_long_streaming_session()
 	_test_ai_states()
 	_test_low_level_food_supply()
 	_test_habitat_food_filter()
@@ -156,6 +157,20 @@ func _test_mixed_population_cooldowns() -> void:
 	_check(not manager.tier_respawn_ready("fernwood", "predator", 1), "Fernwood predator should remain gated")
 	_check(not manager.tier_respawn_ready("nest_basin", "prey", 1), "Nest Basin prey should remain gated")
 	_check(manager.tier_respawn_ready("nest_basin", "predator", 1), "Unaffected Nest Basin predator tier should remain ready")
+
+func _test_long_streaming_session() -> void:
+	var manager = WORLD_STREAM_MANAGER.new()
+	manager.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	manager.set_chunk_state("nest_basin", {"population": {"prey": 4, "predator": 1}})
+	manager.set_chunk_state("fernwood", {"population": {"prey": 3, "predator": 1}})
+	manager.set_tier_respawn_cooldown("fernwood", "predator", 1, 30.0)
+	for step in 600:
+		var grid := Vector2i(step % 3, (step / 3) % 3)
+		manager.update_player_chunk(grid)
+		manager.tick_respawn_cooldowns(0.5)
+		var budget := manager.active_population_budget()
+		_check(int(budget.get("prey", 0)) <= 7, "Long session population budget must remain bounded")
+	_check(manager.get_tier_respawn_cooldown("fernwood", "predator", 1) <= 0.0, "Long session cooldowns should eventually expire")
 
 func _test_main_predator_gate_helper() -> void:
 	var controller := preload("res://main.gd").new()
