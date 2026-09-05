@@ -278,6 +278,7 @@ The player and spawned food now follow the authored elevation function with grav
 104. Added a compact diagnostics HUD with a warning threshold near the 25-NPC performance target.
 105. Added configurable diagnostics visibility for development versus release-style builds.
 106. Added rolling frame-time sampling and a sustained-performance warning to the diagnostics HUD.
+107. Added headless performance-budget validation for repeated streaming and cooldown simulation.
 
 ## Release Readiness
 

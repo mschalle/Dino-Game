@@ -29,6 +29,7 @@ func _run_tests() -> void:
 	_test_runtime_metrics_warning()
 	_test_diagnostics_visibility()
 	_test_frame_sampling()
+	_test_performance_budget()
 	_test_gameplay_integration()
 	_test_main_predator_gate_helper()
 	_test_save_recovery()
@@ -146,6 +147,16 @@ func _test_frame_sampling() -> void:
 		hud.record_frame_time(0.025)
 	_check(hud.frame_samples.size() == 30, "Frame sampling should retain a bounded rolling window")
 	hud.free()
+
+func _test_performance_budget() -> void:
+	var manager = WORLD_STREAM_MANAGER.new()
+	manager.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	for step in 300:
+		manager.update_player_chunk(Vector2i(step % 3, (step / 3) % 3))
+		manager.tick_respawn_cooldowns(1.0 / 60.0)
+		_check(manager.active_ids.size() <= 9, "Streaming should keep the active neighborhood bounded")
+	var metrics := manager.runtime_metrics(root)
+	_check(int(metrics.get("loaded_chunk_scenes", 0)) <= 9, "Loaded chunk scenes should remain within the streaming budget")
 
 func _test_predator_respawn_gate() -> void:
 	var predator := preload("res://predator.gd").new()
