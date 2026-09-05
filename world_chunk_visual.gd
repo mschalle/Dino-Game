@@ -3,6 +3,18 @@ extends Node3D
 const ENVIRONMENT_QUALITY = preload("res://environment_quality.gd")
 
 var chunk_state: Dictionary = {}
+var visual_time := 0.0
+
+func _process(delta: float) -> void:
+	visual_time += delta
+	var water := get_node_or_null("WaterSurface") as MeshInstance3D
+	var foam := get_node_or_null("ShorelineFoam") as MeshInstance3D
+	if water != null:
+		water.position.y = 0.08 + sin(visual_time * 1.4) * 0.018
+		water.rotation.y = sin(visual_time * 0.22) * 0.008
+	if foam != null:
+		foam.position.y = 0.045 + sin(visual_time * 1.1 + 0.8) * 0.012
+		foam.scale = Vector3.ONE * (1.0 + sin(visual_time * 1.6) * 0.018)
 
 func apply_chunk_profile(profile: RefCounted) -> void:
 	set_meta("ground_color", profile.ground_color)
