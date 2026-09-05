@@ -3,6 +3,7 @@ extends Node3D
 var chunk_state: Dictionary = {}
 
 func apply_chunk_profile(profile: RefCounted) -> void:
+	set_meta("ground_color", profile.ground_color)
 	set_meta("vegetation_density", profile.vegetation_density)
 	set_meta("navigation_layers", profile.navigation_layers)
 	set_meta("agent_radius", profile.agent_radius)
@@ -28,6 +29,9 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 			var z := float((index * 17) % 29) - 14.0
 			var height_scale := 0.8 + float(index % 3) * 0.15
 			vegetation.multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
+	var ground := get_node_or_null("Ground") as MeshInstance3D
+	if ground != null and ground.material_override is StandardMaterial3D:
+		(ground.material_override as StandardMaterial3D).albedo_color = profile.ground_color
 
 func apply_chunk_state(state: Dictionary) -> void:
 	chunk_state = state.duplicate(true)
