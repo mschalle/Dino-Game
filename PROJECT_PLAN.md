@@ -434,6 +434,7 @@ The player and spawned food now follow the authored elevation function with grav
 260. Added an explicit ValleySun node and integration validation for bounded directional and ambient lighting energy.
 261. Added integration validation for legacy habitat-label font sizing and outline strength at gameplay distance.
 262. Added streamed-chunk landmark-label font and outline validation for consistent reserve signage readability.
+263. Added streamed-chunk landmark-label contrast validation to require a non-white outline against bright terrain.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
