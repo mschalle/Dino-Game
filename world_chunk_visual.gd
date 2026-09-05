@@ -7,6 +7,9 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 	set_meta("agent_radius", profile.agent_radius)
 	set_meta("max_slope_degrees", profile.max_slope_degrees)
 	set_meta("max_climb", profile.max_climb)
+	var biome_environment := get_node_or_null("BiomeEnvironment") as WorldEnvironment
+	if biome_environment != null and biome_environment.environment != null:
+		biome_environment.environment.fog_density = profile.fog_density
 
 func apply_chunk_state(state: Dictionary) -> void:
 	chunk_state = state.duplicate(true)
@@ -15,6 +18,7 @@ func _ready() -> void:
 	var biome := str(get_meta("biome", "Biome"))
 	var landmark := str(get_meta("landmark", biome))
 	_create_ground(biome)
+	_create_environment(biome)
 	_create_elevation(biome)
 	_create_vegetation(biome)
 	_create_water(biome)
@@ -41,6 +45,18 @@ func _ready() -> void:
 	label.visibility_range_begin = 3.0
 	label.visibility_range_end = 38.0
 	marker.add_child(label)
+
+func _create_environment(biome: String) -> void:
+	var environment_node := WorldEnvironment.new()
+	environment_node.name = "BiomeEnvironment"
+	var environment := Environment.new()
+	environment.background_mode = Environment.BG_COLOR
+	environment.background_color = _biome_material(biome).albedo_color.lightened(0.45)
+	environment.fog_enabled = true
+	environment.fog_light_color = environment.background_color
+	environment.fog_density = float(get_meta("fog_density", 0.006))
+	environment_node.environment = environment
+	add_child(environment_node)
 
 func _biome_material(biome: String) -> StandardMaterial3D:
 	var color := Color("#72ae50")
