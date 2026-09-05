@@ -236,6 +236,7 @@ The player and spawned food now follow the authored elevation function with grav
 62. Added serializable snapshot and restore support for streamed chunk state.
 63. Integrated chunk-state snapshots into versioned save data with recovery coverage.
 64. Wired live world-stream state restore and save into the game session lifecycle.
+65. Added bidirectional biome-connection validation for the reserve graph.
 
 ## Release Readiness
 

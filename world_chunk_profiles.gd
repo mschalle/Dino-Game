@@ -21,3 +21,16 @@ static func reserve() -> Array[RefCounted]:
 				neighbors.append(other.chunk_id)
 		chunk.set_neighbors(neighbors)
 	return chunks
+
+static func connections_are_symmetric(chunk_profiles: Array) -> bool:
+	var by_id: Dictionary = {}
+	for chunk in chunk_profiles:
+		by_id[chunk.chunk_id] = chunk
+	for chunk in chunk_profiles:
+		for neighbor_id in chunk.neighbor_ids:
+			if not by_id.has(neighbor_id):
+				return false
+			var neighbor = by_id[neighbor_id]
+			if not neighbor.neighbor_ids.has(chunk.chunk_id):
+				return false
+	return true
