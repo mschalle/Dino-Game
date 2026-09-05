@@ -2,6 +2,7 @@ class_name SoundFeedback
 extends Node
 
 var audio_player: AudioStreamPlayer
+var ambience_player: AudioStreamPlayer
 var playback: AudioStreamGeneratorPlayback
 var tone_queue: Array[Dictionary] = []
 var active_tone: Dictionary = {}
@@ -14,6 +15,8 @@ func set_effects_volume(value: float) -> void:
 	effects_volume = clampf(value, 0.0, 1.0)
 	if audio_player != null:
 		audio_player.volume_db = linear_to_db(effects_volume)
+	if ambience_player != null:
+		ambience_player.volume_db = linear_to_db(effects_volume * 0.22)
 
 func get_effects_volume() -> float:
 	return effects_volume
@@ -28,11 +31,18 @@ func _ready() -> void:
 	add_child(audio_player)
 	audio_player.play()
 	playback = audio_player.get_stream_playback() as AudioStreamGeneratorPlayback
+	ambience_player = AudioStreamPlayer.new()
+	ambience_player.name = "BiomeAmbience"
+	ambience_player.volume_db = linear_to_db(effects_volume * 0.22)
+	add_child(ambience_player)
 
 func _exit_tree() -> void:
 	if audio_player != null:
 		audio_player.stop()
 		audio_player.stream = null
+	if ambience_player != null:
+		ambience_player.stop()
+		ambience_player.stream = null
 
 func _process(_delta: float) -> void:
 	if playback == null and audio_player != null:
@@ -72,6 +82,29 @@ func play_environment_cue(biome: String) -> void:
 		base = 330.0
 	_queue_tone(base, 0.18, 0.08)
 	_queue_tone(base * 1.25, 0.24, 0.06)
+	_play_biome_ambience(biome)
+
+func _play_biome_ambience(biome: String) -> void:
+	if ambience_player == null:
+		return
+	var file_name := "Grassy Field Loop.wav"
+	if biome.find("Wetland") >= 0 or biome.find("Marsh") >= 0 or biome.find("Cypress") >= 0:
+		file_name = "Rain Forest Loop.wav"
+	elif biome.find("Glacier") >= 0:
+		file_name = "Hail Storm Loop.wav"
+	elif biome.find("Ridge") >= 0 or biome.find("Highland") >= 0 or biome.find("Dunes") >= 0 or biome.find("Volcanic") >= 0:
+		file_name = "Wind Loop.wav"
+	var path := "res://Sound FX Starter Pack Vol. 1/Environment/%s" % file_name
+	if not ResourceLoader.exists(path):
+		return
+	var stream := load(path) as AudioStream
+	if stream == null:
+		return
+	if stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	if ambience_player.stream != stream:
+		ambience_player.stream = stream
+		ambience_player.play()
 
 func play_landmark_discovery() -> void:
 	_queue_tone(294.0, 0.12, 0.08)
