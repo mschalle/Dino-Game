@@ -598,6 +598,7 @@ The player and spawned food now follow the authored elevation function with grav
 317. Added non-player predator pursuit of eligible NPC prey with warn, chase, disengage, and recover states isolated from player combat rewards.
 318. Added NPC predator territory-disengagement regression coverage to prevent endless chases beyond the readable valley boundary.
 319. Added reusable herd regrouping toward shared anchors with recovery-state coverage for separated members.
+320. Added lightweight herd-count persistence to streamed chunk state alongside existing prey and predator population records.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

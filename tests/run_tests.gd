@@ -670,6 +670,7 @@ func _test_world_streaming() -> void:
 	counted_actor.global_position = Vector3(120.0, 0.0, 60.0)
 	manager.capture_population(root)
 	_check(manager.get_chunk_state("redstone_badlands").get("population", {}).get("predator", 0) == 1, "Chunk state should track active predator population")
+	_check(manager.get_chunk_state("redstone_badlands").get("herds", {}) is Dictionary, "Chunk state should retain herd population records")
 	_check(manager.active_population_budget().get("predator", 0) == 1, "Active population budget should include persisted predators")
 	var metrics := manager.runtime_metrics(root)
 	_check(int(metrics.get("active_chunks", 0)) > 0, "Runtime metrics should report active chunks")

@@ -108,6 +108,7 @@ func prune_inactive_actors(scene_root: Node) -> int:
 
 func capture_population(scene_root: Node) -> void:
 	var counts: Dictionary = {}
+	var herds: Dictionary = {}
 	for group_name in ["prey", "predator"]:
 		for node in scene_root.get_tree().get_nodes_in_group(group_name):
 			var actor := node as Node3D
@@ -119,9 +120,15 @@ func capture_population(scene_root: Node) -> void:
 			var role_counts: Dictionary = counts.get(chunk_id, {"prey": 0, "predator": 0})
 			role_counts[group_name] = int(role_counts.get(group_name, 0)) + 1
 			counts[chunk_id] = role_counts
+			if group_name == "prey" and actor is PreyDino and not (actor as PreyDino).herd_id.is_empty():
+				var chunk_herds: Dictionary = herds.get(chunk_id, {})
+				var herd_id := (actor as PreyDino).herd_id
+				chunk_herds[herd_id] = int(chunk_herds.get(herd_id, 0)) + 1
+				herds[chunk_id] = chunk_herds
 	for chunk in chunks:
 		var state := get_chunk_state(chunk.chunk_id)
 		state["population"] = counts.get(chunk.chunk_id, {"prey": 0, "predator": 0})
+		state["herds"] = herds.get(chunk.chunk_id, {})
 		set_chunk_state(chunk.chunk_id, state)
 
 func active_population_budget() -> Dictionary:
