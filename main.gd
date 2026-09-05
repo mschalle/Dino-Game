@@ -224,6 +224,7 @@ func _on_chunk_activated(chunk_id: String) -> void:
 				hud.show_message("Entering %s" % chunk_profile.biome)
 				if sounds != null:
 					sounds.play_environment_cue(chunk_profile.biome)
+					sounds.play_landmark_discovery()
 
 func _on_chunk_deactivated(chunk_id: String) -> void:
 	_cancel_world_event("the habitat unloaded")

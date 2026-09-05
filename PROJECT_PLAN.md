@@ -630,6 +630,7 @@ The player and spawned food now follow the authored elevation function with grav
 349. Added an optional authored hero-valley GLB import hook with a safe procedural fallback when the asset is not imported or present.
 350. Added quality-scaled asset-pack dressing with biome metadata and visibility-range LOD behavior for streamed props.
 351. Added biome-specific mist, snow, and dust particle presets controlled by weather and environment-quality settings.
+352. Added distinctive landmark ground markers and reusable environment/landmark discovery audio cues for streamed biome transitions.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

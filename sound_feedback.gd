@@ -73,6 +73,10 @@ func play_environment_cue(biome: String) -> void:
 	_queue_tone(base, 0.18, 0.08)
 	_queue_tone(base * 1.25, 0.24, 0.06)
 
+func play_landmark_discovery() -> void:
+	_queue_tone(294.0, 0.12, 0.08)
+	_queue_tone(440.0, 0.18, 0.09)
+
 func _queue_tone(frequency: float, duration: float, volume: float) -> void:
 	tone_queue.append({"frequency": frequency, "duration": duration, "volume": volume})
 

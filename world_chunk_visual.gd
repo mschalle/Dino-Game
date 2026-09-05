@@ -544,3 +544,15 @@ func _create_landmark_silhouette(biome: String) -> void:
 	silhouette.set_meta("landmark_kind", landmark_kind)
 	silhouette.set_meta("biome", biome)
 	add_child(silhouette)
+	var marker := MeshInstance3D.new()
+	marker.name = "LandmarkGroundMarker"
+	var ring := TorusMesh.new()
+	ring.inner_radius = 1.05
+	ring.outer_radius = 1.2
+	marker.mesh = ring
+	marker.position = landmark_position + Vector3.UP * 0.06
+	marker.material_override = _biome_material(biome)
+	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	marker.visibility_range_begin = 0.0
+	marker.visibility_range_end = 90.0
+	add_child(marker)
