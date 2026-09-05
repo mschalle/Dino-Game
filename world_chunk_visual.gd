@@ -144,6 +144,9 @@ func _create_ground(biome: String) -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(60.0, 60.0)
 	ground.mesh = plane
+	ground.visibility_range_begin = 0.0
+	ground.visibility_range_end = 220.0
+	ground.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	ground.material_override = _biome_material(biome)
 	ground.position.y = -0.12
 	ground.name = "Ground"
