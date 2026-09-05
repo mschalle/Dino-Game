@@ -308,6 +308,8 @@ func _test_world_chunks() -> void:
 		_check(chunk.spawn_table is Dictionary and not chunk.spawn_table.is_empty(), "%s should declare habitat spawn categories" % chunk.chunk_id)
 		for spawn_key in chunk.spawn_table.keys():
 			_check(spawn_key == "prey" or spawn_key == "predators" or spawn_key == "plants", "%s should use supported habitat spawn categories" % chunk.chunk_id)
+			if spawn_key == "plants":
+				_check(chunk.spawn_table[spawn_key] is bool, "%s plant availability should be boolean" % chunk.chunk_id)
 			if spawn_key == "prey" or spawn_key == "predators":
 				for spawn_tier in chunk.spawn_table[spawn_key]:
 					_check(int(spawn_tier) == spawn_tier and int(spawn_tier) >= 1 and int(spawn_tier) <= 4, "%s spawn tiers should be valid" % chunk.chunk_id)
