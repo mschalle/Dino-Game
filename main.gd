@@ -52,6 +52,7 @@ var valley_environment: Environment
 var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
+var distant_mountains: Array[MeshInstance3D] = []
 var world_stream
 var chunk_instances: Dictionary = {}
 var world_events
@@ -216,6 +217,7 @@ func _create_world() -> void:
 	_create_fireflies()
 	_apply_authored_environment_quality()
 	_create_distant_mountains()
+	_apply_authored_environment_quality()
 
 func _create_distant_mountains() -> void:
 	var mountain_material := _material(Color("#4e5c5b"))
@@ -235,6 +237,7 @@ func _create_distant_mountains() -> void:
 		peak.visibility_range_end = 320.0
 		peak.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 		add_child(peak)
+		distant_mountains.append(peak)
 
 func _add_authored_hero_valley() -> void:
 	var terrain_path := "res://assets/environment/hero_valley.glb"
@@ -1692,6 +1695,10 @@ func _apply_authored_environment_quality() -> void:
 	for firefly in fireflies:
 		if is_instance_valid(firefly):
 			firefly.visibility_range_end = 42.0 + foliage_scale * 28.0
+	var mountain_distance := 170.0 + foliage_scale * 100.0
+	for mountain in distant_mountains:
+		if is_instance_valid(mountain):
+			mountain.visibility_range_end = mountain_distance
 
 func _ensure_key_action(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):

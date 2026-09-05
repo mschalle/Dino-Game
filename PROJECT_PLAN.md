@@ -671,6 +671,7 @@ The player and spawned food now follow the authored elevation function with grav
 390. Added controller/input regression coverage for the F4 quality, F5 weather, F6 reduced-motion, and F7 daylight-cycle actions, including idempotent bootstrap checks.
 391. Added a dark contrast halo behind each active quest marker ring, keeping objective locations readable against weathered terrain, shadowed biomes, and darker lighting presets.
 392. Corrected F4 quality and F5 weather feedback so HUD messages state that settings apply immediately to the current loaded world as well as future streamed areas.
+393. Added quality-scaled visibility for authored distant mountain silhouettes, keeping the expanded horizon aligned with camera far-clip and foliage budgets across Low, Medium, and High modes.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
