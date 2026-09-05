@@ -1,0 +1,5 @@
+[gd_scene format=3]
+
+[node name="NestBasin" type="Node3D"]
+metadata/biome = "Nest Basin"
+metadata/landmark = "Safe Nest"

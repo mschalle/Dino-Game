@@ -20,13 +20,75 @@ var target_panel: ColorRect
 var target_label: Label
 var target_health_bar: ProgressBar
 var target_timer := 0.0
+var large_text_enabled := true
+var high_contrast_enabled := false
+var status_backdrop: ColorRect
+var quest_backdrop: ColorRect
+var message_backdrop: ColorRect
+var controls_backdrop: ColorRect
 
 func _ready() -> void:
+	_apply_ui_settings({})
 	_create_status_panel()
 	_create_pause_panel()
 	_create_completion_panel()
 	_create_help_panel()
 	_create_target_panel()
+	get_viewport().size_changed.connect(_layout_for_viewport)
+	_layout_for_viewport()
+
+func apply_ui_settings(settings: Dictionary) -> void:
+	large_text_enabled = bool(settings.get("large_text", true))
+	high_contrast_enabled = bool(settings.get("high_contrast", false))
+	_apply_ui_settings(settings)
+	_apply_accessibility_style()
+
+func _apply_ui_settings(settings: Dictionary) -> void:
+	var scale := 1.0
+	if not settings.is_empty():
+		scale = clampf(float(settings.get("ui_scale", 1.0)), 1.0, 1.75)
+	get_tree().root.content_scale_factor = scale
+
+func _apply_accessibility_style() -> void:
+	var font_scale := 1.15 if large_text_enabled else 1.0
+	var outline := 6 if high_contrast_enabled else 4
+	for node in _all_controls(self):
+		if node is Label:
+			var label := node as Label
+			var current_size := int(label.get_theme_font_size("font_size"))
+			if current_size > 0:
+				label.add_theme_font_size_override("font_size", maxi(14, int(float(current_size) * font_scale)))
+			label.add_theme_constant_override("outline_size", outline)
+			if high_contrast_enabled:
+				label.add_theme_color_override("font_color", Color.WHITE)
+		if node is Button and high_contrast_enabled:
+			(node as Button).add_theme_color_override("font_color", Color.WHITE)
+
+func _layout_for_viewport() -> void:
+	if status_backdrop == null:
+		return
+	var viewport_size := get_viewport().get_visible_rect().size
+	var width := viewport_size.x
+	var height := viewport_size.y
+	var margin := maxf(16.0, width * 0.018)
+	var compact := width < 1120.0
+	status_backdrop.size.x = 470.0 if compact else 530.0
+	quest_backdrop.size.x = 430.0 if compact else 524.0
+	quest_label.size.x = quest_backdrop.size.x - 24.0
+	quest_label.add_theme_font_size_override("font_size", 17 if compact else 20)
+	status_backdrop.position = Vector2(margin, margin)
+	quest_backdrop.position = Vector2(maxf(margin, width - quest_backdrop.size.x - margin), margin)
+	target_panel.position = Vector2(maxf(margin, (width - target_panel.size.x) * 0.5), margin + 118.0)
+	message_backdrop.position = Vector2(maxf(margin, (width - message_backdrop.size.x) * 0.5), maxf(300.0, height - 110.0))
+	controls_backdrop.position = Vector2(margin, maxf(360.0, height - 46.0))
+	controls_backdrop.size.x = maxf(320.0, width - margin * 2.0)
+
+func _all_controls(node: Node) -> Array[Node]:
+	var result: Array[Node] = []
+	for child in node.get_children():
+		result.append(child)
+		result.append_array(_all_controls(child))
+	return result
 
 func _process(delta: float) -> void:
 	if target_timer > 0.0:
@@ -119,28 +181,28 @@ func show_completion(title: String, details: String) -> void:
 	body.text = details
 
 func _create_status_panel() -> void:
-	var backdrop := ColorRect.new()
-	backdrop.color = Color(0.04, 0.1, 0.16, 0.84)
-	backdrop.position = Vector2(18, 16)
-	backdrop.size = Vector2(530, 238)
-	add_child(backdrop)
+	status_backdrop = ColorRect.new()
+	status_backdrop.color = Color(0.04, 0.1, 0.16, 0.84)
+	status_backdrop.position = Vector2(18, 16)
+	status_backdrop.size = Vector2(530, 238)
+	add_child(status_backdrop)
 	title_label = Label.new()
 	title_label.position = Vector2(18, 12)
 	title_label.size = Vector2(490, 28)
 	title_label.add_theme_font_size_override("font_size", 20)
 	_style_text(title_label)
-	backdrop.add_child(title_label)
-	health_bar = _make_bar(backdrop, "Health", Vector2(18, 50), Color("#ef6b6b"))
-	hunger_bar = _make_bar(backdrop, "Hunger", Vector2(18, 85), Color("#f4c95d"))
-	energy_bar = _make_bar(backdrop, "Energy", Vector2(18, 120), Color("#63d4ed"))
-	growth_bar = _make_bar(backdrop, "Growth", Vector2(18, 155), Color("#8bd66f"))
+	status_backdrop.add_child(title_label)
+	health_bar = _make_bar(status_backdrop, "Health", Vector2(18, 50), Color("#ef6b6b"))
+	hunger_bar = _make_bar(status_backdrop, "Hunger", Vector2(18, 85), Color("#f4c95d"))
+	energy_bar = _make_bar(status_backdrop, "Energy", Vector2(18, 120), Color("#63d4ed"))
+	growth_bar = _make_bar(status_backdrop, "Growth", Vector2(18, 155), Color("#8bd66f"))
 	abilities_label = Label.new()
 	abilities_label.position = Vector2(18, 192)
 	abilities_label.size = Vector2(495, 42)
 	abilities_label.add_theme_font_size_override("font_size", 14)
 	_style_text(abilities_label, Color("#eaf6ff"), 3)
-	backdrop.add_child(abilities_label)
-	var quest_backdrop := ColorRect.new()
+	status_backdrop.add_child(abilities_label)
+	quest_backdrop = ColorRect.new()
 	quest_backdrop.color = Color(0.04, 0.1, 0.16, 0.88)
 	quest_backdrop.position = Vector2(738, 12)
 	quest_backdrop.size = Vector2(524, 100)
@@ -152,7 +214,7 @@ func _create_status_panel() -> void:
 	quest_label.add_theme_font_size_override("font_size", 20)
 	_style_text(quest_label, Color("#ffffff"), 4)
 	quest_backdrop.add_child(quest_label)
-	var message_backdrop := ColorRect.new()
+	message_backdrop = ColorRect.new()
 	message_backdrop.color = Color(0.04, 0.1, 0.16, 0.86)
 	message_backdrop.position = Vector2(95, 610)
 	message_backdrop.size = Vector2(1090, 62)
@@ -164,7 +226,7 @@ func _create_status_panel() -> void:
 	message_label.add_theme_font_size_override("font_size", 22)
 	_style_text(message_label, Color("#fff3a6"), 5)
 	message_backdrop.add_child(message_label)
-	var controls_backdrop := ColorRect.new()
+	controls_backdrop = ColorRect.new()
 	controls_backdrop.color = Color(0.02, 0.06, 0.1, 0.92)
 	controls_backdrop.position = Vector2(30, 674)
 	controls_backdrop.size = Vector2(1220, 38)
@@ -252,7 +314,28 @@ func _add_menu_button(parent: Control, text_value: String, position_value: Vecto
 	button.text = text_value
 	button.position = position_value
 	button.size = Vector2(300, 52)
+	button.focus_mode = Control.FOCUS_ALL
 	button.add_theme_font_size_override("font_size", 20)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color("#28485a")
+	normal.border_width_left = 2
+	normal.border_width_top = 2
+	normal.border_width_right = 2
+	normal.border_width_bottom = 2
+	normal.border_color = Color("#7aa8ba")
+	normal.corner_radius_top_left = 8
+	normal.corner_radius_top_right = 8
+	normal.corner_radius_bottom_left = 8
+	normal.corner_radius_bottom_right = 8
+	var focus := normal.duplicate()
+	focus.bg_color = Color("#e8bd72")
+	focus.border_color = Color.WHITE
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", focus)
+	button.add_theme_stylebox_override("focus", focus)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_hover_color", Color("#102532"))
+	button.add_theme_color_override("font_focus_color", Color("#102532"))
 	button.pressed.connect(callback)
 	parent.add_child(button)
 

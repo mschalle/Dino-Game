@@ -100,7 +100,7 @@ func _defaults() -> Dictionary:
 		"badges": [],
 		"ability_unlocks": {},
 		"records": {},
-		"settings": {"large_text": true, "reduced_flashes": true, "effects_volume": 0.7}
+		"settings": {"large_text": true, "ui_scale": 1.0, "high_contrast": false, "reduced_flashes": true, "effects_volume": 0.7}
 	}
 
 func _merge_defaults(loaded: Dictionary) -> Dictionary:

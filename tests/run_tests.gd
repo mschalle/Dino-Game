@@ -1,5 +1,8 @@
 extends SceneTree
 
+const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
+const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
+
 var failures := 0
 
 func _init() -> void:
@@ -7,6 +10,8 @@ func _init() -> void:
 
 func _run_tests() -> void:
 	_test_profiles()
+	_test_world_chunks()
+	_test_world_streaming()
 	_test_growth()
 	_test_quests()
 	_test_survival()
@@ -59,6 +64,38 @@ func _test_profiles() -> void:
 		root.add_child(dino)
 		_check((dino.imported_model != null) or (dino.tail_mesh != null and dino.leg_meshes.size() >= 4), "%s needs a complete dinosaur silhouette" % profile.id)
 		dino.free()
+
+func _test_world_chunks() -> void:
+	var chunks: Array = WORLD_CHUNK_PROFILES.reserve()
+	_check(chunks.size() == 6, "Reserve should define six initial biome chunks")
+	var ids: Dictionary = {}
+	for chunk in chunks:
+		_check(not ids.has(chunk.chunk_id), "Chunk IDs must be unique")
+		ids[chunk.chunk_id] = true
+		_check(not chunk.landmark_name.is_empty(), "Every chunk needs a landmark")
+		_check(not chunk.scene_path.is_empty(), "Every chunk needs a scene path")
+		_check(chunk.has_scene(), "Every initial biome chunk should have a loadable scene shell")
+		_check(chunk.vegetation_density > 0.0, "Every biome needs vegetation density")
+		_check(chunk.fog_density > 0.0, "Every biome needs fog guidance")
+		_check(not chunk.neighbor_ids.is_empty() or chunk.chunk_id == "nest_basin", "Chunks should define connected neighbors")
+
+func _test_world_streaming() -> void:
+	var manager = WORLD_STREAM_MANAGER.new()
+	manager.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	manager.update_player_chunk(Vector2i(0, 0))
+	_check(manager.is_active("nest_basin"), "Player chunk should activate")
+	_check(manager.is_active("fernwood"), "Adjacent chunk should activate")
+	_check(not manager.is_active("redstone_badlands"), "Distant chunk should remain inactive")
+	manager.update_player_chunk(Vector2i(2, 1))
+	_check(manager.is_active("redstone_badlands"), "New player neighborhood should activate")
+	_check(not manager.is_active("nest_basin"), "Distant previous chunk should deactivate")
+	var holder := Node3D.new()
+	root.add_child(holder)
+	var loaded := manager.instantiate_chunk("fernwood", holder)
+	_check(loaded != null, "Chunk scene should instantiate")
+	_check(manager.instantiate_chunk("fernwood", holder) == loaded, "Chunk should not duplicate instances")
+	manager.release_chunk("fernwood")
+	holder.queue_free()
 
 func _test_growth() -> void:
 	var growth := GrowthSystem.new()

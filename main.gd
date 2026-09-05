@@ -7,6 +7,8 @@ const HUD_SCENE = preload("res://game_hud.gd")
 const PROFILES = preload("res://dinosaur_profiles.gd")
 const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
 const FOOD_TOKEN = preload("res://food_token.gd")
+const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
+const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
 const VALLEY_LIMIT := 28.0
@@ -43,6 +45,7 @@ var environment_time := 0.0
 var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
+var world_stream
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -52,6 +55,9 @@ func _ready() -> void:
 	save_system.load_data()
 	_apply_saved_bindings()
 	_create_world()
+	world_stream = WORLD_STREAM_MANAGER.new()
+	world_stream.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
+	world_stream.update_player_chunk(Vector2i.ZERO)
 	sounds = SOUND_FEEDBACK.new()
 	add_child(sounds)
 	sounds.set_effects_volume(float((save_system.data["settings"] as Dictionary).get("effects_volume", 0.7)))
@@ -94,6 +100,7 @@ func _process(delta: float) -> void:
 	_ground_world_actors()
 	_follow_player(delta)
 	_update_hud()
+	_update_world_stream()
 	if active_target != null and is_instance_valid(active_target):
 		var active_combat = active_target.get("combat")
 		if active_combat != null:
@@ -133,6 +140,13 @@ func _create_world() -> void:
 	_create_habitat_landmarks()
 	_create_waterfall()
 	_create_fireflies()
+
+func _update_world_stream() -> void:
+	if world_stream == null or player == null:
+		return
+	# The current 60m valley occupies the first reserve chunk. This mapping
+	# keeps the foundation active without changing current gameplay coordinates.
+	world_stream.update_player_chunk(Vector2i.ZERO)
 
 func _create_scenery_piece(index: int) -> void:
 	var piece := MeshInstance3D.new()
@@ -190,6 +204,17 @@ func _create_habitat_landmarks() -> void:
 		var point: Vector3 = landmark[1]
 		marker.position = Vector3(point.x, _terrain_height_at(point.x, point.z) + 1.2, point.z)
 		add_child(marker)
+		var label := Label3D.new()
+		label.text = str(landmark[0])
+		label.position = Vector3(0.0, 1.7, 0.0)
+		label.font_size = 32
+		label.outline_size = 8
+		label.modulate = Color.WHITE
+		label.outline_modulate = Color("#163342")
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.visibility_range_begin = 4.0
+		label.visibility_range_end = 42.0
+		marker.add_child(label)
 
 func _create_fireflies() -> void:
 	for index in 12:
@@ -424,6 +449,7 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	cosmetic_button.text = "Color: %s" % save_system.selected_cosmetic(species_profile.id).capitalize()
 	cosmetic_button.position = Vector2(30, 174)
 	cosmetic_button.size = Vector2(270, 28)
+	_style_selection_button(cosmetic_button, false)
 	cosmetic_button.add_theme_font_size_override("font_size", 14)
 	cosmetic_button.pressed.connect(func() -> void:
 		_cycle_cosmetic(species_profile.id, cosmetic_button, swatch)
@@ -433,6 +459,7 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	adventure_button.text = "Play Adventure"
 	adventure_button.position = Vector2(30, 205)
 	adventure_button.size = Vector2(270, 55)
+	_style_selection_button(adventure_button, true)
 	adventure_button.add_theme_font_size_override("font_size", 19)
 	adventure_button.pressed.connect(func() -> void: _start_run(species_profile, "adventure"))
 	card.add_child(adventure_button)
@@ -442,9 +469,33 @@ func _create_species_card(parent: Control, species_profile: DinosaurProfile, ind
 	endless_button.disabled = not unlocked
 	endless_button.position = Vector2(30, 277)
 	endless_button.size = Vector2(270, 55)
+	_style_selection_button(endless_button, true)
 	endless_button.add_theme_font_size_override("font_size", 19)
 	endless_button.pressed.connect(func() -> void: _start_run(species_profile, "endless"))
 	card.add_child(endless_button)
+
+func _style_selection_button(button: Button, primary: bool) -> void:
+	button.focus_mode = Control.FOCUS_ALL
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color("#274657") if primary else Color("#385a68")
+	normal.border_width_left = 2
+	normal.border_width_top = 2
+	normal.border_width_right = 2
+	normal.border_width_bottom = 2
+	normal.border_color = Color("#8bb8c5")
+	normal.corner_radius_top_left = 7
+	normal.corner_radius_top_right = 7
+	normal.corner_radius_bottom_left = 7
+	normal.corner_radius_bottom_right = 7
+	var focus := normal.duplicate()
+	focus.bg_color = Color("#e8bd72")
+	focus.border_color = Color.WHITE
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", focus)
+	button.add_theme_stylebox_override("focus", focus)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_hover_color", Color("#102532"))
+	button.add_theme_color_override("font_focus_color", Color("#102532"))
 
 func _cycle_cosmetic(species_id: String, button: Button, swatch: ColorRect) -> void:
 	var owned: Array = (save_system.data["cosmetics"] as Dictionary).get(species_id, ["default"])
@@ -543,6 +594,7 @@ func _create_hud() -> void:
 	hud = HUD_SCENE.new()
 	hud.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(hud)
+	hud.apply_ui_settings(save_system.data.get("settings", {}))
 	hud.resume_requested.connect(func() -> void: _set_paused(false))
 	hud.restart_requested.connect(func() -> void: call_deferred("_restart_run"))
 	hud.selection_requested.connect(func() -> void: call_deferred("_return_to_selection"))
@@ -1017,6 +1069,13 @@ func _build_valley_mesh() -> ArrayMesh:
 			for vertex in [a, c, b, a, d, c]:
 				var elevation_tint := clampf((vertex.y + 1.0) / 7.0, 0.0, 1.0)
 				var terrain_color := Color("#72ae50").lerp(Color("#b5d96a"), elevation_tint)
+				var zone := Vector2(vertex.x, vertex.z)
+				if zone.distance_to(Vector2(19.0, -4.0)) < 6.5:
+					terrain_color = terrain_color.lerp(Color("#6bb8a0"), 0.45)
+				elif zone.distance_to(Vector2(0.0, -18.0)) < 8.5:
+					terrain_color = terrain_color.lerp(Color("#c88b55"), 0.32)
+				elif zone.distance_to(Vector2(16.0, 16.0)) < 8.0:
+					terrain_color = terrain_color.lerp(Color("#c97862"), 0.25)
 				surface.set_color(terrain_color)
 				surface.set_uv(Vector2((vertex.x + 30.0) / 60.0, (vertex.z + 30.0) / 60.0))
 				surface.add_vertex(vertex)
