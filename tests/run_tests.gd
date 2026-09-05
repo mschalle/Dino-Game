@@ -317,6 +317,9 @@ func _test_world_chunks() -> void:
 		grid_positions[chunk.grid_position] = true
 		_check(abs(chunk.grid_position.x) <= 4 and abs(chunk.grid_position.y) <= 4, "%s grid position should remain inside the authored reserve" % chunk.chunk_id)
 		_check(chunk.scene_path.ends_with(".tscn"), "%s should reference a Godot scene path" % chunk.chunk_id)
+		_check(chunk.vegetation_density >= 0.0 and chunk.vegetation_density <= 2.0, "%s vegetation density should be bounded" % chunk.chunk_id)
+		_check(chunk.fog_density >= 0.0 and chunk.fog_density <= 1.0, "%s fog density should be bounded" % chunk.chunk_id)
+		_check(chunk.navigation_layers > 0, "%s should expose navigation layers" % chunk.chunk_id)
 		_check(FileAccess.file_exists(chunk.scene_path), "%s should reference an authored chunk scene" % chunk.chunk_id)
 		_check(ResourceLoader.exists(chunk.scene_path) and load(chunk.scene_path) != null, "%s chunk scene should be loadable" % chunk.chunk_id)
 		for neighbor_id in chunk.neighbor_ids:
