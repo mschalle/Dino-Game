@@ -303,6 +303,7 @@ The player and spawned food now follow the authored elevation function with grav
 129. Added world-space landmark destination queries for translated streamed chunks.
 130. Added aggregate active-landmark positions for HUD, quest, and accessibility consumers.
 131. Wired active streamed landmarks into scent-trail fallback targeting while preserving quest priority.
+132. Centralized nearest-active-landmark selection in the stream manager for consistent destination guidance.
 
 ## Release Readiness
 

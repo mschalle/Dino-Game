@@ -1015,16 +1015,9 @@ func _scent_target() -> Vector3:
 	if quest != null and session.growth.stage_index >= quest.required_stage and quest.marker_position != Vector3.ZERO:
 		return quest.marker_position
 	if world_stream != null:
-		var closest_landmark := Vector3.ZERO
-		var landmark_distance := INF
-		for landmark_value in world_stream.active_landmark_positions().values():
-			var landmark_position := landmark_value as Vector3
-			var distance := player.global_position.distance_to(landmark_position)
-			if distance < landmark_distance:
-				landmark_distance = distance
-				closest_landmark = landmark_position
-		if closest_landmark != Vector3.ZERO:
-			return closest_landmark
+		var nearest_landmark: Variant = world_stream.nearest_active_landmark(player.global_position)
+		if nearest_landmark is Vector3:
+			return nearest_landmark
 	var food_group := "plant_food" if profile.diet == "herbivore" else "prey"
 	var closest: Node3D
 	var distance_best := INF

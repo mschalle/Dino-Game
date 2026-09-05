@@ -247,6 +247,17 @@ func active_landmark_positions() -> Dictionary:
 			result[str(chunk_id)] = position
 	return result
 
+func nearest_active_landmark(world_position: Vector3) -> Variant:
+	var nearest: Variant = null
+	var best_distance := INF
+	for position in active_landmark_positions().values():
+		var landmark_position: Vector3 = position
+		var distance := world_position.distance_squared_to(landmark_position)
+		if distance < best_distance:
+			best_distance = distance
+			nearest = landmark_position
+	return nearest
+
 func release_chunk(chunk_id: String) -> void:
 	_remove_neighbor_links(chunk_id)
 	if not scene_instances.has(chunk_id):
