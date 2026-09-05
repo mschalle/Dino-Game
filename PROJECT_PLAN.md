@@ -660,6 +660,7 @@ The player and spawned food now follow the authored elevation function with grav
 379. Tuned the gameplay camera for the expanded reserve with a 68-degree field of view, near clipping, and a 340-meter far horizon for distant landmarks and mountains.
 380. Added quality-scaled camera far clipping: 220m Low, 280m Medium, and 340m High, applied immediately by F4.
 381. Added velocity-based camera look-ahead so movement frames upcoming terrain and landmarks while preserving smooth follow behavior.
+382. Rechecked the Windows packaging gate; `tools/windows_export_smoke.ps1` still reports missing matching Godot 4.7.2 export templates, while gameplay and headless validation remain available.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
