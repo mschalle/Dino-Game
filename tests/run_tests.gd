@@ -519,7 +519,7 @@ func _test_world_chunks() -> void:
 					if nested is Label3D:
 						has_labelled_landmark = true
 						landmark_label_matches = nested.text == chunk.landmark_name
-						_check(nested.visibility_range_end > nested.visibility_range_begin, "%s landmark label should define a bounded visibility range" % chunk.chunk_id)
+						_check(nested.visibility_range_begin >= 2.0 and nested.visibility_range_end >= 38.0 and nested.visibility_range_end > nested.visibility_range_begin, "%s landmark label should remain visible across its readable distance" % chunk.chunk_id)
 						_check(nested.font_size >= 24 and nested.outline_size >= 6, "%s landmark label should remain readable at gameplay distance" % chunk.chunk_id)
 						_check(nested.outline_modulate != Color.WHITE, "%s landmark label should retain a contrasting outline" % chunk.chunk_id)
 		_check(has_labelled_landmark, "%s landmark should include a readable label" % chunk.chunk_id)
