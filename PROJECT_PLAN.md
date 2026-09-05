@@ -426,6 +426,7 @@ The player and spawned food now follow the authored elevation function with grav
 252. Added bounded visibility ranges to legacy valley fireflies, with integration coverage for all ambient fireflies.
 253. Added bounded visibility ranges to legacy valley waterfall layers, with integration coverage for all animated layers.
 254. Added bounded visibility ranges to legacy habitat landmark markers, with integration coverage for marker geometry and labels.
+255. Added an explicit visibility range to the legacy valley ground mesh and validated the integration scene draw-distance budget.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

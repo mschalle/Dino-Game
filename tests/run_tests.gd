@@ -873,6 +873,8 @@ func _test_gameplay_integration() -> void:
 	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
 	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")
 	_check(main_scene.get_node_or_null("TerrainSafetyCollision") != null, "The valley should have terrain safety collision")
+	var legacy_ground := main_scene.get_node_or_null("LegacyValleyGround") as MeshInstance3D
+	_check(legacy_ground != null and legacy_ground.visibility_range_end > legacy_ground.visibility_range_begin, "Legacy valley ground should define a bounded visibility range")
 	var trike := DinosaurProfiles.triceratops()
 	main_scene._start_run(trike, "adventure")
 	var plant := PlantFood.new()

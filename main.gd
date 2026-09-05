@@ -144,7 +144,11 @@ func _create_world() -> void:
 	light.light_energy = 1.2
 	add_child(light)
 	var ground := MeshInstance3D.new()
+	ground.name = "LegacyValleyGround"
 	ground.mesh = _build_valley_mesh()
+	ground.visibility_range_begin = 0.0
+	ground.visibility_range_end = 260.0
+	ground.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var terrain_material := _material(Color("#78b957"))
 	terrain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	terrain_material.vertex_color_use_as_albedo = true
