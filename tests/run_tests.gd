@@ -492,6 +492,11 @@ func _test_world_chunks() -> void:
 				for vertex in nav_vertices:
 					nav_bounds = nav_bounds.expand(Vector2(vertex.x, vertex.z))
 				_check(nav_bounds.size.x >= 58.0 and nav_bounds.size.y >= 58.0, "%s navigation mesh should span the visible terrain pad" % chunk.chunk_id)
+				var ground_shape_for_nav := visual_root.get_node_or_null("GroundCollision/GroundShape") as CollisionShape3D
+				var ground_top := -0.12
+				if ground_shape_for_nav != null and ground_shape_for_nav.shape is BoxShape3D:
+					ground_top = ground_shape_for_nav.position.y + (ground_shape_for_nav.shape as BoxShape3D).size.y * 0.5
+				_check(absf(nav_vertices[0].y - ground_top) <= 0.03, "%s navigation surface should align with ground collision height" % chunk.chunk_id)
 		if chunk.biome != "Nest Basin":
 			var elevation := visual_root.get_node_or_null("Elevation") as MeshInstance3D
 			_check(elevation != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
