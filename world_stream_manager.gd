@@ -117,6 +117,20 @@ func active_population_budget() -> Dictionary:
 		budget["predator"] = int(budget["predator"]) + int(population.get("predator", 0))
 	return budget
 
+func runtime_metrics(scene_root: Node) -> Dictionary:
+	var npc_count := 0
+	for group_name in ["prey", "predator"]:
+		npc_count += scene_root.get_tree().get_nodes_in_group(group_name).size()
+	var budget := active_population_budget()
+	var total_budget := int(budget.get("prey", 0)) + int(budget.get("predator", 0))
+	return {
+		"active_chunks": active_ids.size(),
+		"loaded_chunk_scenes": scene_instances.size(),
+		"npc_count": npc_count,
+		"population_budget": total_budget,
+		"population_utilization": float(npc_count) / float(maxi(1, total_budget))
+	}
+
 func set_respawn_cooldown(chunk_id: String, seconds: float) -> void:
 	var state := get_chunk_state(chunk_id)
 	state["respawn_cooldown"] = maxf(0.0, seconds)

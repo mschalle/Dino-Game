@@ -274,6 +274,7 @@ The player and spawned food now follow the authored elevation function with grav
 100. Connected renewable prey instances to the same biome and tier readiness gate.
 101. Added mixed-population integration coverage for independent prey and predator cooldowns across active chunks.
 102. Added a 600-step streaming-session validation for bounded populations and cooldown expiry.
+103. Added runtime streaming metrics for active chunks, loaded scenes, NPC count, and population utilization.
 
 ## Release Readiness
 
