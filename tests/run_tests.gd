@@ -466,6 +466,7 @@ func _test_world_chunks() -> void:
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		if particles != null:
 			_check(particles.visibility_range_end > particles.visibility_range_begin, "%s ambient particles should define a bounded visibility range" % chunk.chunk_id)
+			_check(particles.lifetime <= 10.0, "%s ambient particle lifetime should remain bounded" % chunk.chunk_id)
 		if particles != null and particles.draw_pass_1 is QuadMesh:
 			_check(particles.draw_pass_1.material is StandardMaterial3D and particles.draw_pass_1.material.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.35)), "%s ambient particles should follow its biome palette" % chunk.chunk_id)
 			_check(particles.draw_pass_1.material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED, "%s ambient particles should use unshaded materials" % chunk.chunk_id)
