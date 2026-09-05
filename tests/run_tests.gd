@@ -123,6 +123,12 @@ func _test_world_streaming() -> void:
 	restored.configure(WORLD_CHUNK_PROFILES.reserve(), 1)
 	restored.restore_state(snapshot)
 	_check(restored.get_chunk_state("fernwood").get("food_claimed", 0) == 3, "Chunk state should restore from snapshot")
+	var restored_holder := Node3D.new()
+	root.add_child(restored_holder)
+	var restored_scene := restored.instantiate_chunk("fernwood", restored_holder)
+	var restored_state: Dictionary = restored_scene.get("chunk_state") if restored_scene != null else {}
+	_check(restored_scene != null and restored_state.get("quest_marker", "") == "trail", "Chunk state should apply when a scene reloads")
+	restored_holder.queue_free()
 	holder.queue_free()
 
 func _test_growth() -> void:

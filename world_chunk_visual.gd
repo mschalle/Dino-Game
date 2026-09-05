@@ -1,5 +1,10 @@
 extends Node3D
 
+var chunk_state: Dictionary = {}
+
+func apply_chunk_state(state: Dictionary) -> void:
+	chunk_state = state.duplicate(true)
+
 func _ready() -> void:
 	var biome := str(get_meta("biome", "Biome"))
 	var landmark := str(get_meta("landmark", biome))

@@ -56,6 +56,8 @@ func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 			return null
 		instance.position = Vector3(chunk.grid_position.x * chunk_world_size, 0.0, chunk.grid_position.y * chunk_world_size)
 		parent.add_child(instance)
+		if instance.has_method("apply_chunk_state"):
+			instance.apply_chunk_state(get_chunk_state(chunk_id))
 		scene_instances[chunk_id] = instance
 		return instance
 	return null
