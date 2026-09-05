@@ -622,6 +622,8 @@ func _test_creature_combat() -> void:
 	for profile in profiles:
 		_check(not ids.has(profile.id), "NPC creature IDs must be unique")
 		ids[profile.id] = true
+		_check(not profile.display_name.is_empty(), "%s should have a readable display name" % profile.id)
+		_check(profile.body_color != Color.BLACK, "%s should have a visible body color" % profile.id)
 		_check(profile.role == "prey" or profile.role == "predator" or profile.role == "rival", "%s should use a supported NPC role" % profile.id)
 		_check(profile.tier >= 1 and profile.tier <= 4, "%s should use a supported NPC tier" % profile.id)
 		if profile.role == "prey":
