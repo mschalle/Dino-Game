@@ -388,6 +388,7 @@ The player and spawned food now follow the authored elevation function with grav
 214. Added release validation for the configured `res://Main.tscn` main scene to prevent launch regressions.
 215. Added runtime input-bootstrap coverage so gamepad ability bindings are validated alongside keyboard and mouse controls.
 216. Added idempotence validation for repeated runtime input initialization to prevent duplicate bindings.
+217. Added quest-value validation for positive objective amounts and nonnegative Growth Point rewards.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.

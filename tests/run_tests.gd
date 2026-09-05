@@ -136,6 +136,7 @@ func _test_all_playable_species() -> void:
 		var previous_quest_stage := -1
 		var has_adult_finale := false
 		for quest in profile.adventure_quests:
+			_check(quest.required_amount > 0 and quest.reward_growth >= 0, "%s main quest values should be valid" % profile.id)
 			quest_ids[quest.id] = true
 			_check(quest.required_stage >= previous_quest_stage, "%s quest stages should be ordered" % profile.id)
 			_check(quest.required_stage >= 0 and quest.required_stage < profile.growth_thresholds.size(), "%s quest stage should be valid" % profile.id)
@@ -146,6 +147,7 @@ func _test_all_playable_species() -> void:
 		_check(has_adult_finale, "%s should have an Adult-stage finale" % profile.id)
 		var all_quest_ids := quest_ids.duplicate()
 		for optional_quest in profile.optional_quests:
+			_check(optional_quest.required_amount > 0 and optional_quest.reward_growth >= 0, "%s optional quest values should be valid" % profile.id)
 			_check(optional_quest.optional, "%s optional quests should be marked optional" % profile.id)
 			_check(not all_quest_ids.has(optional_quest.id), "%s optional quest IDs should not collide with main quests" % profile.id)
 			all_quest_ids[optional_quest.id] = true
