@@ -877,6 +877,8 @@ func _test_gameplay_integration() -> void:
 	_check(main_scene.get_node_or_null("TerrainSafetyCollision") != null, "The valley should have terrain safety collision")
 	var legacy_ground := main_scene.get_node_or_null("LegacyValleyGround") as MeshInstance3D
 	_check(legacy_ground != null and legacy_ground.visibility_range_end > legacy_ground.visibility_range_begin, "Legacy valley ground should define a bounded visibility range")
+	var main_environment := main_scene.get_node_or_null("LegacyEnvironment") as WorldEnvironment
+	_check(main_environment != null and main_environment.environment != null and main_environment.environment.fog_enabled, "Legacy valley should provide global child-friendly fog")
 	var trike := DinosaurProfiles.triceratops()
 	main_scene._start_run(trike, "adventure")
 	var plant := PlantFood.new()

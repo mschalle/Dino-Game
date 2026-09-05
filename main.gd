@@ -125,6 +125,7 @@ func _process(delta: float) -> void:
 
 func _create_world() -> void:
 	var environment := WorldEnvironment.new()
+	environment.name = "LegacyEnvironment"
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color("#8ed9f6")
