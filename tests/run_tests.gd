@@ -196,6 +196,10 @@ func _test_world_chunks() -> void:
 	_check(stream.grid_position_at_world_position(Vector3(31.0, 0.0, -29.0)) == Vector2i(1, 0), "World positions should map to streamed chunk grid coordinates")
 	stream.update_player_chunk(Vector2i.ZERO)
 	_check(stream.is_active("nest_basin") and stream.is_active("fernwood"), "Origin chunk should activate adjacent reserve cells")
+	var nest_instance := stream.instantiate_chunk("nest_basin", root)
+	_check(stream.landmark_for_chunk("nest_basin") != null, "Active chunks should expose their landmark destination")
+	if nest_instance != null:
+		stream.release_chunk("nest_basin")
 	stream.update_player_chunk(Vector2i(2, 1))
 	_check(stream.is_active("redstone_badlands") and not stream.is_active("nest_basin"), "Crossing a chunk boundary should update the active set")
 	_check(chunks.size() == 6, "Reserve should define six initial biome chunks")
