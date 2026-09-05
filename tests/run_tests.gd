@@ -261,9 +261,11 @@ func _test_selection_focus_mapping() -> void:
 		_check(DinosaurProfiles.selection_neighbor(index, "right") < 6, "Every selection card should have a right focus target")
 
 func _test_controller_bindings() -> void:
+	var input_bootstrap := preload("res://main.gd").new()
+	input_bootstrap._ensure_default_inputs()
 	for action in ["ui_accept", "ui_cancel", "move_forward", "move_back", "move_left", "move_right"]:
 		_check(InputMap.has_action(action), "%s should be available for keyboard/gamepad input" % action)
-	for action in ["eat", "power_bite", "scent_trail", "dash"]:
+	for action in ["eat", "power_bite", "scent_trail", "dash", "special_ability"]:
 		_check(InputMap.has_action(action), "%s should be available for dinosaur abilities" % action)
 	var eat_mouse_ok := false
 	for event in InputMap.action_get_events("eat"):
@@ -275,6 +277,7 @@ func _test_controller_bindings() -> void:
 			bite_mouse_ok = true
 	_check(eat_mouse_ok, "Eat should remain bound to left click")
 	_check(bite_mouse_ok, "Power Bite should remain bound to right click")
+	input_bootstrap.free()
 	var accept := InputEventJoypadButton.new()
 	accept.button_index = JOY_BUTTON_A
 	_check(accept.button_index == JOY_BUTTON_A, "Controller activation event should be constructible")
