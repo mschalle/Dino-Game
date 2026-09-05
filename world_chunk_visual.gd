@@ -15,6 +15,14 @@ func _process(delta: float) -> void:
 	if foam != null:
 		foam.position.y = 0.045 + sin(visual_time * 1.1 + 0.8) * 0.012
 		foam.scale = Vector3.ONE * (1.0 + sin(visual_time * 1.6) * 0.018)
+	var dressing := get_node_or_null("AssetPackDressing") as Node3D
+	if dressing != null:
+		var wind_amount := 0.018 * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))
+		for prop in dressing.get_children():
+			if not prop.has_meta("wind_sway"):
+				continue
+			var phase := float(prop.get_meta("wind_sway", 0.0))
+			prop.rotation.z = sin(visual_time * 1.3 + phase) * wind_amount
 
 func apply_chunk_profile(profile: RefCounted) -> void:
 	set_meta("ground_color", profile.ground_color)
@@ -370,6 +378,9 @@ func _create_asset_pack_dressing(biome: String) -> void:
 		prop.scale = Vector3.ONE * (0.65 + float(index % 2) * 0.18)
 		prop.set_meta("environment_lod", "hero" if index == 0 else "detail")
 		prop.set_meta("biome", biome)
+		var prop_path := paths[path_index].to_lower()
+		if prop_path.find("tree") >= 0 or prop_path.find("fern") >= 0 or prop_path.find("flower") >= 0 or prop_path.find("bush") >= 0 or prop_path.find("pine") >= 0:
+			prop.set_meta("wind_sway", float(index) * 0.8 + float(biome.hash() % 17))
 		_apply_prop_visibility(prop, quality)
 		dressing.add_child(prop)
 	add_child(dressing)
