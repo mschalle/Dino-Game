@@ -2,7 +2,7 @@
 
 ## Vision
 
-Roar & Rise is a bright, kid-friendly 3D dinosaur adventure game. Players choose a dinosaur, explore one welcoming valley, eat suitable food to grow from Hatchling to Adult, learn species abilities, complete a quest chain, and unlock Endless Survival.
+Roar & Rise is a bright, kid-friendly 3D dinosaur adventure game. Players choose a dinosaur, explore a connected multi-biome prehistoric reserve, eat suitable food to grow from Hatchling to Adult, learn species abilities, complete a quest chain, and unlock Endless Survival.
 
 The initial release targets Windows PC with keyboard/mouse and gamepad support. It is single-player and avoids graphic violence: dinosaurs bump, flee, recover, and respawn at a safe nest.
 
@@ -206,6 +206,27 @@ The player and spawned food now follow the authored elevation function with grav
 32. Added tier-aware habitat bands for renewable prey and plant spawning.
 33. Validated the GLB lookup pipeline for player and NPC models with procedural fallback.
 34. Added valley fog and reran automated gameplay plus headless startup validation.
+35. Added saved UI-scale and high-contrast settings as the first polished-vertical-slice UI foundation.
+36. Applied large-text and high-contrast styling consistently across HUD and menu controls.
+37. Added viewport-aware HUD layout for variable window sizes and aspect ratios.
+38. Anchored the combat target panel responsively beneath the quest area.
+39. Added compact-window HUD sizing to prevent status and quest panel overlap.
+40. Added visible keyboard/gamepad focus states and larger styled menu controls.
+41. Applied matching focus and contrast styling to species selection and mode buttons.
+42. Added high-contrast world-space labels to major valley landmarks.
+43. Added subtle biome color zones for wetlands, ridge, and rival arena terrain.
+44. Added distance-based landmark label visibility to reduce exploration clutter.
+45. Added data-driven six-biome world chunk profiles and connectivity validation.
+46. Added a radius-based world stream manager with activation/deactivation signals.
+47. Added automated checks for nearby chunk activation and distant chunk deactivation.
+48. Connected the stream manager to the current world as a no-op-safe reserve foundation.
+49. Added explicit scene paths to every biome chunk profile.
+50. Added safe missing-scene resolution checks before chunk instantiation.
+51. Added six loadable biome scene shells with biome and landmark metadata.
+52. Added chunk scene instantiation with duplicate protection.
+53. Added chunk release handling and automated load/release validation.
+54. Added per-biome ground palette, vegetation density, and fog-direction data.
+55. Added validation for biome presentation metadata.
 
 ## Release Readiness
 
@@ -217,9 +238,220 @@ The player and spawned food now follow the authored elevation function with grav
 - Confirm no blood, wounds, carcasses, or graphic defeat imagery appears.
 - Package and test a Windows build, then publish a tagged release to GitHub.
 
+## Roadmap 2.0 — From Base Game to Polished Release
+
+### Milestone development loop
+
+The roadmap is executed only when manually triggered. Each run selects the earliest incomplete milestone, implements one focused slice, runs the automated Godot tests and headless startup check, updates this plan with evidence, and creates a local commit. The loop does not push to GitHub automatically.
+
+The loop may make routine implementation decisions using the defaults in this document. It pauses for consequential gameplay, scope, art, save-schema, missing-asset, validation, credential, or external-collaboration decisions. A milestone is complete only when its behavior is implemented, existing behavior remains compatible, relevant tests pass, headless startup passes, `git diff --check` passes, and the completion is recorded here.
+
+Validation commands:
+
+```powershell
+& "F:\GODOT\Godot_v4.7.2-stable_win64.exe" --headless --path "." --script res://tests/run_tests.gd
+& "F:\GODOT\Godot_v4.7.2-stable_win64.exe" --headless --path "." --quit-after 5
+git diff --check
+```
+
+After validation, only milestone files are staged and committed locally. GitHub pushes require an explicit request. The loop ends when all milestones are complete and the packaged Windows build, save migration, accessibility, performance, Adventure, and Endless validation gates pass.
+
+### Product target
+
+The first polished release should provide a 30–45 minute Adventure for each playable dinosaur, a replayable Endless mode, six distinct playable species, and one connected 600×600-meter reserve containing six recognizable biomes. The current three-species, 60×60-meter valley remains the vertical slice used to validate systems before expansion.
+
+The larger reserve does not require Godot large-world coordinates. Godot documents ordinary single-precision coordinates as suitable for third-person worlds extending several thousand units from the origin; keeping this reserve centered near the origin avoids unnecessary engine and asset-pipeline complexity.
+
+### Target playable roster
+
+| Species | Diet | Play style | Signature mechanics | Production priority |
+| --- | --- | --- | --- | --- |
+| T. rex | Carnivore | Powerful hunter | Power Bite, Valley Roar | Existing; polish first |
+| Velociraptor | Carnivore | Fast explorer | Dash, Pack Signal | Existing; polish first |
+| Triceratops | Herbivore | Defensive guardian | Horn Push, Shield Stance | Existing; polish first |
+| Ankylosaurus | Herbivore | Armored defender | Tail Swing, Brace | Expansion wave 1 |
+| Parasaurolophus | Herbivore | Social navigator | Herd Call, Endurance Run | Expansion wave 1 |
+| Carnotaurus | Carnivore | Burst chaser | Charge, Intimidate | Expansion wave 1 |
+
+Flying, swimming, and very small burrowing species are deferred because each requires a separate locomotion, camera, navigation, quest, and level-design layer. New ground dinosaurs must use the shared profile, abilities, animation, combat, quest, save, and selection systems without adding species conditionals to `main.gd`.
+
+### World structure and biome plan
+
+Build the reserve as a 4×4 grid of approximately 150-meter authored chunks. Keep a 3×3 neighborhood around the player loaded; distant chunks retain lightweight simulation data rather than full scenes. Every chunk owns its terrain, collision, navigation region, spawn volumes, landmarks, ambient audio, and decorative instances.
+
+| Biome | Gameplay purpose | Terrain language | Typical inhabitants |
+| --- | --- | --- | --- |
+| Nest Basin | Safe onboarding hub | Gentle grass slopes, broad sightlines | Tier-1 prey, plants |
+| Fernwood | Close-range exploration | Forest paths, logs, shallow gullies | Raptors, Dryosaurus |
+| River Wetlands | Food-rich risk/reward zone | Riverbanks, islands, mud flats | Parasaurolophus, herd prey |
+| Sunstone Ridge | Traversal and races | Switchback ramps, arches, overlooks | Fast prey, Carnotaurus |
+| Redstone Badlands | Higher-tier combat | Dry terraces, rock pillars, sparse cover | Dilophosaurus, Allosaurus |
+| Ancient Meadow | Herd and guardian quests | Rolling hills, flowers, nesting grounds | Triceratops, Ankylosaurus |
+
+Required routes stay under a 30-degree slope and require no precision jumping. Rivers are shallow traversal features until swimming is deliberately implemented. Each biome needs one skyline landmark, one safe resting point, one repeatable activity, at least two food habitats, and multiple routes into neighboring biomes.
+
+### Large-map technical architecture
+
+1. Create a `WorldChunkProfile` resource containing chunk ID, scene path, grid position, biome, neighbor IDs, navigation region IDs, spawn tables, and landmark metadata.
+2. Create a `WorldStreamManager` that loads the player chunk plus adjacent chunks and unloads distant chunks after actors and quest state are serialized.
+3. Use background resource loading for chunk scenes and prewarm shaders/materials before revealing a newly loaded chunk.
+4. Partition navigation into one baked `NavigationRegion3D` per chunk. Align shared border vertices exactly so Godot can join neighboring regions, and use navigation links only for deliberate transitions such as bridges or ramps.
+5. Use navigation layers for small, medium, and large dinosaurs where their traversable spaces differ. Limit large-map path queries to relevant nearby regions when profiling shows navigation cost is material.
+6. Replace per-object grass, flowers, pebbles, and fern nodes with biome-level `MultiMeshInstance3D` batches. Keep collision only on gameplay-relevant trunks, rocks, and landmarks.
+7. Enable automatic mesh LOD for imported scenery and dinosaurs, then add visibility ranges for distant clusters and landmarks. Use occlusion culling only where ridges, cliffs, or dense forest blocks provide meaningful occlusion.
+8. Pool prey, predators, tokens, hit effects, and ambient effects to reduce allocation spikes during chunk transitions.
+9. Cap detailed simulation to approximately 25 nearby roaming creatures. Distant populations update as low-frequency records and instantiate when their chunk becomes active.
+10. Add a loading-boundary fallback: if a destination chunk is not ready, keep the player inside the current safe path and show a brief friendly “Discovering the trail…” indicator.
+
+### Data-driven species expansion
+
+Expand `DinosaurProfile` and `CreatureProfile` rather than adding new species branches:
+
+- Model wrapper and animation-set resources.
+- Locomotion archetype and turning radius.
+- Stage-specific scale, health, damage, speed, and camera offset.
+- Diet tags and food reward rules.
+- Ability loadout with reusable effects and targeting rules.
+- Habitat affinities and AI relationship tags.
+- Quest-chain resource and finale definition.
+- Selection-screen statistics, difficulty rating, description, and preview pose.
+- Cosmetic material palettes and unlock requirements.
+
+Create reusable ability effects for dash, cone knockback, radial roar, temporary defense, charge, stamina recovery, and ally/herd signal. A new ground dinosaur is accepted only when it can be added through resources and composition without editing the central session loop.
+
+### Animation and model quality pass
+
+1. Replace root-transform placeholder animations with rigged clips for Idle, Walk, Run, Attack, Eat, Hit, Defeat, and each species ability.
+2. Standardize three skeleton archetypes: small biped, large biped, and quadruped. Share clips only where proportions remain believable.
+3. Wrap every GLB in a Godot scene that controls scale, ground offset, capsule collision, shadow settings, materials, animation tree, and attachment points.
+4. Use `AnimationTree` locomotion blending and action one-shots so attacks and hit reactions do not permanently interrupt movement.
+5. Add foot-contact events, attack-impact events, and reward events to synchronize sound and effects.
+6. Validate silhouettes at normal gameplay distance, not only in Blender close-ups.
+
+### Gameplay UI redesign
+
+#### Shared theme
+
+- Build one project-wide Godot `Theme` for fonts, panels, buttons, focus indicators, outlines, spacing, and species accent colors.
+- Use anchors and containers at 16:9, 16:10, ultrawide, and 1280×720 minimum resolution.
+- Provide UI scales of 100%, 125%, 150%, and 175% using the root content scale factor.
+- Target at least 4.5:1 contrast for important standard text, 3:1 for large text, and a configurable high-contrast mode targeting 7:1.
+- Use color plus shape/icon/text; never make color the only way to communicate health, danger, diet suitability, quest status, or rarity.
+
+#### Gameplay HUD
+
+- Top-left: compact health, hunger, energy, growth stage, and Growth Points.
+- Top-center: contextual compass with quest, nest, food, and danger pips; avoid a full minimap until the larger reserve has been playtested.
+- Top-right: one active objective with progress and a short optional hint.
+- Bottom-center: contextual interaction prompt and temporary reward/combat messages.
+- Bottom-right: ability icons, controller/keyboard binding, cooldown fill, and locked-stage requirement.
+- Near target: name, tier, health, diet suitability, and danger indicator only while noticed or engaged.
+- Collapse nonessential HUD elements during exploration and restore them when state changes.
+
+#### Menus and onboarding
+
+- Replace text-only selection with rotating dinosaur previews, readable stat bars, diet, role, abilities, difficulty, Adventure completion, and Endless records.
+- Add a first-run tutorial that advances when the player moves, eats, attacks, scents, uses an ability, and completes a quest action.
+- Add a field guide containing discovered species, habitats, diets, abilities, badges, cosmetics, and records.
+- Ensure every menu can be completed with keyboard, mouse, or gamepad and always shows a strong focus state.
+- Keep instructional text short, concrete, and appropriate for younger readers.
+
+### Graphics and environment art pass
+
+1. Write a one-page art bible defining shape language, polygon budgets, palette, material roughness, lighting, fog, particle density, and forbidden graphic imagery.
+2. Produce terrain materials for grass, forest soil, mud, stone, red rock, sand, and shallow water with restrained texture detail and clear walkable-path contrast.
+3. Create modular biome kits: trees, ferns, flowers, grasses, rocks, logs, nests, bones-as-fossils, arches, and water-edge props.
+4. Use warm/cool color shifts and landmark silhouettes to differentiate biomes while keeping the game bright.
+5. Add a time-of-day presentation cycle only after the daytime readability target is met; gameplay visibility must remain stable.
+6. Add distance fog, cloud layers, wind animation, water movement, ambient insects, leaf particles, and biome audio with reduced-motion/effects alternatives.
+7. Give quest objectives a world-space visual language that remains readable without overpowering the environment.
+8. Create low, medium, and high graphics presets controlling shadows, vegetation density, particles, render scale, and view distance.
+
+### Content structure for the larger reserve
+
+Each species Adventure contains:
+
+- One short onboarding quest at Hatchling.
+- One food/survival quest at Juvenile.
+- One traversal or ability quest at Young Adult.
+- One story encounter or rescue quest before Adult.
+- One non-graphic Adult finale.
+- Two optional exploration challenges.
+- One species-specific cosmetic reward and one badge.
+
+Add reusable quest templates for reach, follow trail, collect, eat, defeat-and-claim, escort, race, defend, signal, and discover. Every quest must define a recovery path for lost targets, failed escorts, unloaded chunks, or player defeat.
+
+### Production milestones and gates
+
+#### Milestone A — Polished vertical slice
+
+- Finish the shared UI theme, HUD hierarchy, onboarding, target feedback, and selection screen.
+- Replace placeholder root animations for the T. rex with a proper rig and animation tree.
+- Art-pass Nest Basin and one adjacent biome.
+- Complete and playtest the T. rex Adventure at target quality.
+
+Gate: a new player can finish the T. rex Adventure without developer guidance; HUD remains readable across both biomes; the packaged build maintains 60 FPS on the target Windows test machine.
+
+#### Milestone B — Scalable world foundation
+
+- Implement chunk profiles, streaming, navigation-region borders, actor persistence, and loading feedback.
+- Expand from 60×60 meters to a four-chunk 300×300-meter prototype.
+- Convert vegetation to MultiMesh batches and establish LOD/visibility settings.
+
+Gate: cross all chunk borders repeatedly without visible holes, navigation loss, duplicate actors, quest loss, or frame-time spikes above the agreed budget.
+
+#### Milestone C — Existing roster polish
+
+- Finish production models and animations for Velociraptor and Triceratops.
+- Complete their Adventures, finales, tutorials, cosmetics, and Endless unlocks.
+- Complete the first four final-quality biomes.
+
+Gate: all three Adventures pass clean-save, defeat-recovery, gamepad, and accessibility playtests.
+
+#### Milestone D — Expanded roster and full reserve
+
+- Add Ankylosaurus, Parasaurolophus, and Carnotaurus using data-driven resources.
+- Complete all 16 world chunks and six biomes.
+- Add field-guide discovery, expanded quest templates, and biome population simulation.
+
+Gate: all six species can complete Adventure; no species-specific central-loop conditionals are required; the reserve supports a 60-minute Endless session without resource exhaustion.
+
+#### Milestone E — Release candidate
+
+- Finalize audio, graphics presets, controller remapping, UI scale, contrast, reduced motion, save migration, credits, and build metadata.
+- Profile CPU, GPU, memory, navigation, draw calls, and shader stutter on at least two Windows hardware tiers.
+- Run family readability sessions and fix the highest-frequency confusion points.
+
+Gate: zero critical/high defects, saves migrate safely, all required text meets the chosen accessibility targets, and packaged builds pass three complete Adventures plus a two-hour Endless soak test.
+
+### Quality metrics
+
+- First suitable food discovered within 90 seconds for at least 90% of new-player sessions.
+- First main objective understood without opening Help by at least 80% of family playtest participants.
+- No more than five persistent HUD groups visible during ordinary exploration.
+- Stable 60 FPS at 1280×720 on the baseline machine, with a 30 FPS low-preset floor on the minimum machine.
+- No more than 25 fully simulated roaming creatures and no unbounded token/effect growth.
+- Chunk transition completes without blocking gameplay under the target storage conditions.
+- All Adventures completable using keyboard/mouse or gamepad alone.
+- No blood, wounds, carcasses, dismemberment, or realistic distress audio.
+
+### Research references
+
+- [Godot 4.7 large-world coordinates](https://docs.godotengine.org/en/4.7/tutorials/physics/large_world_coordinates.html)
+- [Godot 4.7 navigation maps](https://docs.godotengine.org/en/4.7/tutorials/navigation/navigation_using_navigationmaps.html)
+- [Godot 4.7 navigation path-query region filtering](https://docs.godotengine.org/en/4.7/tutorials/navigation/navigation_using_navigationpathqueryobjects.html)
+- [Godot 4.7 connecting navigation meshes](https://docs.godotengine.org/en/4.7/tutorials/navigation/navigation_connecting_navmesh.html)
+- [Godot 4.7 AnimationTree](https://docs.godotengine.org/en/4.7/tutorials/animation/animation_tree.html)
+- [Godot performance guidance](https://docs.godotengine.org/en/4.7/tutorials/performance/index.html)
+- [Godot 3D importing](https://docs.godotengine.org/en/4.7/tutorials/assets_pipeline/importing_3d_scenes/index.html)
+- [Godot UI anchors](https://docs.godotengine.org/en/4.7/tutorials/ui/size_and_anchors.html)
+- [Microsoft Xbox Accessibility Guideline: text display](https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/101)
+- [Microsoft Xbox Accessibility Guideline: contrast](https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/102)
+
 ## Out of Scope for This Release
 
 - Multiplayer or online accounts.
-- Additional valleys or species beyond the first three playable dinosaurs.
+- Procedural worlds or a second disconnected reserve map.
+- Flying, swimming, or burrowing playable species.
 - Realistic/graphic combat.
 - Mobile or console-specific releases.
