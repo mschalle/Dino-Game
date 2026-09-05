@@ -19,6 +19,7 @@ func _ready() -> void:
 	_create_vegetation(biome)
 	_create_water(biome)
 	_create_ambient_particles(biome)
+	_create_navigation()
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -171,3 +172,17 @@ func _create_ambient_particles(biome: String) -> void:
 	process_material.emission_box_extents = Vector3(24.0, 3.0, 24.0)
 	particles.process_material = process_material
 	add_child(particles)
+
+func _create_navigation() -> void:
+	var region := NavigationRegion3D.new()
+	region.name = "NavigationRegion"
+	var nav_mesh := NavigationMesh.new()
+	nav_mesh.vertices = PackedVector3Array([
+		Vector3(-29.0, 0.02, -29.0), Vector3(29.0, 0.02, -29.0),
+		Vector3(29.0, 0.02, 29.0), Vector3(-29.0, 0.02, 29.0)
+	])
+	nav_mesh.add_polygon(PackedInt32Array([0, 1, 2, 3]))
+	nav_mesh.agent_radius = float(get_meta("agent_radius", 0.8))
+	nav_mesh.agent_height = 1.8
+	region.navigation_mesh = nav_mesh
+	add_child(region)
