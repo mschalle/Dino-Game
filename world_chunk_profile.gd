@@ -12,8 +12,11 @@ var ground_color: Color
 var vegetation_density: float
 var fog_density: float
 var navigation_layers: int
+var agent_radius: float
+var max_slope_degrees: float
+var max_climb: float
 
-func _init(new_id: String, new_biome: String, new_grid: Vector2i, new_landmark: String, new_spawns: Dictionary, new_scene_path: String = "", new_ground_color: Color = Color("#72ae50"), new_vegetation_density: float = 1.0, new_fog_density: float = 0.006, new_navigation_layers: int = 1) -> void:
+func _init(new_id: String, new_biome: String, new_grid: Vector2i, new_landmark: String, new_spawns: Dictionary, new_scene_path: String = "", new_ground_color: Color = Color("#72ae50"), new_vegetation_density: float = 1.0, new_fog_density: float = 0.006, new_navigation_layers: int = 1, new_agent_radius: float = 0.8, new_max_slope_degrees: float = 35.0, new_max_climb: float = 0.5) -> void:
 	chunk_id = new_id
 	biome = new_biome
 	grid_position = new_grid
@@ -24,6 +27,9 @@ func _init(new_id: String, new_biome: String, new_grid: Vector2i, new_landmark: 
 	vegetation_density = new_vegetation_density
 	fog_density = new_fog_density
 	navigation_layers = new_navigation_layers
+	agent_radius = new_agent_radius
+	max_slope_degrees = new_max_slope_degrees
+	max_climb = new_max_climb
 	neighbor_ids = []
 
 func set_neighbors(ids: Array[String]) -> WorldChunkProfile:

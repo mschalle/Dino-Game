@@ -78,6 +78,9 @@ func _test_world_chunks() -> void:
 		_check(chunk.vegetation_density > 0.0, "Every biome needs vegetation density")
 		_check(chunk.fog_density > 0.0, "Every biome needs fog guidance")
 		_check(chunk.navigation_layers > 0, "Every biome needs navigation layers")
+		_check(chunk.agent_radius > 0.0, "Every biome needs an agent radius")
+		_check(chunk.max_slope_degrees > 0.0 and chunk.max_slope_degrees <= 45.0, "Biome slope must remain traversable")
+		_check(chunk.max_climb > 0.0, "Every biome needs a climb limit")
 		_check(not chunk.neighbor_ids.is_empty() or chunk.chunk_id == "nest_basin", "Chunks should define connected neighbors")
 
 func _test_world_streaming() -> void:
