@@ -355,6 +355,7 @@ The player and spawned food now follow the authored elevation function with grav
 185. Expanded legacy-save migration coverage to preserve species Endless unlocks and per-species records.
 186. Added roster-wide Adventure quest validation for unique IDs, ordered growth stages, valid stage bounds, and Adult finales.
 187. Added diet and quest-target validation so carnivore and herbivore progression cannot reference incompatible food sources.
+188. Added optional-quest metadata validation to prevent ID collisions and ensure optional entries are explicitly flagged.
 162. Added roster GLB resource-load validation while retaining procedural fallback coverage.
 163. Added playable imported-model animation-library validation for all required child-friendly motion states.
 164. Added imported prey and predator animation-library validation for the complete required motion set.

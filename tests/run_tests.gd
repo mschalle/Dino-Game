@@ -143,6 +143,11 @@ func _test_all_playable_species() -> void:
 			previous_quest_stage = quest.required_stage
 		_check(quest_ids.size() == profile.adventure_quests.size(), "%s quest IDs should be unique" % profile.id)
 		_check(has_adult_finale, "%s should have an Adult-stage finale" % profile.id)
+		var all_quest_ids := quest_ids.duplicate()
+		for optional_quest in profile.optional_quests:
+			_check(optional_quest.optional, "%s optional quests should be marked optional" % profile.id)
+			_check(not all_quest_ids.has(optional_quest.id), "%s optional quest IDs should not collide with main quests" % profile.id)
+			all_quest_ids[optional_quest.id] = true
 		var previous_unlock_stage := -1
 		for ability in profile.abilities:
 			_check(ability.unlock_stage >= 0 and ability.unlock_stage < profile.growth_thresholds.size(), "%s ability unlock stage should be valid" % profile.id)
