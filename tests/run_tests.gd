@@ -345,6 +345,9 @@ func _test_diagnostics_visibility() -> void:
 	var hud := preload("res://game_hud.gd").new()
 	hud.set_diagnostics_enabled(false)
 	_check(not hud.diagnostics_enabled, "Diagnostics should be configurable for release builds")
+	_check(hud.format_active_biomes([]) == "—", "HUD should show an empty biome placeholder")
+	_check(hud.format_active_biomes("invalid") == "—", "HUD should tolerate malformed biome metrics")
+	_check(hud.format_active_biomes(["Nest Basin", "Fernwood", "Glacier Valley"]) == "Nest Basin, Fernwood +1", "HUD should compact active biome metrics")
 	hud.free()
 
 func _test_flow_signals() -> void:

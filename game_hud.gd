@@ -119,15 +119,26 @@ func update_diagnostics(metrics: Dictionary) -> void:
 	var npc_count := int(metrics.get("npc_count", 0))
 	var average_frame_ms := _average_frame_ms()
 	var performance_warning := "  SLOW" if average_frame_ms > 20.0 else ""
-	var active_biomes: Array = metrics.get("active_biomes", [])
-	var biome_text := "—"
-	if not active_biomes.is_empty():
-		var visible_biomes := active_biomes.slice(0, mini(active_biomes.size(), 2))
-		biome_text = ", ".join(visible_biomes)
-		if active_biomes.size() > 2:
-			biome_text += " +%d" % (active_biomes.size() - 2)
+	var biome_text := format_active_biomes(metrics.get("active_biomes", []))
 	diagnostics_label.text = "DEV  %s\nChunks %d  Scenes %d  Landmarks %d  NPCs %d/25  Budget %.0f%%  %.1fms%s" % [biome_text, int(metrics.get("active_chunks", 0)), int(metrics.get("loaded_chunk_scenes", 0)), int(metrics.get("loaded_landmarks", 0)), npc_count, float(metrics.get("population_utilization", 0.0)) * 100.0, average_frame_ms, performance_warning]
 	diagnostics_label.modulate = Color("#ffcf70") if npc_count >= 20 or average_frame_ms > 20.0 else Color("#b8e6ef")
+
+func format_active_biomes(raw_biomes: Variant) -> String:
+	if not raw_biomes is Array:
+		return "—"
+	var active_biomes: Array = raw_biomes
+	if active_biomes.is_empty():
+		return "—"
+	var visible_biomes: Array[String] = []
+	for biome in active_biomes.slice(0, mini(active_biomes.size(), 2)):
+		if biome is String and not biome.is_empty():
+			visible_biomes.append(biome)
+	if visible_biomes.is_empty():
+		return "—"
+	var biome_text := ", ".join(visible_biomes)
+	if active_biomes.size() > 2:
+		biome_text += " +%d" % (active_biomes.size() - 2)
+	return biome_text
 
 func record_frame_time(delta: float) -> void:
 	frame_samples.append(maxf(0.0, delta * 1000.0))
