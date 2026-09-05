@@ -433,7 +433,7 @@ func _test_world_chunks() -> void:
 			_check(biome_environment.environment.background_color != Color.BLACK, "%s should derive a visible background palette" % chunk.chunk_id)
 			_check(biome_environment.environment.background_color.is_equal_approx(chunk.ground_color.lightened(0.45)), "%s environment palette should follow its ground profile" % chunk.chunk_id)
 			_check(biome_environment.environment.fog_light_color.is_equal_approx(chunk.ground_color.lightened(0.3)), "%s fog light color should follow its ground profile" % chunk.chunk_id)
-			_check(biome_environment.environment.fog_sky_affect >= 0.0 and biome_environment.environment.fog_sky_affect <= 1.0, "%s fog sky affect should remain bounded" % chunk.chunk_id)
+			_check(is_equal_approx(biome_environment.environment.fog_sky_affect, 0.15), "%s fog sky affect should use the authored readability target" % chunk.chunk_id)
 		_check(visual_root.get_node_or_null("LandmarkSilhouette") != null, "%s should create a landmark silhouette" % chunk.chunk_id)
 		var silhouette := visual_root.get_node_or_null("LandmarkSilhouette")
 		_check(str(silhouette.get_meta("biome", "")) == chunk.biome, "%s landmark should retain biome identity" % chunk.chunk_id)
