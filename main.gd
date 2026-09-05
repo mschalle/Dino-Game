@@ -1588,6 +1588,9 @@ func _cycle_environment_quality() -> void:
 		valley_environment.ssao_intensity = 0.7 if ENVIRONMENT_QUALITY.active_id == "medium" else 1.0
 		var fog_scale := 0.8 if ENVIRONMENT_QUALITY.active_id == "low" else (1.15 if ENVIRONMENT_QUALITY.active_id == "high" else 1.0)
 		valley_environment.fog_density = 0.0045 * fog_scale
+	for tree in animated_trees:
+		if is_instance_valid(tree):
+			tree.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if ENVIRONMENT_QUALITY.active_id == "low" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	save_system.save_data()
 	_apply_environment_settings_to_loaded_chunks()
 	hud.show_message("Environment quality: %s (new areas use this setting)" % next.to_upper())

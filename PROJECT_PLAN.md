@@ -656,6 +656,7 @@ The player and spawned food now follow the authored elevation function with grav
 375. Made F4 update ambient and biome-weather particle counts live using each effect system's biome-specific base budget.
 376. Added quality-scaled global and biome fog density updates for Low/Medium/High runtime rendering modes.
 377. Added live decorative-shadow scaling: Low disables asset-pack and debris shadows while Medium/High restore them in loaded chunks.
+378. Extended live decorative-shadow scaling to central valley tree scenery for consistent Low/Medium/High behavior.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
