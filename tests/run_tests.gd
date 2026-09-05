@@ -320,6 +320,7 @@ func _test_world_chunks() -> void:
 		_check(chunk.vegetation_density >= 0.0 and chunk.vegetation_density <= 2.0, "%s vegetation density should be bounded" % chunk.chunk_id)
 		_check(chunk.fog_density >= 0.0 and chunk.fog_density <= 1.0, "%s fog density should be bounded" % chunk.chunk_id)
 		_check(chunk.ground_color != Color.BLACK and chunk.ground_color.a > 0.0, "%s ground palette should remain visible" % chunk.chunk_id)
+		_check(chunk.ground_color.a >= 0.99 and chunk.ground_color.r >= 0.0 and chunk.ground_color.r <= 1.0 and chunk.ground_color.g >= 0.0 and chunk.ground_color.g <= 1.0 and chunk.ground_color.b >= 0.0 and chunk.ground_color.b <= 1.0, "%s ground palette should use opaque in-range channels" % chunk.chunk_id)
 		_check(chunk.navigation_layers > 0, "%s should expose navigation layers" % chunk.chunk_id)
 		_check(FileAccess.file_exists(chunk.scene_path), "%s should reference an authored chunk scene" % chunk.chunk_id)
 		_check(ResourceLoader.exists(chunk.scene_path) and load(chunk.scene_path) != null, "%s chunk scene should be loadable" % chunk.chunk_id)
