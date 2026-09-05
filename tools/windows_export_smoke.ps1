@@ -14,11 +14,11 @@ Push-Location $ProjectPath
 try {
     $exportOutput = (& $Godot --headless --path "." --export-release "Windows Desktop" $outputPath 2>&1 | Out-String)
     Write-Host $exportOutput
-    if ($exportOutput -match "Case mismatch opening requested file") {
-        throw "Windows export found case-mismatched resource paths; normalize asset references before packaging."
-    }
     if ($LASTEXITCODE -ne 0 -or $exportOutput -match "No export template found") {
         throw "Windows export requires matching Godot export templates (4.7.2). Install them in Editor Settings and retry."
+    }
+    if ($exportOutput -match "Case mismatch opening requested file") {
+        throw "Windows export found case-mismatched resource paths; normalize asset references before packaging."
     }
     if (-not (Test-Path -LiteralPath $outputPath)) { throw "Windows export completed without producing $outputPath" }
     Write-Host "Windows export smoke test: PASS"
