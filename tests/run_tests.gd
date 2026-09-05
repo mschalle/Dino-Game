@@ -123,6 +123,12 @@ func _test_all_playable_species() -> void:
 		_check(session.profile.id == profile.id, "%s Adventure should start with its own profile" % profile.id)
 		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
 		_check(profile.adventure_quests.size() >= 4, "%s should expose a full quest chain" % profile.id)
+		_check(profile.growth_thresholds == [0, 5, 12, 25], "%s should use the four-stage growth curve" % profile.id)
+		var previous_unlock_stage := -1
+		for ability in profile.abilities:
+			_check(ability.unlock_stage >= 0 and ability.unlock_stage < profile.growth_thresholds.size(), "%s ability unlock stage should be valid" % profile.id)
+			_check(ability.unlock_stage >= previous_unlock_stage, "%s ability unlock stages should be ordered" % profile.id)
+			previous_unlock_stage = ability.unlock_stage
 		save.record_run(profile.id, 1.0, 1, 0, {"species_validation": true})
 	_check(species_ids.size() == DinosaurProfiles.all().size(), "Playable species IDs should be unique")
 	_check(species_names.size() == DinosaurProfiles.all().size(), "Playable species display names should be unique")
