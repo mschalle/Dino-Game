@@ -124,6 +124,8 @@ func _test_all_playable_species() -> void:
 		_check(session.profile.id == profile.id, "%s Adventure should start with its own profile" % profile.id)
 		_check(profile.abilities.size() >= 3, "%s should expose its ability progression" % profile.id)
 		_check(profile.diet == "carnivore" or profile.diet == "herbivore", "%s should use a supported diet" % profile.id)
+		_check(not profile.tagline.is_empty(), "%s should have a readable tagline" % profile.id)
+		_check(profile.body_color != Color.BLACK and profile.accent_color != Color.BLACK, "%s should have visible selection colors" % profile.id)
 		for quest in profile.adventure_quests:
 			if quest.objective_type == "eat":
 				if profile.diet == "carnivore":
