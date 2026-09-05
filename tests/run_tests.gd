@@ -887,6 +887,7 @@ func _test_gameplay_integration() -> void:
 	if main_environment != null and main_environment.environment != null:
 		_check(main_environment.environment.fog_density > 0.0 and main_environment.environment.fog_density <= 1.0, "Legacy valley fog density should remain bounded")
 		_check(main_environment.environment.background_color != Color.BLACK and main_environment.environment.fog_light_color != Color.BLACK, "Legacy valley fog and background colors should remain visible")
+		_check(main_environment.environment.fog_sky_affect >= 0.0 and main_environment.environment.fog_sky_affect <= 1.0, "Legacy valley fog sky affect should remain bounded")
 		_check(main_environment.environment.ambient_light_energy > 0.0 and main_environment.environment.ambient_light_energy <= 4.0, "Legacy valley ambient light energy should remain bounded")
 	var sun := main_scene.get_node_or_null("ValleySun") as DirectionalLight3D
 	_check(sun != null and sun.light_energy > 0.0 and sun.light_energy <= 4.0, "Legacy valley directional light should remain bounded")

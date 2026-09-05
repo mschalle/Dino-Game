@@ -436,6 +436,7 @@ The player and spawned food now follow the authored elevation function with grav
 262. Added streamed-chunk landmark-label font and outline validation for consistent reserve signage readability.
 263. Added streamed-chunk landmark-label contrast validation to require a non-white outline against bright terrain.
 264. Added legacy habitat-label contrast validation to require a non-white outline against bright terrain.
+265. Added bounded sky-affect validation for legacy valley fog to protect atmospheric readability.
 ## Release Readiness
 
 - Complete all three Adventure routes from a clean save.
