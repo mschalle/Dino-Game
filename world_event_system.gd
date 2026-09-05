@@ -8,6 +8,16 @@ const FRESH_GROWTH := "fresh_growth"
 const HERD_JOURNEY := "herd_journey"
 const PREDATOR_PASSAGE := "predator_passage"
 
+static func field_guide_text(event_id: String) -> String:
+	match event_id:
+		FRESH_GROWTH:
+			return "Fresh Growth: rain and sunlight briefly bring extra edible plants to the valley."
+		HERD_JOURNEY:
+			return "Herd Journey: a herd moves together to a safer feeding meadow."
+		PREDATOR_PASSAGE:
+			return "Predator Passage: a predator crosses a marked route; give it room and use a safe retreat."
+	return ""
+
 var active_event_id := ""
 var remaining_seconds := 0.0
 

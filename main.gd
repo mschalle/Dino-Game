@@ -55,6 +55,7 @@ var world_events
 var next_endless_event_time := 120.0
 var endless_event_index := 0
 var endless_challenges
+var endless_challenges_completed := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -649,6 +650,7 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	next_endless_event_time = 180.0
 	endless_event_index = 0
 	endless_challenges = ENDLESS_CHALLENGE_SYSTEM.new()
+	endless_challenges_completed = 0
 	if mode == "adventure":
 		quest_system.start(profile.adventure_quests)
 	else:
@@ -924,6 +926,9 @@ func _on_quest_started(quest: QuestDefinition) -> void:
 func _on_quest_completed(quest: QuestDefinition) -> void:
 	session.quests_completed += 1
 	session.growth.add_points(quest.reward_growth)
+	if mode == "endless":
+		endless_challenges_completed += 1
+		save_system.record_challenge_completion(profile.id, endless_challenges_completed)
 	hud.show_message("%s complete! +%d Growth Points" % [quest.title, quest.reward_growth])
 	sounds.play_quest_reward()
 
@@ -1126,6 +1131,8 @@ func _update_world_events(delta: float) -> void:
 		if not _event_is_eligible(event_id):
 			next_endless_event_time += 30.0
 		elif world_events.start(event_id, 45.0):
+			if save_system.discover_event(event_id):
+				hud.show_message("Field Guide discovery: %s" % WORLD_EVENT_SYSTEM.field_guide_text(event_id))
 			if event_id == WORLD_EVENT_SYSTEM.FRESH_GROWTH:
 				food_spawner.set_event_plant_bonus(4)
 				hud.show_message("Fresh Growth! Extra plants have appeared for a short time.")
@@ -1393,7 +1400,9 @@ func _return_to_selection() -> void:
 
 func _record_current_run() -> void:
 	if session != null and profile != null:
-		save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, session.summary())
+		var summary := session.summary()
+		summary["endless_challenges_completed"] = endless_challenges_completed
+		save_system.record_run(profile.id, session.survival_time, session.growth.points, session.quests_completed, summary)
 	if world_stream != null:
 		save_system.save_chunk_states(world_stream.snapshot_state())
 

@@ -20,6 +20,7 @@ func _run_tests() -> void:
 	_test_endless_scaling_rules()
 	_test_world_events()
 	_test_endless_challenges()
+	_test_event_discovery_progression()
 	_test_release_readiness()
 	_test_windows_export_preset()
 	_test_selection_roster_layout()
@@ -266,6 +267,20 @@ func _test_endless_challenges() -> void:
 	_check(observe.target_id == "herd_journey", "Herd events should unlock observation challenges")
 	_check(evade.target_id == "predator_passage", "Predator events should unlock evasion challenges")
 	_check(challenges.skip(forage.id) and not challenges.skip(forage.id), "Skipped challenges should never award or skip twice")
+
+func _test_event_discovery_progression() -> void:
+	var path := "user://event_discovery_test.json"
+	var save := SaveSystem.new(path)
+	_check(save.discover_event("fresh_growth"), "A new event discovery should be recorded once")
+	_check(not save.discover_event("fresh_growth"), "Duplicate event discoveries should not be recorded twice")
+	save.discover_event("herd_journey")
+	save.discover_event("predator_passage")
+	_check((save.data["badges"] as Array).has("event_naturalist"), "Discovering every event should award the naturalist badge")
+	for count in 10:
+		save.record_challenge_completion("t_rex", count + 1)
+	_check(int(save.data["records"].get("t_rex", {}).get("challenge_completions", 0)) == 10, "Challenge totals should stay species-specific and cumulative")
+	_check((save.data["badges"] as Array).has("t_rex_challenge_veteran"), "Ten species challenges should award a species badge")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 func _test_windows_export_preset() -> void:
 	_check(FileAccess.file_exists("res://export_presets.cfg"), "Windows export preset should be checked in")

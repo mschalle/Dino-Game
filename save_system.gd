@@ -51,6 +51,27 @@ func award_badge(badge_id: String) -> void:
 	if not badges.has(badge_id):
 		badges.append(badge_id)
 
+func discover_event(event_id: String) -> bool:
+	var discoveries := data["event_discoveries"] as Array
+	if discoveries.has(event_id):
+		return false
+	discoveries.append(event_id)
+	if discoveries.has("fresh_growth") and discoveries.has("herd_journey") and discoveries.has("predator_passage"):
+		award_badge("event_naturalist")
+	save_data()
+	return true
+
+func record_challenge_completion(species_id: String, completed_in_run: int) -> void:
+	var records := data["records"] as Dictionary
+	var current: Dictionary = records.get(species_id, {})
+	var total := int(current.get("challenge_completions", 0)) + 1
+	current["challenge_completions"] = total
+	current["best_challenges_in_run"] = maxi(int(current.get("best_challenges_in_run", 0)), completed_in_run)
+	records[species_id] = current
+	if total >= 10:
+		award_badge("%s_challenge_veteran" % species_id)
+	save_data()
+
 func unlock_ability(species_id: String, ability_id: String) -> void:
 	var all_unlocks := data["ability_unlocks"] as Dictionary
 	var species_unlocks: Array = all_unlocks.get(species_id, [])
@@ -109,6 +130,7 @@ func _defaults() -> Dictionary:
 		"selected_cosmetics": {},
 		"badges": [],
 		"ability_unlocks": {},
+		"event_discoveries": [],
 		"records": {},
 		"chunk_states": {},
 		"settings": {"large_text": true, "ui_scale": 1.0, "high_contrast": false, "reduced_flashes": true, "effects_volume": 0.7}
