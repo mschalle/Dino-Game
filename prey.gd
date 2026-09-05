@@ -33,6 +33,8 @@ var respawn_gate: Callable
 var herd_id := ""
 var herd_leader := false
 var herd_anchor := Vector3.ZERO
+var journey_target := Vector3.ZERO
+var journey_active := false
 
 func setup(new_label: String, new_nutrition: int, new_tint: Color) -> void:
 	label = new_label
@@ -72,6 +74,11 @@ func _process(delta: float) -> void:
 			position = base_position
 		return
 	phase += delta * (0.55 + nutrition * 0.08)
+	if journey_active:
+		_update_journey(delta)
+		_clamp_to_valley()
+		_animate_visuals(true)
+		return
 	if player == null:
 		_wander()
 		_clamp_to_valley()
@@ -145,6 +152,30 @@ func regroup_herd() -> int:
 			other.state = "recover"
 			regrouped += 1
 	return regrouped
+
+func begin_journey(destination: Vector3) -> void:
+	journey_target = destination
+	journey_target.x = clampf(journey_target.x, -VALLEY_LIMIT, VALLEY_LIMIT)
+	journey_target.z = clampf(journey_target.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	journey_active = true
+	state = "journey"
+
+func _update_journey(delta: float) -> void:
+	var direction := _navigation_direction(journey_target)
+	var speed := maxf(1.2, creature_profile.move_speed * 0.55)
+	var distance := global_position.distance_to(journey_target)
+	if distance <= speed * delta:
+		global_position = journey_target
+	else:
+		global_position += direction * speed * delta
+	base_position = global_position
+	rotation.y = atan2(-direction.x, -direction.z) if direction.length() > 0.01 else rotation.y
+	if global_position.distance_to(journey_target) <= 0.8:
+		global_position = journey_target
+		base_position = journey_target
+		herd_anchor = journey_target
+		journey_active = false
+		state = "wander"
 
 func _navigation_direction(target: Vector3) -> Vector3:
 	var direct := target - global_position

@@ -241,6 +241,7 @@ func _test_world_events() -> void:
 	_check(not events.start(WORLD_EVENT_SYSTEM.FRESH_GROWTH, 45.0), "Overlapping world events should be rejected")
 	_check(not events.tick(44.0), "Fresh Growth should remain active before its duration ends")
 	_check(events.tick(1.0), "Fresh Growth should finish at its duration boundary")
+	_check(events.start(WORLD_EVENT_SYSTEM.HERD_JOURNEY, 45.0), "Herd Journey should start after the prior event ends")
 	var spawner := FoodSpawner.new()
 	spawner.set_event_plant_bonus(4)
 	_check(spawner.event_plant_bonus == 4, "Fresh Growth should add a bounded plant-spawn bonus")
@@ -941,6 +942,10 @@ func _test_herd_context() -> void:
 	_check(prey.regroup_herd() == 1, "Herd regrouping should recover separated members")
 	_check(sibling.state == "recover", "Separated herd members should recover toward the anchor")
 	_check(prey.herd_id == sibling.herd_id, "Nearby herd members should share a herd identity")
+	prey.position = Vector3.ZERO
+	prey.begin_journey(Vector3(2.0, 0.0, 0.0))
+	prey._process(2.0)
+	_check(not prey.journey_active and prey.state == "wander", "Herd members should finish a reachable journey and resume wandering")
 	var spawner := FoodSpawner.new()
 	root.add_child(spawner)
 	spawner.set_persisted_herd_records({"tier_1_9": {"count": 2, "tier": 1, "anchor": {"x": 7.0, "y": 0.0, "z": -3.0}}})

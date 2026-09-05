@@ -52,6 +52,7 @@ var world_stream
 var chunk_instances: Dictionary = {}
 var world_events
 var next_endless_event_time := 120.0
+var endless_event_index := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -641,6 +642,7 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	endless_second_timer = 0.0
 	world_events = WORLD_EVENT_SYSTEM.new()
 	next_endless_event_time = 120.0
+	endless_event_index = 0
 	if mode == "adventure":
 		quest_system.start(profile.adventure_quests)
 	else:
@@ -1105,10 +1107,33 @@ func _update_world_events(delta: float) -> void:
 		food_spawner.set_event_plant_bonus(0)
 		hud.show_message("Fresh Growth has faded. The valley returns to normal.")
 	if world_events.active_event_id.is_empty() and session.survival_time >= next_endless_event_time:
-		if world_events.start(WORLD_EVENT_SYSTEM.FRESH_GROWTH, 45.0):
-			food_spawner.set_event_plant_bonus(4)
-			hud.show_message("Fresh Growth! Extra plants have appeared for a short time.")
+		var event_id := WORLD_EVENT_SYSTEM.FRESH_GROWTH if endless_event_index % 2 == 0 else WORLD_EVENT_SYSTEM.HERD_JOURNEY
+		if world_events.start(event_id, 45.0):
+			if event_id == WORLD_EVENT_SYSTEM.FRESH_GROWTH:
+				food_spawner.set_event_plant_bonus(4)
+				hud.show_message("Fresh Growth! Extra plants have appeared for a short time.")
+			else:
+				_start_herd_journey()
 			next_endless_event_time += 180.0
+			endless_event_index += 1
+
+func _start_herd_journey() -> void:
+	var lead: PreyDino
+	for node in get_tree().get_nodes_in_group("prey"):
+		var prey := node as PreyDino
+		if prey != null and prey.visible and (lead == null or prey.herd_leader):
+			lead = prey
+			if prey.herd_leader:
+				break
+	if lead == null:
+		hud.show_message("Herd Journey could not find a nearby herd.")
+		return
+	var destination := Vector3(-lead.herd_anchor.x * 0.6, lead.herd_anchor.y, -lead.herd_anchor.z * 0.6)
+	for node in get_tree().get_nodes_in_group("prey"):
+		var prey := node as PreyDino
+		if prey != null and prey.herd_id == lead.herd_id:
+			prey.begin_journey(destination)
+	hud.show_message("Herd Journey! Follow the traveling herd to its new meadow.")
 
 func _tick_cooldowns(delta: float) -> void:
 	for ability_id in ability_cooldowns.keys():
