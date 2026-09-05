@@ -92,10 +92,13 @@ func _test_world_chunks() -> void:
 		var visual_root := scene.instantiate()
 		root.add_child(visual_root)
 		_check(visual_root.get_child_count() >= 1, "%s should create a visible landmark mesh" % chunk.chunk_id)
-		if visual_root.get_child_count() > 0:
-			var landmark_mesh := visual_root.get_child(0)
-			_check(landmark_mesh is MeshInstance3D, "%s landmark should use a mesh instance" % chunk.chunk_id)
-			_check(landmark_mesh.get_child_count() >= 1, "%s landmark should include a readable label" % chunk.chunk_id)
+		_check(visual_root.get_node_or_null("Ground") != null, "%s should create a ground mesh" % chunk.chunk_id)
+		_check(visual_root.get_node_or_null("GroundCollision") != null, "%s should create ground collision" % chunk.chunk_id)
+		var has_labelled_landmark := false
+		for child in visual_root.get_children():
+			if child is MeshInstance3D and child.get_child_count() >= 1:
+				has_labelled_landmark = true
+		_check(has_labelled_landmark, "%s landmark should include a readable label" % chunk.chunk_id)
 		visual_root.free()
 
 func _test_world_streaming() -> void:

@@ -247,6 +247,7 @@ The player and spawned food now follow the authored elevation function with grav
 73. Positioned streamed chunk scenes from their authored grid coordinates to prevent biome overlap.
 74. Applied persisted chunk state when streamed biome scenes are instantiated after reload.
 75. Applied authored navigation constraints to loaded biome scene roots for runtime alignment.
+76. Added lightweight per-biome ground meshes and static collision to streamed chunk scenes.
 
 ## Release Readiness
 

@@ -14,6 +14,7 @@ func apply_chunk_state(state: Dictionary) -> void:
 func _ready() -> void:
 	var biome := str(get_meta("biome", "Biome"))
 	var landmark := str(get_meta("landmark", biome))
+	_create_ground(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -53,3 +54,22 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 	material.emission = color.darkened(0.35)
 	material.emission_energy_multiplier = 0.35
 	return material
+
+func _create_ground(biome: String) -> void:
+	var ground := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(60.0, 60.0)
+	ground.mesh = plane
+	ground.material_override = _biome_material(biome)
+	ground.position.y = -0.12
+	ground.name = "Ground"
+	add_child(ground)
+	var body := StaticBody3D.new()
+	body.name = "GroundCollision"
+	var collider := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(60.0, 0.25, 60.0)
+	collider.shape = shape
+	collider.position.y = -0.12
+	body.add_child(collider)
+	add_child(body)
