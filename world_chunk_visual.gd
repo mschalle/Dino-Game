@@ -15,6 +15,7 @@ func _ready() -> void:
 	var biome := str(get_meta("biome", "Biome"))
 	var landmark := str(get_meta("landmark", biome))
 	_create_ground(biome)
+	_create_elevation(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
 	pillar.top_radius = 0.18
@@ -71,5 +72,41 @@ func _create_ground(biome: String) -> void:
 	shape.size = Vector3(60.0, 0.25, 60.0)
 	collider.shape = shape
 	collider.position.y = -0.12
+	body.add_child(collider)
+	add_child(body)
+
+func _create_elevation(biome: String) -> void:
+	var size := Vector3(18.0, 1.2, 14.0)
+	var position := Vector3(0.0, 0.55, 0.0)
+	if biome == "Sunstone Ridge":
+		size = Vector3(24.0, 4.0, 16.0)
+		position = Vector3(8.0, 2.0, -5.0)
+	elif biome == "Redstone Badlands":
+		size = Vector3(20.0, 3.0, 18.0)
+		position = Vector3(-7.0, 1.5, 4.0)
+	elif biome == "River Wetlands":
+		size = Vector3(16.0, 0.7, 12.0)
+		position = Vector3(-5.0, 0.35, -4.0)
+	elif biome == "Ancient Meadow":
+		size = Vector3(22.0, 1.8, 18.0)
+		position = Vector3(5.0, 0.9, 5.0)
+	elif biome == "Fernwood":
+		size = Vector3(14.0, 1.0, 20.0)
+		position = Vector3(-6.0, 0.5, 6.0)
+	var mound := MeshInstance3D.new()
+	mound.name = "Elevation"
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mound.mesh = mesh
+	mound.position = position
+	mound.material_override = _biome_material(biome).duplicate()
+	add_child(mound)
+	var body := StaticBody3D.new()
+	body.name = "ElevationCollision"
+	var collider := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	collider.shape = shape
+	collider.position = position
 	body.add_child(collider)
 	add_child(body)
