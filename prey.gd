@@ -7,6 +7,7 @@ const CREATURE_PROFILES = preload("res://creature_profiles.gd")
 const COMBAT_COMPONENT = preload("res://combat_component.gd")
 
 const VALLEY_LIMIT := 27.0
+var habitat_origin := Vector2.ZERO
 
 var nutrition := 1
 var creature_profile
@@ -55,6 +56,7 @@ func configure(profile) -> void:
 func _ready() -> void:
 	add_to_group("prey")
 	base_position = position
+	habitat_origin = preload("res://jungle_habitat.gd").origin_for(position)
 	phase = randf() * TAU
 	if creature_profile == null:
 		creature_profile = CREATURE_PROFILES.prey_for_tier(nutrition)
@@ -158,8 +160,8 @@ func regroup_herd() -> int:
 
 func begin_journey(destination: Vector3) -> void:
 	journey_target = destination
-	journey_target.x = clampf(journey_target.x, -VALLEY_LIMIT, VALLEY_LIMIT)
-	journey_target.z = clampf(journey_target.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	journey_target.x = clampf(journey_target.x, habitat_origin.x-VALLEY_LIMIT, habitat_origin.x+VALLEY_LIMIT)
+	journey_target.z = clampf(journey_target.z, habitat_origin.y-VALLEY_LIMIT, habitat_origin.y+VALLEY_LIMIT)
 	journey_active = true
 	state = "journey"
 
@@ -222,8 +224,8 @@ func _wander() -> void:
 	rotation.y = -phase
 
 func _clamp_to_valley() -> void:
-	var clamped_x := clampf(global_position.x, -VALLEY_LIMIT, VALLEY_LIMIT)
-	var clamped_z := clampf(global_position.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	var clamped_x := clampf(global_position.x, habitat_origin.x-VALLEY_LIMIT, habitat_origin.x+VALLEY_LIMIT)
+	var clamped_z := clampf(global_position.z, habitat_origin.y-VALLEY_LIMIT, habitat_origin.y+VALLEY_LIMIT)
 	if not is_equal_approx(global_position.x, clamped_x) or not is_equal_approx(global_position.z, clamped_z):
 		global_position.x = clamped_x
 		global_position.z = clamped_z

@@ -1,6 +1,8 @@
 class_name FoodToken
 extends Node3D
 
+signal expired(token: FoodToken)
+
 var creature_profile
 var lifetime := 30.0
 var claimed := false
@@ -8,6 +10,21 @@ var phase := 0.0
 
 func setup(profile) -> void:
 	creature_profile = profile
+	lifetime = 30.0
+	claimed = false
+	phase = 0.0
+	rotation = Vector3.ZERO
+	visible = true
+	set_process(true)
+	if is_inside_tree():
+		add_to_group("food_token")
+
+func deactivate() -> void:
+	claimed = true
+	creature_profile = null
+	visible = false
+	set_process(false)
+	remove_from_group("food_token")
 
 func _ready() -> void:
 	add_to_group("food_token")
@@ -31,7 +48,10 @@ func _process(delta: float) -> void:
 	position.y += sin(phase * 3.0) * 0.002
 	rotation.y += delta
 	if lifetime <= 0.0:
-		queue_free()
+		if expired.has_connections():
+			expired.emit(self)
+		else:
+			queue_free()
 
 func claim() -> Dictionary:
 	if claimed or creature_profile == null:

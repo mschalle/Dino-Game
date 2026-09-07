@@ -11,8 +11,13 @@ var max_energy := 100.0
 var strength := 1
 var growth_scale := 1.0
 var facing := Vector3.FORWARD
+var mouse_steering := false
+
 var dash_cooldown := 0.0
 var dash_timer := 0.0
+var acceleration := 28.0
+var deceleration := 36.0
+var turn_acceleration := 38.0
 
 var body_mesh: MeshInstance3D
 var head_mesh: MeshInstance3D
@@ -26,6 +31,13 @@ var gravity := 24.0
 var imported_model: Node3D
 var imported_model_rest_y := 0.0
 var imported_animation_player: AnimationPlayer
+var imported_native_animations := false
+var imported_action_timer := 0.0
+
+func turn_with_mouse(amount: float) -> void:
+	mouse_steering = true
+	rotation.y = wrapf(rotation.y-amount,-PI,PI)
+	facing = Vector3.FORWARD.rotated(Vector3.UP,rotation.y)
 
 func configure(new_profile: DinosaurProfile) -> void:
 	profile = new_profile
@@ -36,7 +48,18 @@ func configure(new_profile: DinosaurProfile) -> void:
 	energy = max_energy
 
 func _ready() -> void:
+	collision_mask |= 2 # Substantial jungle trunks; ground remains layer one.
 	name = profile.display_name if profile != null else "Young T. rex"
+	var collider := CollisionShape3D.new()
+	collider.name = "BodyCollision"
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.4
+	capsule.height = 1.6
+	collider.shape = capsule
+	collider.position.y = 0.8
+	add_child(collider)
+	floor_snap_length = 0.6
+	floor_max_angle = deg_to_rad(35.0)
 	_create_visuals()
 
 func _physics_process(delta: float) -> void:
@@ -44,15 +67,13 @@ func _physics_process(delta: float) -> void:
 	dash_timer = maxf(0.0, dash_timer - delta)
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := Vector3(input_vector.x, 0.0, input_vector.y)
+	if mouse_steering:
+		direction = direction.rotated(Vector3.UP,rotation.y)
 	var world := get_tree().get_first_node_in_group("world_controller")
 	var floor_y := global_position.y
 	if world != null and world.has_method("_terrain_height_at"):
 		floor_y = world._terrain_height_at(global_position.x, global_position.z)
-	if global_position.y > floor_y + 0.04:
-		velocity.y -= gravity * delta
-	else:
-		global_position.y = floor_y
-		velocity.y = 0.0
+	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
 	if dash_timer > 0.0:
 		direction = facing
 	var sprinting := Input.is_action_pressed("sprint") and energy > 0.0 and direction.length() > 0.0
@@ -62,17 +83,20 @@ func _physics_process(delta: float) -> void:
 	else:
 		energy = minf(max_energy, energy + 16.0 * delta)
 	energy_changed.emit(energy)
-	velocity.x = direction.x * speed
-	velocity.z = direction.z * speed
+	var current_horizontal := Vector2(velocity.x, velocity.z)
+	var desired_horizontal := Vector2(direction.x, direction.z) * speed
+	var response := deceleration
 	if direction.length() > 0.0:
+		response = turn_acceleration if current_horizontal.length() > 0.1 and current_horizontal.normalized().dot(desired_horizontal.normalized()) < 0.45 else acceleration
+	current_horizontal = current_horizontal.move_toward(desired_horizontal, response * delta)
+	velocity.x = current_horizontal.x
+	velocity.z = current_horizontal.y
+	if direction.length() > 0.0 and not mouse_steering:
 		facing = direction.normalized()
-		rotation.y = lerp_angle(rotation.y, atan2(-facing.x, -facing.z), 10.0 * delta)
-	else:
-		velocity.x = move_toward(velocity.x, 0.0, speed)
-		velocity.z = move_toward(velocity.z, 0.0, speed)
+		rotation.y = lerp_angle(rotation.y, atan2(-facing.x, -facing.z), minf(1.0, 7.0 * delta))
 	move_and_slide()
-	if global_position.y < floor_y - 2.0:
-		global_position.y = floor_y
+	if global_position.y < floor_y - 3.0:
+		global_position.y = floor_y + 0.05
 		velocity.y = 0.0
 	_animate_visuals(delta, Vector2(velocity.x, velocity.z).length() / maxf(move_speed, 0.01))
 
@@ -91,20 +115,20 @@ func grow_to(new_scale: float) -> void:
 
 func celebrate_bite() -> void:
 	if imported_animation_player != null:
-		imported_animation_player.play("Eat")
-	if imported_model != null:
+		_play_imported_action("Eat")
+	if imported_model != null and not imported_native_animations:
 		var eat_tween := create_tween()
 		eat_tween.tween_property(imported_model, "rotation:x", -0.16, 0.10)
 		eat_tween.tween_property(imported_model, "rotation:x", 0.0, 0.18)
-	var tween := create_tween()
 	if head_mesh != null:
+		var tween := create_tween()
 		tween.tween_property(head_mesh, "position:z", -0.52, 0.08)
 		tween.tween_property(head_mesh, "position:z", -0.33, 0.12)
 
 func play_combat_animation(power_bite: bool) -> void:
 	if imported_animation_player != null:
-		imported_animation_player.play("Attack")
-	if imported_model != null:
+		_play_imported_action("PowerBite" if power_bite and imported_animation_player.has_animation("PowerBite") else "Attack")
+	if imported_model != null and not imported_native_animations:
 		var imported_tween := create_tween()
 		imported_tween.tween_property(imported_model, "rotation:x", -0.24 if power_bite else -0.14, 0.08)
 		imported_tween.tween_property(imported_model, "rotation:x", 0.0, 0.16)
@@ -172,18 +196,23 @@ func _create_visuals() -> void:
 		_add_leg(Vector3(x, 0.4, -0.18), green, 0.13, 0.62)
 	_finish_visual_setup()
 
-func _try_imported_model() -> bool:
+func _imported_model_paths() -> Array[String]:
 	if profile == null:
-		return false
+		return []
 	var model_paths: Array[String] = []
 	if profile.id == "t_rex":
 		model_paths.append("res://assets/models/dinosaurs/t_rex_hero.glb")
+		model_paths.append("res://assets/models/dinosaurs/t_rex.glb")
 	elif profile.id == "velociraptor":
+		model_paths.append("res://assets/models/dinosaurs/local_downloads/pbr_velociraptor_animated.glb")
 		model_paths.append("res://assets/models/dinosaurs/velociraptor.glb")
 	elif profile.id == "triceratops":
 		model_paths.append("res://assets/models/dinosaurs/triceratops.glb")
 	model_paths.append("res://assets/models/dinosaurs/%s.glb" % profile.id)
-	for model_path in model_paths:
+	return model_paths
+
+func _try_imported_model() -> bool:
+	for model_path in _imported_model_paths():
 		if not ResourceLoader.exists(model_path):
 			continue
 		var model_scene := load(model_path) as PackedScene
@@ -194,16 +223,149 @@ func _try_imported_model() -> bool:
 			continue
 		add_child(imported_model)
 		imported_model.name = "ImportedDinosaurModel"
+		if _visual_bounds(imported_model).size == Vector3.ZERO:
+			imported_model.free()
+			imported_model = null
+			continue
+		_normalize_imported_model()
 		imported_model_rest_y = imported_model.position.y
-		_create_imported_animation_library()
+		if not _try_native_imported_animation_player():
+			_create_imported_animation_library()
 		return true
 	return false
 
+func _normalize_imported_model() -> void:
+	if imported_model.scene_file_path.ends_with("/pbr_velociraptor_animated.glb"):
+		# Supplied rig faces +Z; the controller moves forward along -Z.
+		imported_model.rotation.y += PI
+	var bounds := _visual_bounds(imported_model)
+	if bounds.size == Vector3.ZERO:
+		return
+	var target_height := 2.05 if profile != null and profile.id == "t_rex" else 1.6
+	var scale_factor := target_height / maxf(bounds.size.y, 0.01)
+	imported_model.scale *= scale_factor
+	bounds = _visual_bounds(imported_model)
+	# Bounds are in world space. Convert the desired ground-center point back into
+	# the player's local space before offsetting the imported model. Subtracting
+	# world coordinates here moved models away from players spawned off the origin.
+	var parent_node := imported_model.get_parent() as Node3D
+	if parent_node == null:
+		return
+	var ground_center_world := Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z)
+	var ground_center_local := parent_node.to_local(ground_center_world)
+	imported_model.position -= ground_center_local
+	if imported_model.scene_file_path.ends_with("/pbr_velociraptor_animated.glb"):
+		# This converted rig's bind AABB understates its skinned Idle height.
+		# Rendered skeleton measurement: 6.52425 m after generic normalization.
+		# Fit the visible pose to the existing 1.6 m gameplay convention instead.
+		var skin_fit := 1.6 / 6.52425
+		imported_model.scale *= skin_fit
+		imported_model.position *= skin_fit
+		_prepare_raptor_materials(imported_model)
+
+func _prepare_raptor_materials(node: Node) -> void:
+	if node is MeshInstance3D:
+		for surface in node.mesh.get_surface_count():
+			var source := node.get_active_material(surface) as StandardMaterial3D
+			if source != null:
+				var material := source.duplicate() as StandardMaterial3D
+				# Skin is dielectric; the download's metal response made it black
+				# under the game's Compatibility lighting without reflection probes.
+				material.metallic = 0.0
+				material.metallic_texture = null
+				material.roughness = maxf(material.roughness, 0.65)
+				node.set_surface_override_material(surface, material)
+	for child in node.get_children():
+		_prepare_raptor_materials(child)
+
+func _visual_bounds(node: Node) -> AABB:
+	var has_bounds := false
+	var bounds := AABB()
+	if node is MeshInstance3D:
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.mesh != null:
+			bounds = mesh_instance.global_transform * mesh_instance.get_aabb()
+			has_bounds = true
+	for child in node.get_children():
+		var child_bounds := _visual_bounds(child)
+		if child_bounds.size == Vector3.ZERO:
+			continue
+		if has_bounds:
+			bounds = bounds.merge(child_bounds)
+		else:
+			bounds = child_bounds
+			has_bounds = true
+	if not has_bounds:
+		return AABB()
+	return bounds
+
+func _try_native_imported_animation_player() -> bool:
+	var native_player := _find_animation_player(imported_model)
+	if native_player == null:
+		return false
+	if profile.id == "velociraptor" and imported_model.scene_file_path.ends_with("/pbr_velociraptor_animated.glb"):
+		var aliases := {"Idle": "Raptor_Idle1_Anim", "Walk": "Raptor_Walk_Anim", "Run": "Raptor_Run1_Anim", "Attack": "Raptor_Bite1_Anim", "Eat": "Raptor_EatPrey_Ani", "Hit": "Raptor_Hit1_Anim", "Defeat": "Raptor_Death1_Anim", "Roar": "Raptor_Roar1_Anim"}
+		var library := AnimationLibrary.new()
+		for alias: String in aliases:
+			for source_name in native_player.get_animation_list():
+				if aliases[alias] in source_name:
+					library.add_animation(alias, native_player.get_animation(source_name).duplicate())
+					break
+		# Preserve the source library and its skeletal tracks under their original names.
+		if native_player.has_animation_library(""):
+			var source_library := native_player.get_animation_library("")
+			native_player.remove_animation_library("")
+			native_player.add_animation_library("source", source_library)
+		native_player.add_animation_library("", library)
+	# The baseline rig supplies Attack and Roar; reuse its skeletal bite for
+	# Power Bite rather than replacing every native clip with root motion.
+	if profile.id == "t_rex" and not native_player.has_animation("PowerBite") and native_player.has_animation("Attack"):
+		var library := native_player.get_animation_library("")
+		if library != null:
+			library.add_animation("PowerBite", native_player.get_animation("Attack").duplicate())
+	for animation_name in _required_animation_names():
+		if not native_player.has_animation(animation_name):
+			return false
+	imported_animation_player = native_player
+	imported_native_animations = true
+	for animation_name in _required_animation_names():
+		var clip := imported_animation_player.get_animation(animation_name)
+		clip.loop_mode = Animation.LOOP_LINEAR if animation_name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
+	imported_animation_player.playback_default_blend_time = 0.16
+	imported_animation_player.play("Idle")
+	return true
+
+func _play_imported_action(animation_name: String) -> void:
+	imported_animation_player.speed_scale = 1.0
+	imported_animation_player.play(animation_name, 0.12)
+	imported_action_timer = imported_animation_player.get_animation(animation_name).length
+
+func play_reaction(animation_name: String) -> void:
+	if imported_animation_player != null and imported_animation_player.has_animation(animation_name):
+		_play_imported_action(animation_name)
+
+func _find_animation_player(node: Node) -> AnimationPlayer:
+	if node is AnimationPlayer:
+		return node
+	for child in node.get_children():
+		var found := _find_animation_player(child)
+		if found != null:
+			return found
+	return null
+
+func _required_animation_names() -> Array[String]:
+	var names: Array[String] = ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]
+	if profile != null and profile.id == "t_rex":
+		names.append("Roar")
+		names.append("PowerBite")
+	return names
+
 func _create_imported_animation_library() -> void:
+	imported_native_animations = false
 	imported_animation_player = AnimationPlayer.new()
 	imported_animation_player.name = "AnimationPlayer"
 	var library := AnimationLibrary.new()
-	for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
+	for animation_name in _required_animation_names():
 		var animation := Animation.new()
 		animation.length = 0.8 if animation_name != "Idle" else 2.0
 		animation.loop_mode = Animation.LOOP_LINEAR if animation_name in ["Idle", "Walk", "Run"] else Animation.LOOP_NONE
@@ -332,13 +494,21 @@ func _finish_visual_setup() -> void:
 
 func _animate_visuals(delta: float, speed_ratio: float) -> void:
 	if imported_model != null:
-		visual_time += delta * lerpf(2.0, 12.0, clampf(speed_ratio, 0.0, 1.0))
-		var imported_bob := sin(visual_time) * (0.035 if speed_ratio > 0.08 else 0.012)
-		imported_model.position.y = imported_model_rest_y + imported_bob
+		imported_action_timer = maxf(0.0, imported_action_timer - delta)
+		if not imported_native_animations:
+			visual_time += delta * lerpf(2.0, 12.0, clampf(speed_ratio, 0.0, 1.0))
+			var imported_bob := sin(visual_time) * (0.035 if speed_ratio > 0.08 else 0.012)
+			imported_model.position.y = imported_model_rest_y + imported_bob
 		if imported_animation_player != null:
 			var desired_animation := "Run" if speed_ratio > 1.0 else ("Walk" if speed_ratio > 0.08 else "Idle")
-			if imported_animation_player.current_animation != desired_animation:
-				imported_animation_player.play(desired_animation)
+			if imported_native_animations and profile.id == "t_rex":
+				# Movement at the game's normal speed is a run for a juvenile.
+				desired_animation = "Run" if speed_ratio > 0.65 else ("Walk" if speed_ratio > 0.04 else "Idle")
+			if imported_action_timer <= 0.0:
+				if imported_animation_player.current_animation != desired_animation:
+					imported_animation_player.play(desired_animation, 0.16)
+				var stride_speed := 2.4 if desired_animation == "Run" else 1.1
+				imported_animation_player.speed_scale = clampf(speed_ratio * move_speed / (stride_speed * growth_scale), 0.5, 2.6) if imported_native_animations and profile.id == "t_rex" and desired_animation != "Idle" else 1.0
 		return
 	if body_mesh == null or head_mesh == null or tail_mesh == null:
 		return

@@ -1,0 +1,24 @@
+{
+  "stage": 0,
+  "triangles": 33000,
+  "length_m": 4.799999952316284,
+  "hip_m": 1.5987330675125122,
+  "height_m": 1.8716988563537598,
+  "ground_m": 0.0,
+  "clips": {
+    "Idle": 91,
+    "Walk": 37,
+    "Run": 25,
+    "Attack": 25,
+    "Eat": 46,
+    "Hit": 23,
+    "Stagger": 33,
+    "Defeat": 61,
+    "Roar": 61,
+    "PowerBite": 37,
+    "TurnLeft": 31,
+    "TurnRight": 31
+  },
+  "walk_speed_mps": 0.8893825607009376,
+  "run_speed_mps": 1.7152377956375227
+}

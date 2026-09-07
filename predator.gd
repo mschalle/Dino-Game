@@ -10,6 +10,7 @@ const CREATURE_PROFILES = preload("res://creature_profiles.gd")
 const COMBAT_COMPONENT = preload("res://combat_component.gd")
 
 const VALLEY_LIMIT := 27.0
+var habitat_origin := Vector2.ZERO
 
 var player: PlayerDino
 var strength := 2
@@ -45,6 +46,7 @@ func setup(new_strength: int, new_position: Vector3) -> void:
 	creature_profile = CREATURE_PROFILES.predator_for_tier(new_strength)
 	position = new_position
 	home = new_position
+	habitat_origin = preload("res://jungle_habitat.gd").origin_for(new_position)
 
 func set_player(new_player: PlayerDino) -> void:
 	player = new_player
@@ -95,13 +97,16 @@ func _process(delta: float) -> void:
 			warning_started.emit()
 	elif state == "warn":
 		warning_timer -= delta
-		look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
+		var facing_target := Vector3(player.global_position.x, global_position.y, player.global_position.z)
+		if global_position.distance_squared_to(facing_target) > 0.000001:
+			look_at(facing_target, Vector3.UP)
 		if warning_timer <= 0.0:
 			state = "chase" if can_challenge else "recover"
 	elif state == "chase":
 		var direction := _navigation_direction(player.global_position)
 		global_position += direction * 4.0 * delta
-		look_at(global_position + direction, Vector3.UP)
+		if direction.length_squared() > 0.000001:
+			look_at(global_position + direction, Vector3.UP)
 		if distance < 1.7 and attack_cooldown <= 0.0:
 			attack_cooldown = 1.5
 			bump_attack.emit(creature_profile.attack_damage)
@@ -122,8 +127,8 @@ func scare_away() -> void:
 	state = "recover"
 	if player != null:
 		home = global_position + (global_position - player.global_position).normalized() * 8.0
-		home.x = clampf(home.x, -VALLEY_LIMIT, VALLEY_LIMIT)
-		home.z = clampf(home.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+		home.x = clampf(home.x, habitat_origin.x-VALLEY_LIMIT, habitat_origin.x+VALLEY_LIMIT)
+		home.z = clampf(home.z, habitat_origin.y-VALLEY_LIMIT, habitat_origin.y+VALLEY_LIMIT)
 
 func _process_npc_prey(delta: float) -> void:
 	if prey_target == null or not is_instance_valid(prey_target) or not prey_target.visible:
@@ -139,13 +144,16 @@ func _process_npc_prey(delta: float) -> void:
 		warning_timer = 0.8
 	elif state == "warn":
 		warning_timer -= delta
-		look_at(Vector3(prey_target.global_position.x, global_position.y, prey_target.global_position.z), Vector3.UP)
+		var facing_target := Vector3(prey_target.global_position.x, global_position.y, prey_target.global_position.z)
+		if global_position.distance_squared_to(facing_target) > 0.000001:
+			look_at(facing_target, Vector3.UP)
 		if warning_timer <= 0.0:
 			state = "chase"
 	elif state == "chase":
 		var direction := _navigation_direction(prey_target.global_position)
 		global_position += direction * 3.5 * delta
-		look_at(global_position + direction, Vector3.UP)
+		if direction.length_squared() > 0.000001:
+			look_at(global_position + direction, Vector3.UP)
 		if distance < 1.7 or distance > 20.0:
 			state = "recover"
 	elif state == "recover":
@@ -172,8 +180,8 @@ func _nearest_prey() -> PreyDino:
 
 func begin_passage(destination: Vector3) -> void:
 	passage_target = destination
-	passage_target.x = clampf(passage_target.x, -VALLEY_LIMIT, VALLEY_LIMIT)
-	passage_target.z = clampf(passage_target.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	passage_target.x = clampf(passage_target.x, habitat_origin.x-VALLEY_LIMIT, habitat_origin.x+VALLEY_LIMIT)
+	passage_target.z = clampf(passage_target.z, habitat_origin.y-VALLEY_LIMIT, habitat_origin.y+VALLEY_LIMIT)
 	passage_return_home = home
 	passage_active = true
 	state = "passage"
@@ -234,10 +242,10 @@ func _wander() -> void:
 	global_position = home + Vector3(sin(phase * 0.35) * 2.0, 0.0, cos(phase * 0.28) * 2.0)
 
 func _clamp_to_valley() -> void:
-	global_position.x = clampf(global_position.x, -VALLEY_LIMIT, VALLEY_LIMIT)
-	global_position.z = clampf(global_position.z, -VALLEY_LIMIT, VALLEY_LIMIT)
-	home.x = clampf(home.x, -VALLEY_LIMIT, VALLEY_LIMIT)
-	home.z = clampf(home.z, -VALLEY_LIMIT, VALLEY_LIMIT)
+	global_position.x = clampf(global_position.x, habitat_origin.x-VALLEY_LIMIT, habitat_origin.x+VALLEY_LIMIT)
+	global_position.z = clampf(global_position.z, habitat_origin.y-VALLEY_LIMIT, habitat_origin.y+VALLEY_LIMIT)
+	home.x = clampf(home.x, habitat_origin.x-VALLEY_LIMIT, habitat_origin.x+VALLEY_LIMIT)
+	home.z = clampf(home.z, habitat_origin.y-VALLEY_LIMIT, habitat_origin.y+VALLEY_LIMIT)
 
 func _create_visuals() -> void:
 	if _try_imported_model():

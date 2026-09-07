@@ -7,12 +7,13 @@ const HABITAT_SPAWN_RULES = preload("res://habitat_spawn_rules.gd")
 const HUD_SCENE = preload("res://game_hud.gd")
 const PROFILES = preload("res://dinosaur_profiles.gd")
 const SOUND_FEEDBACK = preload("res://sound_feedback.gd")
-const FOOD_TOKEN = preload("res://food_token.gd")
+const FOOD_TOKEN_POOL = preload("res://food_token_pool.gd")
 const WORLD_CHUNK_PROFILES = preload("res://world_chunk_profiles.gd")
 const ENVIRONMENT_QUALITY = preload("res://environment_quality.gd")
 const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
 const ENDLESS_CHALLENGE_SYSTEM = preload("res://endless_challenge_system.gd")
+const TERRAIN = preload("res://valley_terrain.gd")
 
 const SAFE_SPAWN := Vector3(0, 0, 7)
 const VALLEY_LIMIT := 210.0
@@ -24,7 +25,14 @@ var profile: DinosaurProfile
 var mode := "adventure"
 var player: PlayerDino
 var camera: Camera3D
+var camera_arm: SpringArm3D
+var camera_panning := false
+var camera_orbit_yaw := 0.0
+var camera_pitch := -0.476
+var camera_zoom := 1.0
+const MOUSE_SENSITIVITY := 0.003
 var run_root: Node3D
+var food_token_pool: Node3D
 var food_spawner: FoodSpawner
 var hud: GameHUD
 var selection_screen: CanvasLayer
@@ -49,6 +57,8 @@ var sounds
 var environment_time := 0.0
 var valley_sky_material: ProceduralSkyMaterial
 var valley_environment: Environment
+var atmosphere: Node3D
+var announced_biome := ""
 var animated_trees: Array[MeshInstance3D] = []
 var waterfall_layers: Array[MeshInstance3D] = []
 var fireflies: Array[MeshInstance3D] = []
@@ -139,9 +149,14 @@ func _process(delta: float) -> void:
 		food_spawner.set_respawn_cooldown(world_stream.active_respawn_cooldown())
 		food_spawner.set_tier_respawn_cooldowns(world_stream.active_tier_respawn_cooldowns())
 		world_stream.prune_inactive_actors(self)
+		world_stream.restore_pooled_actors(self)
+		_sync_jungle_predators()
+		world_stream.update_actor_simulation(self)
 		world_stream.capture_population(self)
 		food_spawner.set_persisted_herd_records(world_stream.active_herd_records())
 		var metrics: Dictionary = world_stream.runtime_metrics(self)
+		metrics["pooled_tokens"] = food_token_pool.available.size()
+		metrics["active_tokens"] = get_tree().get_nodes_in_group("food_token").size()
 		metrics["environment_quality"] = ENVIRONMENT_QUALITY.active_id
 		metrics["weather_enabled"] = ENVIRONMENT_QUALITY.weather_enabled
 		metrics["day_cycle_enabled"] = bool((save_system.data.get("settings", {}) as Dictionary).get("day_cycle_enabled", true))
@@ -160,27 +175,27 @@ func _create_world() -> void:
 	var sky := Sky.new()
 	var sky_material := ProceduralSkyMaterial.new()
 	valley_sky_material = sky_material
-	sky_material.sky_top_color = Color("#263d58")
-	sky_material.sky_horizon_color = Color("#c2b79f")
-	sky_material.ground_bottom_color = Color("#1b242b")
-	sky_material.ground_horizon_color = Color("#8f806c")
+	sky_material.sky_top_color = Color("#6f7f89")
+	sky_material.sky_horizon_color = Color("#b8b5aa")
+	sky_material.ground_bottom_color = Color("#b7b5aa")
+	sky_material.ground_horizon_color = Color("#c3c0b4")
 	sky_material.sun_angle_max = 18.0
 	sky.sky_material = sky_material
 	env.sky = sky
-	env.background_color = Color("#8f806c")
+	env.background_color = Color("#a5a69d")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("#d7d8cb")
-	env.ambient_light_energy = 0.62
+	env.ambient_light_color = Color("#c5c8bd")
+	env.ambient_light_energy = 0.5
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.12
+	env.tonemap_exposure = 0.92
 	env.ssao_enabled = true
 	env.ssao_radius = 2.2
 	env.ssao_intensity = 1.25
 	env.ssao_power = 1.35
 	env.fog_enabled = true
-	env.fog_light_color = Color("#a9a18e")
-	env.fog_density = 0.0045
-	env.fog_sky_affect = 0.32
+	env.fog_light_color = Color("#b5b4aa")
+	env.fog_density = 0.0032
+	env.fog_sky_affect = 0.18
 	env.fog_height = 1.5
 	env.fog_height_density = 0.018
 	environment.environment = env
@@ -188,32 +203,22 @@ func _create_world() -> void:
 	var light := DirectionalLight3D.new()
 	light.name = "ValleySun"
 	light.rotation_degrees = Vector3(-52, -35, 0)
-	light.light_color = Color("#ffe2b0")
-	light.light_energy = 1.35
+	light.light_color = Color("#d6d0bd")
+	light.light_energy = 0.95
 	light.shadow_enabled = true
 	light.directional_shadow_max_distance = float(ENVIRONMENT_QUALITY.preset(save_system.data.get("settings", {})).get("shadow_distance", 90.0))
 	light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
 	light.light_angular_distance = 1.8
 	add_child(light)
-	var ground := MeshInstance3D.new()
-	ground.name = "LegacyValleyGround"
-	ground.mesh = _build_valley_mesh()
-	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	ground.visibility_range_begin = 0.0
-	ground.visibility_range_end = 260.0
-	ground.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-	var terrain_material := _material(Color("#78b957"))
-	terrain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	terrain_material.vertex_color_use_as_albedo = true
-	ground.material_override = terrain_material
-	add_child(ground)
-	_add_authored_hero_valley()
-	_create_terrain_collision()
-	_create_navigation_region()
-	for index in 30:
-		_create_scenery_piece(index)
+	atmosphere = preload("res://valley_atmosphere.gd").new()
+	atmosphere.name = "ValleyAtmosphere"
+	add_child(atmosphere)
+	atmosphere.configure(env, sky_material, light)
+	# Nest Basin owns the sole visible surface, collider and baked navigation.
+	# The old hero GLB stays on disk until it is reauthored for the shared sampler.
+	# Starting-region vegetation is owned by deterministic chunk dressing.
 	_create_habitat_landmarks()
-	_create_waterfall()
+	# River Wetlands owns the natural water feature; no prototype water boxes.
 	_create_fireflies()
 	_apply_authored_environment_quality()
 	_create_distant_mountains()
@@ -222,57 +227,37 @@ func _create_world() -> void:
 func _create_distant_mountains() -> void:
 	var mountain_material := _material(Color("#4e5c5b"))
 	mountain_material.roughness = 1.0
+	mountain_material.albedo_color.a = 0.48
+	mountain_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	for index in 8:
 		var peak := MeshInstance3D.new()
 		peak.name = "DistantMountain_%d" % index
 		var mesh := PrismMesh.new()
-		mesh.size = Vector3(26.0 + float(index % 3) * 7.0, 18.0 + float(index % 4) * 4.0, 16.0 + float(index % 2) * 5.0)
+		mesh.size = Vector3(44.0 + float(index % 3) * 10.0, 7.0 + float(index % 4) * 2.0, 18.0 + float(index % 2) * 5.0)
 		peak.mesh = mesh
 		var angle := TAU * float(index) / 8.0
-		peak.position = Vector3(cos(angle) * 178.0, mesh.size.y * 0.35 - 1.0, sin(angle) * 178.0)
+		peak.position = Vector3(cos(angle) * 285.0, mesh.size.y * 0.28 - 4.0, sin(angle) * 285.0)
 		peak.rotation.y = angle + 0.4
 		peak.material_override = mountain_material
 		peak.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		peak.visibility_range_begin = 80.0
-		peak.visibility_range_end = 320.0
-		peak.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+		peak.visibility_range_begin = 160.0
+		peak.visibility_range_end = 360.0
+		peak.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		add_child(peak)
 		distant_mountains.append(peak)
-
-func _add_authored_hero_valley() -> void:
-	var terrain_path := "res://assets/environment/hero_valley.glb"
-	if not ResourceLoader.exists(terrain_path):
-		return
-	var packed := load(terrain_path) as PackedScene
-	if packed == null:
-		return
-	var authored := packed.instantiate() as Node3D
-	if authored == null:
-		return
-	authored.name = "AuthoredHeroValley"
-	authored.position = Vector3.ZERO
-	add_child(authored)
-	# The imported surface now matches collision; avoid overlapping terrain faces.
-	var fallback := get_node_or_null("LegacyValleyGround") as MeshInstance3D
-	if fallback != null:
-		fallback.hide()
 
 func _update_world_stream() -> void:
 	if world_stream == null or player == null:
 		return
-	world_stream.update_player_chunk(world_stream.grid_position_at_world_position(player.global_position))
+	world_stream.defer_decoration = game_active
+	world_stream.update_player_position(player.global_position)
+	world_stream.advance_decoration()
+	world_stream.update_visual_tiers(self,world_stream.grid_position_at_world_position(player.global_position))
 
 func _on_chunk_activated(chunk_id: String) -> void:
 	var instance: Node3D = world_stream.instantiate_chunk(chunk_id, self)
 	if instance != null:
 		chunk_instances[chunk_id] = instance
-		if game_active and hud != null:
-			var chunk_profile: RefCounted = world_stream.profile_for_chunk(chunk_id)
-			if chunk_profile != null:
-				hud.show_message("Entering %s" % chunk_profile.biome)
-				if sounds != null:
-					sounds.play_environment_cue(chunk_profile.biome)
-					sounds.play_landmark_discovery()
 
 func _on_chunk_deactivated(chunk_id: String) -> void:
 	_cancel_world_event("the habitat unloaded")
@@ -316,6 +301,7 @@ func _create_scenery_piece(index: int) -> void:
 		piece.position.y = 0.25
 	piece.position.x = randf_range(-26, 26)
 	piece.position.z = randf_range(-26, 26)
+	piece.position.y += _terrain_height_at(piece.position.x, piece.position.z)
 	add_child(piece)
 
 func _create_waterfall() -> void:
@@ -329,7 +315,8 @@ func _create_waterfall() -> void:
 		waterfall.visibility_range_end = 150.0
 		waterfall.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 		waterfall.material_override = _glow_material(Color("#72d8f2").lightened(index * 0.04))
-		waterfall.position = Vector3(18.3 + index * 0.72, 2.0 - index * 0.12, -4)
+		waterfall.position = Vector3(18.3 + index * 0.72, 2.0 - index * 0.12 + _terrain_height_at(19.0, -4.0), -4)
+		waterfall.set_meta("rest_y", waterfall.position.y)
 		waterfall.set_meta("flow_offset", float(index) * 1.7)
 		add_child(waterfall)
 		waterfall_layers.append(waterfall)
@@ -382,20 +369,22 @@ func _create_fireflies() -> void:
 
 func _animate_environment(delta: float) -> void:
 	var settings: Dictionary = save_system.data.get("settings", {})
-	if bool(settings.get("day_cycle_enabled", true)):
-		var sun := get_node_or_null("ValleySun") as DirectionalLight3D
-		if sun != null:
-			var cycle := fmod(environment_time, 240.0) / 240.0
-			var arc := sin(cycle * TAU) * 0.5 + 0.5
-			sun.rotation_degrees = Vector3(-28.0 - arc * 38.0, -35.0 + cycle * 24.0, 0.0)
-			sun.light_energy = 0.72 + arc * 0.65
-			if valley_sky_material != null:
-				var dawn := Color("#d28d78").lerp(Color("#263d58"), arc)
-				valley_sky_material.sky_top_color = dawn.darkened(0.12)
-				valley_sky_material.sky_horizon_color = Color("#e0b28c").lerp(Color("#c2b79f"), arc)
-			if valley_environment != null:
-				valley_environment.fog_light_color = Color("#7b6472").lerp(Color("#a9a18e"), arc)
-				valley_environment.fog_density = 0.0062 - arc * 0.002
+	if atmosphere != null:
+		var region := "Nest Basin"
+		var point := player.global_position if player != null else SAFE_SPAWN
+		if world_stream != null:
+			var chunk = world_stream.profile_for_chunk(world_stream.chunk_id_at_world_position(point))
+			if chunk != null:
+				region = chunk.biome
+		atmosphere.advance(delta,region,point,bool(settings.get("day_cycle_enabled",true)))
+		if game_active and region != announced_biome:
+			announced_biome = region
+			if hud != null:
+				hud.show_message("Entering %s" % region)
+			if sounds != null:
+				sounds.play_environment_cue(region)
+		elif not game_active:
+			announced_biome = ""
 	if not ENVIRONMENT_QUALITY.reduced_motion:
 		for tree in animated_trees:
 			if is_instance_valid(tree):
@@ -403,7 +392,7 @@ func _animate_environment(delta: float) -> void:
 		for waterfall in waterfall_layers:
 			if is_instance_valid(waterfall):
 				var flow := sin(environment_time * 3.0 + float(waterfall.get_meta("flow_offset", 0.0)))
-				waterfall.position.y = 2.0 + flow * 0.1
+				waterfall.position.y = float(waterfall.get_meta("rest_y")) + flow * 0.1
 				waterfall.scale.y = 1.0 + flow * 0.035
 				var material := waterfall.material_override as StandardMaterial3D
 				if material != null:
@@ -480,7 +469,10 @@ func _collection_summary() -> String:
 	return "Collection: %d color%s unlocked  |  %d badge%s earned" % [unlocked, "" if unlocked == 1 else "s", badges, "" if badges == 1 else "s"]
 func _input(event: InputEvent) -> void:
 	if waiting_rebind.is_empty():
+		_handle_mouse_controls(event)
 		return
+	if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_RIGHT,MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+		return # Reserved for camera controls.
 	var accepted := event is InputEventKey or event is InputEventMouseButton or event is InputEventJoypadButton
 	if not accepted or not event.is_pressed():
 		return
@@ -498,6 +490,41 @@ func _input(event: InputEvent) -> void:
 		button.text = "%s: %s" % [_action_label(waiting_rebind), _event_name(event)]
 	waiting_rebind = ""
 	get_viewport().set_input_as_handled()
+
+func _handle_mouse_controls(event: InputEvent) -> void:
+	if not game_active or get_tree().paused or player==null:
+		return
+	if event is InputEventJoypadMotion and absf(event.axis_value)>0.2:
+		player.mouse_steering = false
+		camera_panning = false
+		camera_orbit_yaw = 0.0
+		return
+	if event is InputEventKey and event.pressed:
+		for action in ["move_forward","move_back","move_left","move_right"]:
+			if event.is_action(action):
+				player.turn_with_mouse(0.0)
+	if Input.mouse_mode!=Input.MOUSE_MODE_CAPTURED:
+		return
+	if event is InputEventMouseButton:
+		if event.button_index==MOUSE_BUTTON_RIGHT:
+			camera_panning = event.pressed
+			if not camera_panning:
+				camera_orbit_yaw = 0.0
+			get_viewport().set_input_as_handled()
+		elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+			camera_zoom = clampf(camera_zoom+(-0.1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else 0.1),0.45,1.8)
+			get_viewport().set_input_as_handled()
+	elif event is InputEventMouseMotion:
+		if camera_panning:
+			camera_orbit_yaw = wrapf(camera_orbit_yaw-event.relative.x*MOUSE_SENSITIVITY,-PI,PI)
+			camera_pitch = clampf(camera_pitch-event.relative.y*MOUSE_SENSITIVITY,deg_to_rad(-75),deg_to_rad(-8))
+		else:
+			player.turn_with_mouse(event.relative.x*MOUSE_SENSITIVITY)
+		get_viewport().set_input_as_handled()
+
+func _notification(what: int) -> void:
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT and game_active:
+		_set_paused(true)
 
 func _show_controls_overlay() -> void:
 	if controls_overlay != null and is_instance_valid(controls_overlay):
@@ -547,6 +574,8 @@ func _apply_saved_bindings() -> void:
 		var event := _deserialize_input_event(bindings[action] as Dictionary)
 		if event == null:
 			continue
+		if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_RIGHT,MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+			continue # Old right-click ability bindings cannot consume camera input.
 		for existing in InputMap.action_get_events(action):
 			if (event is InputEventKey and existing is InputEventKey) or (event is InputEventMouseButton and existing is InputEventMouseButton) or (event is InputEventJoypadButton and existing is InputEventJoypadButton):
 				InputMap.action_erase_event(action, existing)
@@ -727,6 +756,14 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	run_root = Node3D.new()
 	run_root.name = "Active Run"
 	add_child(run_root)
+	camera_panning = false
+	camera_orbit_yaw = 0.0
+	camera_pitch = -atan2(4.9,9.5)
+	camera_zoom = 1.0
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	food_token_pool = FOOD_TOKEN_POOL.new()
+	food_token_pool.name = "FoodTokenPool"
+	run_root.add_child(food_token_pool)
 	session = GameSession.new()
 	session.start(profile, mode)
 	session.growth.stage_changed.connect(_on_stage_changed)
@@ -758,21 +795,37 @@ func _start_run(new_profile: DinosaurProfile, new_mode: String) -> void:
 	hud.show_message("Explore, eat, grow, and rise!")
 
 func _create_player() -> void:
-	player = PLAYER.new()
+	player = preload("res://researched_trex_player.gd").new() if profile.id=="t_rex" and "--researched-trex" in OS.get_cmdline_user_args() else PLAYER.new()
 	player.configure(profile)
 	player.position = SAFE_SPAWN
+	player.position.y = _terrain_height_at(SAFE_SPAWN.x, SAFE_SPAWN.z)
 	run_root.add_child(player)
+	camera_arm = SpringArm3D.new()
+	player.mouse_steering = true
+	camera_arm.collision_mask = 3
+	camera_arm.name = "CameraArm"
+	camera_arm.position = player.position + Vector3.UP * 0.9
+	camera_arm.rotation.x = -atan2(4.9, 9.5)
+	camera_arm.spring_length = Vector2(4.9, 9.5).length()
+	camera_arm.margin = 0.2
+	var camera_shape := SphereShape3D.new()
+	camera_shape.radius = 0.25
+	camera_arm.shape = camera_shape
+	camera_arm.add_excluded_object(player.get_rid())
+	run_root.add_child(camera_arm)
 	camera = Camera3D.new()
 	camera.current = true
 	camera.fov = 68.0
 	camera.near = 0.08
 	camera.far = 340.0
-	camera.position = SAFE_SPAWN + Vector3(0, 5.8, 9.5)
-	run_root.add_child(camera)
+	camera.position.z = camera_arm.spring_length
+	camera_arm.add_child(camera)
 
 func _create_food_spawner() -> void:
 	food_spawner = FOOD_SPAWNER.new()
 	run_root.add_child(food_spawner)
+	if world_stream != null:
+		food_spawner.set_spawn_plan(world_stream.active_spawn_plan())
 	food_spawner.configure(mode == "endless")
 	food_spawner.set_player(player)
 	food_spawner.set_respawn_gate_factory(_prey_respawn_ready)
@@ -786,6 +839,35 @@ func _create_predators() -> void:
 			continue
 		var predator := PREDATOR.new()
 		predator.setup(int(data[0]), data[1] as Vector3)
+		predator.set_player(player)
+		predator.set_respawn_gate(func() -> bool: return _predator_respawn_ready(predator))
+		predator.bump_attack.connect(_on_predator_attack)
+		predator.warning_started.connect(_on_predator_warning)
+		predator.attack_landed.connect(_on_predator_attack_landed)
+		predator.creature_defeated.connect(_on_creature_defeated)
+		run_root.add_child(predator)
+		predators.append(predator)
+	_sync_jungle_predators()
+
+func _sync_jungle_predators() -> void:
+	if run_root == null or player == null or world_stream == null:
+		return
+	var habitat = preload("res://jungle_habitat.gd")
+	for index in range(1, 4):
+		var chunk_id: String = habitat.IDS[index]
+		if not world_stream.is_simulated(chunk_id):
+			continue
+		var exists := false
+		for actor in get_tree().get_nodes_in_group("predator"):
+			if actor.get_meta("jungle_habitat", "") == chunk_id and not actor.is_queued_for_deletion():
+				exists = true
+		var count := get_tree().get_nodes_in_group("prey").size() + get_tree().get_nodes_in_group("predator").size()
+		if exists or count >= 25:
+			continue
+		var predator := PREDATOR.new()
+		var point: Vector2 = habitat.PREDATOR_EDGES[index]
+		predator.setup(2 if index == 3 else 1, Vector3(point.x, _terrain_height_at(point.x,point.y), point.y))
+		predator.set_meta("jungle_habitat", chunk_id)
 		predator.set_player(player)
 		predator.set_respawn_gate(func() -> bool: return _predator_respawn_ready(predator))
 		predator.bump_attack.connect(_on_predator_attack)
@@ -926,7 +1008,10 @@ func _claim_food_token(token) -> bool:
 		quest_system.record("finale", "valley_rival")
 	hud.show_message("Victory token! +%d Growth Points" % int(reward["growth"]))
 	sounds.play_food()
-	token.queue_free()
+	if token.get_parent()==food_token_pool:
+		food_token_pool.release(token)
+	else:
+		token.queue_free()
 	return true
 
 func _on_creature_defeated(creature: Node3D, creature_profile: RefCounted) -> void:
@@ -935,10 +1020,7 @@ func _on_creature_defeated(creature: Node3D, creature_profile: RefCounted) -> vo
 		var role := "predator" if creature_profile.role == "predator" else "prey"
 		if not defeated_chunk.is_empty():
 			world_stream.set_tier_respawn_cooldown(defeated_chunk, role, creature_profile.tier, creature_profile.respawn_delay)
-	var token := FOOD_TOKEN.new()
-	token.setup(creature_profile)
-	token.global_position = creature.global_position
-	run_root.add_child(token)
+	food_token_pool.acquire(creature_profile,creature.global_position)
 	session.record_target_defeated(creature_profile.id, creature_profile.tier)
 	hud.show_message("%s dropped a glowing victory token!" % creature_profile.display_name)
 
@@ -986,8 +1068,9 @@ func _use_special_ability() -> void:
 	if not _ability_ready(ability):
 		return
 	if ability.id == "roar":
+		player.play_reaction("Roar")
 		for predator in predators:
-			if player.global_position.distance_to(predator.global_position) < 10.0:
+			if is_instance_valid(predator) and predator.is_inside_tree() and player.global_position.distance_to(predator.global_position) < 10.0:
 				predator.scare_away()
 		hud.show_message("ROAR! The valley heard you!")
 	elif ability.id == "pack_call":
@@ -1013,7 +1096,8 @@ func _use_scent_trail() -> void:
 	for index in scent_dots.size():
 		var fraction := float(index + 1) / float(scent_dots.size() + 1)
 		scent_dots[index].global_position = player.global_position.lerp(target, fraction)
-		scent_dots[index].global_position.y = 0.55
+		var dot_position := scent_dots[index].global_position
+		scent_dots[index].global_position.y = _terrain_height_at(dot_position.x, dot_position.z) + 0.55
 	scent_timer = 6.0 if profile.id == "velociraptor" else 4.5
 	_set_scent_visible(true)
 	_start_cooldown(ability)
@@ -1100,6 +1184,7 @@ func _create_eggs(center: Vector3) -> void:
 		egg.mesh = mesh
 		egg.material_override = _glow_material(Color("#fff0a8"))
 		egg.position = center + offset + Vector3.UP * 0.38
+		egg.position.y = _terrain_height_at(egg.position.x, egg.position.z) + 0.38
 		run_root.add_child(egg)
 		quest_props.append(egg)
 
@@ -1139,7 +1224,10 @@ func _complete_adventure() -> void:
 
 func _on_predator_attack(damage: float) -> void:
 	var final_damage := damage * 0.3 if shield_timer > 0.0 else damage
+	var health_before := session.health
 	session.take_damage(final_damage)
+	if session.health > 0.0 and session.health < health_before:
+		player.play_reaction("Hit")
 	hud.show_message("A larger dinosaur bumped you! Find space to recover.")
 	sounds.play_warning()
 
@@ -1154,10 +1242,24 @@ func _on_predator_attack_landed() -> void:
 
 func _on_player_defeated() -> void:
 	_cancel_world_event("you returned to the safe nest")
+	var defeated_player: PlayerDino = player
+	var defeated_session: GameSession = session
+	game_active = false
+	player.velocity = Vector3.ZERO
+	player.set_physics_process(false)
+	player.play_reaction("Defeat")
+	await get_tree().create_timer(0.8, false).timeout
+	# Restart/selection may replace the run while this animation is playing.
+	if not is_instance_valid(defeated_player) or player != defeated_player or session != defeated_session:
+		return
 	_show_dust_transition()
 	player.position = SAFE_SPAWN
+	player.position.y = _terrain_height_at(SAFE_SPAWN.x, SAFE_SPAWN.z) + 0.05
 	player.velocity = Vector3.ZERO
 	session.respawn_at_stage_floor()
+	player.imported_action_timer = 0.0
+	player.set_physics_process(true)
+	game_active = true
 	hud.show_message("Back at the safe nest. Current-stage growth was reset.")
 	sounds.play_warning()
 
@@ -1252,7 +1354,7 @@ func _clear_quest_objects() -> void:
 
 func _danger_nearby() -> bool:
 	for predator in predators:
-		if is_instance_valid(predator) and player.global_position.distance_to(predator.global_position) < 9.0:
+		if is_instance_valid(predator) and predator.is_inside_tree() and player.global_position.distance_to(predator.global_position) < 9.0:
 			return true
 	return false
 
@@ -1261,7 +1363,8 @@ func _update_endless_difficulty() -> void:
 		return
 	var awareness := 1.0 + minf(session.survival_time / 600.0, 0.75)
 	for predator in predators:
-		predator.awareness_multiplier = awareness
+		if is_instance_valid(predator):
+			predator.awareness_multiplier = awareness
 
 func _update_world_events(delta: float) -> void:
 	if mode != "endless" or world_events == null or food_spawner == null:
@@ -1311,7 +1414,7 @@ func _start_herd_journey() -> void:
 func _start_predator_passage() -> void:
 	var traveler: ValleyPredator = null
 	for predator in predators:
-		if is_instance_valid(predator) and predator.visible and (traveler == null or predator.strength < traveler.strength):
+		if is_instance_valid(predator) and predator.is_inside_tree() and predator.visible and (traveler == null or predator.strength < traveler.strength):
 			traveler = predator
 	if traveler == null:
 		hud.show_message("Predator Passage could not find a nearby traveler.")
@@ -1344,7 +1447,7 @@ func _event_is_eligible(event_id: String) -> bool:
 	return false
 
 func _event_actor_is_reachable(actor: Node3D) -> bool:
-	return world_stream == null or not world_stream.chunk_id_at_world_position(actor.global_position).is_empty()
+	return actor.is_inside_tree() and (world_stream == null or not world_stream.chunk_id_at_world_position(actor.global_position).is_empty())
 
 func _cancel_world_event(reason: String) -> void:
 	if world_events == null or world_events.active_event_id.is_empty():
@@ -1408,18 +1511,36 @@ func _update_hud() -> void:
 		hud.update_view(session, player, quest_system, _cooldown_text())
 
 func _follow_player(delta: float) -> void:
-	var desired := player.global_position + Vector3(0, 5.8, 9.5)
-	camera.global_position = camera.global_position.lerp(desired, minf(delta * 5.0, 1.0))
+	var camera_pivot := player.global_position + Vector3.UP * (0.8 + player.growth_scale * 0.22)
+	if player.has_method("candidate_camera_height"):
+		camera_pivot = player.global_position+Vector3.UP*float(player.call("candidate_camera_height"))
+	var follow_weight := 1.0 if ENVIRONMENT_QUALITY.reduced_motion else minf(1.0, 10.0 * delta)
+	if camera_arm.global_position.distance_to(camera_pivot) > 18.0:
+		camera_arm.global_position = camera_pivot
+	else:
+		camera_arm.global_position = camera_arm.global_position.lerp(camera_pivot, follow_weight)
+	# SpringArm retracts immediately; extending gradually avoids an obstruction pop.
+	var full_length := Vector2(4.4 + player.growth_scale * 0.5, 8.4 + player.growth_scale * 1.1).length()
+	if player.has_method("candidate_camera_distance"):
+		full_length = float(player.call("candidate_camera_distance"))
+	full_length *= camera_zoom
+	var camera_weight := 1.0 if ENVIRONMENT_QUALITY.reduced_motion else 1.0-exp(-12.0*delta)
+	var yaw := player.rotation.y+camera_orbit_yaw if player.mouse_steering else camera_orbit_yaw
+	camera_arm.rotation.y = lerp_angle(camera_arm.rotation.y,yaw,camera_weight)
+	camera_arm.rotation.x = lerpf(camera_arm.rotation.x,camera_pitch,camera_weight)
+	camera_arm.spring_length = minf(full_length, camera_arm.get_hit_length() + camera_arm.margin + delta * 8.0)
 	var look_ahead := Vector3.ZERO if ENVIRONMENT_QUALITY.reduced_motion else player.velocity
 	look_ahead.y = 0.0
 	if look_ahead.length() > 0.1:
-		look_ahead = look_ahead.normalized() * 1.3
-	camera.look_at(player.global_position + Vector3(0, 0.9, 0) + look_ahead, Vector3.UP)
+		look_ahead = look_ahead.normalized() * 0.75
+	camera.look_at(camera_pivot + look_ahead, Vector3.UP)
 
 func _keep_player_in_valley() -> void:
 	player.position.x = clampf(player.position.x, -VALLEY_LIMIT, VALLEY_LIMIT)
 	player.position.z = clampf(player.position.z, -VALLEY_LIMIT, VALLEY_LIMIT)
-	player.position.y = _terrain_height_at(player.position.x, player.position.z)
+	if player.position.y < _terrain_height_at(player.position.x, player.position.z) - 3.0:
+		player.position = Vector3(SAFE_SPAWN.x, _terrain_height_at(SAFE_SPAWN.x, SAFE_SPAWN.z), SAFE_SPAWN.z)
+		player.velocity = Vector3.ZERO
 
 func _ground_world_actors() -> void:
 	for group_name in ["prey", "predator", "plant_food", "food_token"]:
@@ -1431,7 +1552,10 @@ func _ground_world_actors() -> void:
 				world_stream.confine_actor(actor, SAFE_SPAWN)
 			if actor.global_position.y < -6.0:
 				if actor.is_in_group("food_token"):
-					actor.queue_free()
+					if actor.get_parent()==food_token_pool:
+						food_token_pool.release(actor)
+					else:
+						actor.queue_free()
 					continue
 				actor.global_position = SAFE_SPAWN
 			actor.global_position.y = _terrain_height_at(actor.global_position.x, actor.global_position.z)
@@ -1439,97 +1563,12 @@ func _ground_world_actors() -> void:
 				(actor as ValleyPredator).home.y = _terrain_height_at((actor as ValleyPredator).home.x, (actor as ValleyPredator).home.z)
 
 func _terrain_height_at(x: float, z: float) -> float:
-	var point := Vector2(x, z)
-	var height := 0.0
-	height += 2.0 * exp(-point.distance_squared_to(Vector2(-13, 11)) / 85.0)
-	height += 4.0 * exp(-point.distance_squared_to(Vector2(14, -12)) / 70.0)
-	height += 6.0 * exp(-point.distance_squared_to(Vector2(0, -18)) / 62.0)
-	height += 3.5 * exp(-point.distance_squared_to(Vector2(17, 17)) / 95.0)
-	height -= 1.4 * exp(-point.distance_squared_to(Vector2(19, -4)) / 32.0)
-	return height
-
-func _build_valley_mesh() -> ArrayMesh:
-	var surface := SurfaceTool.new()
-	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var cells := 30
-	var step := 2.0
-	for z_index in cells:
-		for x_index in cells:
-			var x0 := -30.0 + x_index * step
-			var z0 := -30.0 + z_index * step
-			var a := Vector3(x0, _terrain_height_at(x0, z0), z0)
-			var b := Vector3(x0 + step, _terrain_height_at(x0 + step, z0), z0)
-			var c := Vector3(x0 + step, _terrain_height_at(x0 + step, z0 + step), z0 + step)
-			var d := Vector3(x0, _terrain_height_at(x0, z0 + step), z0 + step)
-			for vertex in [a, c, b, a, d, c]:
-				var elevation_tint := clampf((vertex.y + 1.0) / 7.0, 0.0, 1.0)
-				var terrain_color := Color("#72ae50").lerp(Color("#b5d96a"), elevation_tint)
-				var zone := Vector2(vertex.x, vertex.z)
-				if zone.distance_to(Vector2(19.0, -4.0)) < 6.5:
-					terrain_color = terrain_color.lerp(Color("#6bb8a0"), 0.45)
-				elif zone.distance_to(Vector2(0.0, -18.0)) < 8.5:
-					terrain_color = terrain_color.lerp(Color("#c88b55"), 0.32)
-				elif zone.distance_to(Vector2(16.0, 16.0)) < 8.0:
-					terrain_color = terrain_color.lerp(Color("#c97862"), 0.25)
-				surface.set_color(terrain_color)
-				surface.set_uv(Vector2((vertex.x + 30.0) / 60.0, (vertex.z + 30.0) / 60.0))
-				surface.add_vertex(vertex)
-	surface.generate_normals()
-	return surface.commit()
-
-func _create_terrain_collision() -> void:
-	var body := StaticBody3D.new()
-	body.name = "TerrainSafetyCollision"
-	var shape := CollisionShape3D.new()
-	# Use the same triangles as the visible terrain so slopes and hills are solid.
-	# The broad safety volume remains unnecessary now that actors have recovery logic.
-	var triangles := PackedVector3Array()
-	var cells := 30
-	var step := 2.0
-	for z_index in cells:
-		for x_index in cells:
-			var x0 := -30.0 + x_index * step
-			var z0 := -30.0 + z_index * step
-			var a := Vector3(x0, _terrain_height_at(x0, z0), z0)
-			var b := Vector3(x0 + step, _terrain_height_at(x0 + step, z0), z0)
-			var c := Vector3(x0 + step, _terrain_height_at(x0 + step, z0 + step), z0 + step)
-			var d := Vector3(x0, _terrain_height_at(x0, z0 + step), z0 + step)
-			triangles.append_array([a, c, b, a, d, c])
-	var terrain_shape := ConcavePolygonShape3D.new()
-	terrain_shape.data = triangles
-	shape.shape = terrain_shape
-	body.add_child(shape)
-	add_child(body)
-
-func _create_navigation_region() -> void:
-	var region := NavigationRegion3D.new()
-	region.name = "ValleyNavigation"
-	var navigation_mesh := NavigationMesh.new()
-	navigation_mesh.agent_radius = 0.8
-	navigation_mesh.agent_max_slope = 35.0
-	navigation_mesh.agent_max_climb = 0.5
-	var vertices := PackedVector3Array()
-	var cells := 30
-	var step := 2.0
-	for z_index in cells + 1:
-		for x_index in cells + 1:
-			var x := -30.0 + x_index * step
-			var z := -30.0 + z_index * step
-			vertices.append(Vector3(x, _terrain_height_at(x, z) + 0.03, z))
-	navigation_mesh.vertices = vertices
-	for z_index in cells:
-		for x_index in cells:
-			var row := cells + 1
-			var a := z_index * row + x_index
-			var b := a + 1
-			var c := a + row + 1
-			var d := a + row
-			navigation_mesh.add_polygon(PackedInt32Array([a, c, b]))
-			navigation_mesh.add_polygon(PackedInt32Array([a, d, c]))
-	region.navigation_mesh = navigation_mesh
-	add_child(region)
+	return TERRAIN.height_at(x, z)
 
 func _set_paused(paused: bool) -> void:
+	camera_panning = false
+	camera_orbit_yaw = 0.0
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if paused else Input.MOUSE_MODE_CAPTURED
 	get_tree().paused = paused
 	if hud != null:
 		hud.set_paused(paused)
@@ -1561,7 +1600,10 @@ func _run_summary_text() -> String:
 	return "Run summary: %.1f min | %d food | %d %s" % [session.survival_time / 60.0, session.food_eaten, session.defeat_count, defeat_word]
 
 func _cleanup_run() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	camera_panning = false
 	game_active = false
+	world_stream.clear_actor_pool()
 	get_tree().paused = false
 	if hud != null and is_instance_valid(hud):
 		hud.free()
@@ -1569,14 +1611,20 @@ func _cleanup_run() -> void:
 		run_root.free()
 	hud = null
 	run_root = null
+	food_token_pool = null
 	player = null
 	camera = null
+	camera_arm = null
 	active_marker = null
 	scent_dots.clear()
 	quest_props.clear()
 	predators.clear()
 
 func _ensure_default_inputs() -> void:
+	for event in InputMap.action_get_events("power_bite"):
+		if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_RIGHT:
+			InputMap.action_erase_event("power_bite",event)
+	_ensure_key_action("power_bite",KEY_E)
 	_ensure_key_action("special_ability", KEY_R)
 	_ensure_key_action("volume_down", KEY_F2)
 	_ensure_key_action("volume_up", KEY_F3)
@@ -1654,6 +1702,8 @@ func _toggle_day_cycle() -> void:
 	hud.show_message("Daylight cycle: %s" % ("ON" if bool(settings["day_cycle_enabled"]) else "OFF"))
 
 func _apply_environment_settings_to_loaded_chunks() -> void:
+	# Inactive scenes must not return with stale quality/weather settings.
+	world_stream._clear_cached_chunks()
 	for chunk in chunk_instances.values():
 		if not is_instance_valid(chunk):
 			continue
@@ -1667,7 +1717,9 @@ func _apply_environment_settings_to_loaded_chunks() -> void:
 				weather_particles.emitting = ENVIRONMENT_QUALITY.weather_enabled and not ENVIRONMENT_QUALITY.reduced_motion
 				weather_particles.amount = maxi(4, int(float(weather_particles.get_meta("base_particle_count", 18)) * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))))
 		var dressing: Node = chunk.get_node_or_null("AssetPackDressing")
-		if dressing != null:
+		if dressing != null and preload("res://jungle_habitat.gd").contains(str(chunk.get_meta("biome", ""))):
+			preload("res://jungle_dressing.gd").apply_quality(chunk)
+		elif dressing != null:
 			var prop_distance := 95.0 * float(ENVIRONMENT_QUALITY.preset({}).get("foliage", 1.0))
 			for visual in dressing.find_children("*", "GeometryInstance3D", true, false):
 				var prop_visual := visual as GeometryInstance3D
@@ -1700,9 +1752,10 @@ func _apply_authored_environment_quality() -> void:
 	for firefly in fireflies:
 		if is_instance_valid(firefly):
 			firefly.visibility_range_end = 42.0 + foliage_scale * 28.0
-	var mountain_distance := 170.0 + foliage_scale * 100.0
+	var mountain_distance := 260.0 + foliage_scale * 120.0
 	for mountain in distant_mountains:
 		if is_instance_valid(mountain):
+			mountain.visibility_range_begin = 160.0
 			mountain.visibility_range_end = mountain_distance
 
 func _ensure_key_action(action: String, keycode: Key) -> void:

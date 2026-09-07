@@ -217,7 +217,7 @@ func _create_help_panel() -> void:
 	_style_text(heading, Color("#fff3a6"), 5)
 	help_panel.add_child(heading)
 	var body := Label.new()
-	body.text = "Explore the naturalistic valley and follow the MAIN QUEST marker.\n\nEat the food your dinosaur likes to restore Hunger and earn Growth Points.\nGrow from Hatchling to Adult to unlock stronger abilities.\n\nSmall dinosaurs flee, larger predators warn and may attack, and the safe nest restores you after a defeat.\nCombat uses readable impact feedback without extreme gore.\n\nWASD / Left Stick: Move    Shift: Sprint\nLeft Click / X: Eat    Right Click / B: Primary Ability\nQ / LB: Scent Trail    Space / A: Dash    R / Y: Special Ability\nF2/F3: Effects volume    F4: Environment quality    F5: Weather    F6: Reduced motion    F7: Daylight cycle    Esc / Start: Pause    F1: Close this guide"
+	body.text = "Explore the naturalistic valley and follow the MAIN QUEST marker.\n\nEat suitable food to restore Hunger and earn Growth Points. Grow from Hatchling to Adult to unlock abilities.\nPredators warn before attacking; defeat returns you to the safe nest.\n\nMouse: Turn dinosaur    W/S: Forward/Backward    A/D: Strafe\nHold Right Mouse: Camera look-around    Wheel: Zoom\nLeft Click / X: Eat or Attack    E / B: Primary Ability\nLeft Stick: Move    Shift: Sprint    Q / LB: Scent\nSpace / A: Dash    R / Y: Special Ability\nF2/F3: Volume    F4: Quality    F5: Weather    F6: Reduced Motion\nF7: Daylight    Esc / Start: Pause    F1: Close this guide"
 	body.position = Vector2(340, 190)
 	body.size = Vector2(600, 390)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -292,7 +292,7 @@ func _create_status_panel() -> void:
 	controls_backdrop.size = Vector2(1220, 38)
 	add_child(controls_backdrop)
 	var controls := Label.new()
-	controls.text = "WASD / Stick: Move    Shift: Sprint    Left Click: Eat    Right Click: Ability    Q: Scent    Space: Dash    R: Special    F4: Quality    F5: Weather    F6: Motion    F7: Daylight    Esc: Pause"
+	controls.text = "W/S: Forward/Back   A/D: Strafe   Mouse: Turn   RMB Hold: Look   Wheel: Zoom   LMB: Eat/Attack   E: Ability   Shift: Sprint   Esc: Pause"
 	controls.position = Vector2(10, 5)
 	controls.size = Vector2(1200, 28)
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

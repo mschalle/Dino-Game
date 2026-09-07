@@ -126,7 +126,7 @@ func _play_biome_ambience(biome: String) -> void:
 	var target_db := linear_to_db(effects_volume * 0.22)
 	if ambience_player.playing:
 		ambience_fade = create_tween()
-		ambience_fade.tween_property(ambience_player, "volume_db", -48.0, 0.18)
+		ambience_fade.tween_property(ambience_player, "volume_db", -48.0, 1.0)
 		ambience_fade.tween_callback(_start_ambience_stream.bind(stream, target_db))
 	else:
 		_start_ambience_stream(stream, target_db)
@@ -136,7 +136,7 @@ func _start_ambience_stream(stream: AudioStream, target_db: float) -> void:
 	ambience_player.volume_db = -48.0
 	ambience_player.play()
 	ambience_fade = create_tween()
-	ambience_fade.tween_property(ambience_player, "volume_db", target_db, 0.35)
+	ambience_fade.tween_property(ambience_player, "volume_db", target_db, 1.0)
 
 func play_landmark_discovery() -> void:
 	_queue_tone(294.0, 0.12, 0.08)

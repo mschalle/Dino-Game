@@ -2,32 +2,66 @@ class_name WorldStreamManager
 extends RefCounted
 
 const HABITAT_RULES = preload("res://habitat_spawn_rules.gd")
+const TERRAIN = preload("res://valley_terrain.gd")
 
 signal chunk_activated(chunk_id: String)
 signal chunk_deactivated(chunk_id: String)
 
 var chunks: Array = []
 var active_ids: Dictionary = {}
+var simulated_ids: Dictionary = {}
 var scene_instances: Dictionary = {}
+var distant_instances: Dictionary = {}
 var connection_links: Dictionary = {}
 var chunk_states: Dictionary = {}
+var activation_samples: Array[Dictionary] = []
+const CACHE_LIMIT := 8
+var cached_instances: Dictionary = {}
+var cache_owners: Dictionary = {}
+var actor_pool: Array[Dictionary] = []
+const ACTOR_POOL_LIMIT := 25
+var defer_decoration := false
+var decoration_samples: Array[Dictionary] = []
 var active_radius := 1
 var chunk_world_size := 60.0
+const UNLOAD_MARGIN := 6.0
 
 func configure(chunk_profiles: Array, radius: int = 1) -> void:
+	_clear_cached_chunks()
+	clear_actor_pool()
+	for instance in distant_instances.values():
+		if is_instance_valid(instance):
+			instance.free()
+	distant_instances.clear()
 	chunks = chunk_profiles.duplicate()
 	active_radius = maxi(0, radius)
 	active_ids.clear()
+	simulated_ids.clear()
 	scene_instances.clear()
 	connection_links.clear()
 	chunk_states.clear()
+	activation_samples.clear()
+	decoration_samples.clear()
 
-func update_player_chunk(grid_position: Vector2i) -> void:
+func update_player_position(world_position: Vector3) -> void:
+	update_player_chunk(grid_position_at_world_position(world_position),world_position)
+
+func update_player_chunk(grid_position: Vector2i, world_position: Variant = null) -> void:
 	var next_active: Dictionary = {}
+	simulated_ids.clear()
 	for chunk in chunks:
+		var offset: Vector2i = chunk.grid_position-grid_position
 		var distance := maxi(abs(chunk.grid_position.x - grid_position.x), abs(chunk.grid_position.y - grid_position.y))
 		if distance <= active_radius:
 			next_active[chunk.chunk_id] = true
+			if absi(offset.x)+absi(offset.y)<=1:
+				simulated_ids[chunk.chunk_id] = true
+		elif world_position is Vector3 and active_ids.has(chunk.chunk_id):
+			var center := Vector3(chunk.grid_position.x*chunk_world_size,0,chunk.grid_position.y*chunk_world_size)
+			var separation: Vector3 = world_position-center
+			var unload_distance := (float(active_radius)+0.5)*chunk_world_size+UNLOAD_MARGIN
+			if maxf(absf(separation.x),absf(separation.z))<=unload_distance:
+				next_active[chunk.chunk_id] = true
 	for chunk in chunks:
 		var was_active := active_ids.has(chunk.chunk_id)
 		var should_be_active := next_active.has(chunk.chunk_id)
@@ -39,6 +73,61 @@ func update_player_chunk(grid_position: Vector2i) -> void:
 
 func is_active(chunk_id: String) -> bool:
 	return active_ids.has(chunk_id)
+
+func advance_decoration() -> void:
+	# One phase globally per frame, not one phase for every newly loaded chunk.
+	for chunk_id in scene_instances:
+		var instance: Node3D = scene_instances[chunk_id]
+		if not instance.decoration_steps.is_empty():
+			var started := Time.get_ticks_usec()
+			var phase: StringName = instance.decoration_steps[0].get_method()
+			instance.build_next_decoration()
+			if instance.decoration_steps.is_empty():
+				instance.apply_chunk_profile(_find_chunk(chunk_id))
+			instance.apply_visual_tier(str(instance.get_meta("stream_tier","full")),true)
+			decoration_samples.append({"chunk_id":chunk_id,"phase":str(phase),"build_ms":float(Time.get_ticks_usec()-started)/1000.0,"completed_usec":Time.get_ticks_usec()})
+			if decoration_samples.size()>32:
+				decoration_samples.pop_front()
+			return
+
+func update_visual_tiers(parent: Node, grid: Vector2i) -> void:
+	for chunk_id in scene_instances:
+		var profile := _find_chunk(chunk_id)
+		scene_instances[chunk_id].apply_visual_tier("full" if profile.grid_position==grid else "adjacent")
+	var desired: Dictionary = {}
+	for profile in chunks:
+		var offset: Vector2i = profile.grid_position-grid
+		if maxi(absi(offset.x),absi(offset.y))<=active_radius+1 and not is_active(profile.chunk_id):
+			desired[profile.chunk_id] = profile
+	for chunk_id in distant_instances.keys():
+		if not desired.has(chunk_id):
+			distant_instances[chunk_id].queue_free()
+			distant_instances.erase(chunk_id)
+	# Bound distant construction to one presentation-only scene per update.
+	for chunk_id in desired:
+		if distant_instances.has(chunk_id):
+			continue
+		var instance := preload("res://distant_chunk_visual.gd").new()
+		instance.configure(desired[chunk_id])
+		parent.add_child(instance)
+		distant_instances[chunk_id] = instance
+		break
+
+func is_simulated(chunk_id: String) -> bool:
+	return simulated_ids.has(chunk_id)
+
+func update_actor_simulation(scene_root: Node) -> void:
+	for group_name in ["prey","predator"]:
+		for actor in scene_root.get_tree().get_nodes_in_group(group_name):
+			if not actor is Node3D or actor.is_queued_for_deletion():
+				continue
+			var simulate := is_simulated(chunk_id_at_world_position(actor.global_position))
+			if not simulate and not actor.has_meta("stream_process_mode"):
+				actor.set_meta("stream_process_mode",actor.process_mode)
+				actor.process_mode = Node.PROCESS_MODE_DISABLED
+			elif simulate and actor.has_meta("stream_process_mode"):
+				actor.process_mode = int(actor.get_meta("stream_process_mode"))
+				actor.remove_meta("stream_process_mode")
 
 func profile_for_chunk(chunk_id: String) -> RefCounted:
 	return _find_chunk(chunk_id)
@@ -66,7 +155,7 @@ func grid_position_at_world_position(world_position: Vector3) -> Vector2i:
 func active_spawn_plan() -> Array[Dictionary]:
 	var plan: Array[Dictionary] = []
 	for chunk in chunks:
-		if not is_active(chunk.chunk_id):
+		if not is_simulated(chunk.chunk_id):
 			continue
 		var rules := HABITAT_RULES.for_biome(chunk.biome)
 		for tier in rules.get("prey_tiers", []):
@@ -102,9 +191,46 @@ func prune_inactive_actors(scene_root: Node) -> int:
 			var actor := node as Node3D
 			if actor == null or is_world_position_navigable(actor.global_position):
 				continue
-			actor.queue_free()
+			var habitat_id := ""
+			var grid := grid_position_at_world_position(actor.global_position)
+			for profile in chunks:
+				if profile.grid_position==grid:
+					habitat_id = profile.chunk_id
+			if (actor is PreyDino or actor is ValleyPredator) and not habitat_id.is_empty() and not actor.is_queued_for_deletion():
+				var parent := actor.get_parent()
+				parent.remove_child(actor)
+				var owner := preload("res://cached_chunk_owner.gd").new()
+				owner.chunk = actor
+				parent.add_child(owner)
+				actor_pool.append({"actor":actor,"parent":parent,"owner":owner,"habitat":habitat_id})
+				if actor_pool.size()>ACTOR_POOL_LIMIT:
+					var oldest: Dictionary = actor_pool.pop_front()
+					if is_instance_valid(oldest.owner):
+						oldest.owner.free()
+			else:
+				actor.queue_free()
 			removed += 1
 	return removed
+
+func restore_pooled_actors(scene_root: Node, limit: int = 25) -> void:
+	var count := scene_root.get_tree().get_nodes_in_group("prey").size()+scene_root.get_tree().get_nodes_in_group("predator").size()
+	for record in actor_pool.duplicate():
+		if not is_instance_valid(record.actor) or not is_instance_valid(record.parent):
+			actor_pool.erase(record)
+			continue
+		if count>=limit or not is_simulated(record.habitat) or not record.parent.is_inside_tree() or record.parent.is_queued_for_deletion():
+			continue
+		record.owner.chunk = null
+		record.owner.free()
+		record.parent.add_child(record.actor)
+		actor_pool.erase(record)
+		count += 1
+
+func clear_actor_pool() -> void:
+	for record in actor_pool:
+		if is_instance_valid(record.owner):
+			record.owner.free()
+	actor_pool.clear()
 
 func capture_population(scene_root: Node) -> void:
 	var counts: Dictionary = {}
@@ -181,6 +307,12 @@ func active_herd_records() -> Dictionary:
 
 func runtime_metrics(scene_root: Node) -> Dictionary:
 	var npc_count := 0
+	var pending_decoration := 0
+	var full_chunks := 0
+	for instance in scene_instances.values():
+		pending_decoration += instance.decoration_steps.size()
+		if instance.get_meta("stream_tier","full")=="full":
+			full_chunks += 1
 	for group_name in ["prey", "predator"]:
 		npc_count += scene_root.get_tree().get_nodes_in_group(group_name).size()
 	var budget := active_population_budget()
@@ -190,6 +322,13 @@ func runtime_metrics(scene_root: Node) -> Dictionary:
 	var biome_names := active_biome_names()
 	return {
 		"active_chunks": active_ids.size(),
+		"simulated_chunks": simulated_ids.size(),
+		"cached_chunks": cached_instances.size(),
+		"pooled_actors": actor_pool.size(),
+		"pending_decoration_phases": pending_decoration,
+		"distant_chunk_scenes": distant_instances.size(),
+		"full_chunk_scenes": full_chunks,
+		"adjacent_chunk_scenes": scene_instances.size()-full_chunks,
 		"active_biomes": biome_names,
 		"active_biome_count": biome_names.size(),
 		"loaded_chunk_scenes": scene_instances.size(),
@@ -248,6 +387,10 @@ func active_tier_respawn_cooldowns() -> Dictionary:
 	return result
 
 func tick_respawn_cooldowns(delta: float) -> void:
+	for record in actor_pool:
+		if is_instance_valid(record.actor):
+			record.actor.defeat_timer = maxf(0.0,record.actor.defeat_timer-delta)
+			record.actor.combat.tick(delta)
 	for chunk in chunks:
 		var cooldown := get_respawn_cooldown(chunk.chunk_id)
 		var state := get_chunk_state(chunk.chunk_id)
@@ -275,9 +418,32 @@ func _nearest_active_chunk_position(world_position: Vector3) -> Variant:
 func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 	if scene_instances.has(chunk_id):
 		return scene_instances[chunk_id]
+	if cached_instances.has(chunk_id) and not is_instance_valid(cached_instances[chunk_id]):
+		cached_instances.erase(chunk_id)
+		cache_owners.erase(chunk_id)
+	if cached_instances.has(chunk_id):
+		var started := Time.get_ticks_usec()
+		var reused: Node3D = cached_instances[chunk_id]
+		cached_instances.erase(chunk_id)
+		var owner: Node = cache_owners[chunk_id]
+		owner.chunk = null
+		owner.free()
+		cache_owners.erase(chunk_id)
+		parent.add_child(reused)
+		if reused.has_method("apply_chunk_state"):
+			reused.apply_chunk_state(get_chunk_state(chunk_id))
+		if reused.has_node("AssetPackDressing") and preload("res://jungle_habitat.gd").contains(str(reused.get_meta("biome",""))):
+			preload("res://jungle_dressing.gd").apply_quality(reused)
+		scene_instances[chunk_id] = reused
+		_create_neighbor_links(_find_chunk(chunk_id),parent)
+		activation_samples.append({"chunk_id":chunk_id,"reused":true,"build_ms":float(Time.get_ticks_usec()-started)/1000.0,"completed_usec":Time.get_ticks_usec()})
+		if activation_samples.size() > 32:
+			activation_samples.pop_front()
+		return reused
 	for chunk in chunks:
 		if chunk.chunk_id != chunk_id or not chunk.has_scene():
 			continue
+		var started := Time.get_ticks_usec()
 		var scene := load(chunk.scene_path) as PackedScene
 		if scene == null:
 			return null
@@ -285,6 +451,7 @@ func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 		if instance == null:
 			return null
 		instance.position = Vector3(chunk.grid_position.x * chunk_world_size, 0.0, chunk.grid_position.y * chunk_world_size)
+		instance.set_meta("defer_decoration",defer_decoration)
 		parent.add_child(instance)
 		if instance.has_method("apply_chunk_profile"):
 			instance.apply_chunk_profile(chunk)
@@ -292,6 +459,9 @@ func instantiate_chunk(chunk_id: String, parent: Node) -> Node3D:
 			instance.apply_chunk_state(get_chunk_state(chunk_id))
 		scene_instances[chunk_id] = instance
 		_create_neighbor_links(chunk, parent)
+		activation_samples.append({"chunk_id":chunk_id,"build_ms":float(Time.get_ticks_usec()-started)/1000.0,"core":instance.get_meta("core_timings",{}),"completed_usec":Time.get_ticks_usec()})
+		if activation_samples.size() > 32:
+			activation_samples.pop_front()
 		return instance
 	return null
 
@@ -334,8 +504,28 @@ func release_chunk(chunk_id: String) -> void:
 		return
 	var instance: Node3D = scene_instances[chunk_id]
 	if is_instance_valid(instance):
-		instance.queue_free()
+		var parent := instance.get_parent()
+		# Detached chunks have no physics, navigation, rendering or processing cost.
+		# World-owned cache holders free detached scenes on eviction or teardown.
+		parent.remove_child(instance)
+		cached_instances[chunk_id] = instance
+		var owner := preload("res://cached_chunk_owner.gd").new()
+		owner.chunk = instance
+		parent.add_child(owner)
+		cache_owners[chunk_id] = owner
+		while cached_instances.size() > CACHE_LIMIT:
+			var oldest: String = cached_instances.keys()[0]
+			cache_owners[oldest].free()
+			cache_owners.erase(oldest)
+			cached_instances.erase(oldest)
 	scene_instances.erase(chunk_id)
+
+func _clear_cached_chunks() -> void:
+	for owner in cache_owners.values():
+		if is_instance_valid(owner):
+			owner.free()
+	cache_owners.clear()
+	cached_instances.clear()
 
 func _create_neighbor_links(chunk: RefCounted, parent: Node) -> void:
 	for neighbor_id in chunk.neighbor_ids:
@@ -349,6 +539,12 @@ func _create_neighbor_links(chunk: RefCounted, parent: Node) -> void:
 		link.name = "Link_%s" % key
 		var start := Vector3(chunk.grid_position.x * chunk_world_size, 0.05, chunk.grid_position.y * chunk_world_size)
 		var end := Vector3(neighbor.grid_position.x * chunk_world_size, 0.05, neighbor.grid_position.y * chunk_world_size)
+		var midpoint := (start + end) * 0.5
+		var direction := (end - start).normalized()
+		start = midpoint - direction * 1.5
+		end = midpoint + direction * 1.5
+		start.y = TERRAIN.height_at(start.x, start.z) + 0.05
+		end.y = TERRAIN.height_at(end.x, end.z) + 0.05
 		link.start_position = start
 		link.end_position = end
 		link.enter_cost = 1.0

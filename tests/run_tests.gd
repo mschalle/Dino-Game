@@ -5,6 +5,7 @@ const WORLD_STREAM_MANAGER = preload("res://world_stream_manager.gd")
 const HABITAT_SPAWN_RULES = preload("res://habitat_spawn_rules.gd")
 const WORLD_EVENT_SYSTEM = preload("res://world_event_system.gd")
 const ENDLESS_CHALLENGE_SYSTEM = preload("res://endless_challenge_system.gd")
+const TERRAIN = preload("res://valley_terrain.gd")
 
 var failures := 0
 
@@ -13,6 +14,7 @@ func _init() -> void:
 
 func _run_tests() -> void:
 	_test_profiles()
+	_test_trex_hero_model_asset()
 	_test_all_playable_species()
 	_test_species_asset_and_save_isolation()
 	_test_all_species_endless_unlocks()
@@ -95,6 +97,10 @@ func _test_profiles() -> void:
 	for profile in profiles:
 		var dino := PlayerDino.new()
 		dino.configure(profile)
+		if profile.id == "t_rex":
+			# Production spawns are away from the world origin. Keep this non-zero so
+			# imported-model normalization cannot accidentally use world coordinates.
+			dino.position = Vector3(17.0, 3.0, -11.0)
 		root.add_child(dino)
 		_check((dino.imported_model != null) or (dino.tail_mesh != null and dino.leg_meshes.size() >= 4), "%s needs a complete dinosaur silhouette" % profile.id)
 		if dino.imported_model != null:
@@ -102,6 +108,15 @@ func _test_profiles() -> void:
 			if dino.imported_animation_player != null:
 				for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
 					_check(dino.imported_animation_player.has_animation(animation_name), "%s should expose %s animation" % [profile.id, animation_name])
+				if profile.id == "t_rex":
+					for animation_name in ["Roar", "PowerBite"]:
+						_check(dino.imported_animation_player.has_animation(animation_name), "T. rex hero should expose native %s animation" % animation_name)
+					_check(dino.imported_native_animations, "T. rex must animate the imported skeleton instead of substituting rigid wrapper motion")
+					var trex_bounds := dino._visual_bounds(dino.imported_model)
+					_check(trex_bounds.size.y >= 1.8 and trex_bounds.size.y <= 2.3, "T. rex Hatchling visual height should fit juvenile camera framing")
+					_check(maxf(trex_bounds.size.x, trex_bounds.size.z) >= trex_bounds.size.y * 1.5, "T. rex must retain a long dinosaur silhouette instead of collapsing around its rig")
+					_check(absf(trex_bounds.get_center().x - dino.global_position.x) <= 0.2 and absf(trex_bounds.get_center().z - dino.global_position.z) <= 0.2, "T. rex visual should be centered on its gameplay capsule")
+					_check(absf(trex_bounds.position.y - dino.global_position.y) <= 0.05, "T. rex feet should sit at ground level")
 		dino.free()
 	var prey := PreyDino.new()
 	prey.setup("Animation Test Prey", 1, Color.WHITE)
@@ -119,6 +134,45 @@ func _test_profiles() -> void:
 		for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat"]:
 			_check(predator.imported_animation_player.has_animation(animation_name), "Imported predator should expose %s animation" % animation_name)
 	predator.free()
+
+func _test_trex_hero_model_asset() -> void:
+	var scene := load("res://assets/models/dinosaurs/t_rex_hero.glb") as PackedScene
+	_check(scene != null, "The realistic T. rex hero GLB should import as a scene")
+	if scene == null:
+		return
+	var instance := scene.instantiate()
+	root.add_child(instance)
+	var stats := {"triangles": 0, "materials": {}, "animations": {}}
+	_collect_model_stats(instance, stats)
+	for material_name in ["Body", "Accent", "Eyes", "Teeth", "Claws", "Mouth"]:
+		_check((stats["materials"] as Dictionary).has(material_name), "T. rex hero should expose %s material slot" % material_name)
+	for animation_name in ["Idle", "Walk", "Run", "Attack", "Eat", "Hit", "Defeat", "Roar", "PowerBite"]:
+		_check((stats["animations"] as Dictionary).has(animation_name), "T. rex hero GLB should contain %s animation" % animation_name)
+	_check(int(stats["triangles"]) >= 25000 and int(stats["triangles"]) <= 35000, "T. rex hero should stay in the 25k-35k triangle benchmark range, got %d" % int(stats["triangles"]))
+	instance.free()
+
+func _collect_model_stats(node: Node, stats: Dictionary) -> void:
+	if node is MeshInstance3D:
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.mesh != null:
+			for surface_index in mesh_instance.mesh.get_surface_count():
+				var arrays := mesh_instance.mesh.surface_get_arrays(surface_index)
+				var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+				var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+				if not indices.is_empty():
+					stats["triangles"] = int(stats["triangles"]) + int(indices.size() / 3)
+				else:
+					stats["triangles"] = int(stats["triangles"]) + int(vertices.size() / 3)
+			for surface_index in mesh_instance.mesh.get_surface_count():
+				var material := mesh_instance.mesh.surface_get_material(surface_index)
+				if material != null and not material.resource_name.is_empty():
+					(stats["materials"] as Dictionary)[material.resource_name] = true
+	if node is AnimationPlayer:
+		var animation_player := node as AnimationPlayer
+		for animation_name in animation_player.get_animation_list():
+			(stats["animations"] as Dictionary)[str(animation_name)] = true
+	for child in node.get_children():
+		_collect_model_stats(child, stats)
 
 func _test_all_playable_species() -> void:
 	var save := preload("res://save_system.gd").new()
@@ -370,16 +424,17 @@ func _test_controller_bindings() -> void:
 	for event in InputMap.action_get_events("eat"):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 			eat_mouse_ok = true
-	var bite_mouse_ok := false
+	var bite_key_ok := false
 	for event in InputMap.action_get_events("power_bite"):
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
-			bite_mouse_ok = true
+		if event is InputEventKey and event.physical_keycode == KEY_E:
+			bite_key_ok = true
+		_check(not (event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_RIGHT), "Right click is reserved for camera look")
 	var skip_gamepad_ok := false
 	for event in InputMap.action_get_events("skip_challenge"):
 		if event is InputEventJoypadButton and event.button_index == JOY_BUTTON_RIGHT_SHOULDER:
 			skip_gamepad_ok = true
 	_check(eat_mouse_ok, "Eat should remain bound to left click")
-	_check(bite_mouse_ok, "Power Bite should remain bound to right click")
+	_check(bite_key_ok, "Primary ability should be bound to E")
 	_check(skip_gamepad_ok, "Right shoulder should bind no-reward challenge skipping")
 	input_bootstrap.free()
 	var accept := InputEventJoypadButton.new()
@@ -502,23 +557,26 @@ func _test_world_chunks() -> void:
 		_check(bool(chunk.spawn_table.get("plants", false)) == bool(rules.get("plants", false)), "%s plant availability must match habitat rules" % chunk.chunk_id)
 		var scene := load(chunk.scene_path) as PackedScene
 		var visual_root := scene.instantiate()
+		visual_root.position = Vector3(chunk.grid_position.x * 60.0, 0.0, chunk.grid_position.y * 60.0)
 		root.add_child(visual_root)
 		visual_root.apply_chunk_profile(chunk)
 		_check(visual_root.get_child_count() >= 1, "%s should create a visible landmark mesh" % chunk.chunk_id)
 		_check(visual_root.get_node_or_null("Ground") != null, "%s should create a ground mesh" % chunk.chunk_id)
 		_check(visual_root.get_node_or_null("GroundCollision") != null, "%s should create ground collision" % chunk.chunk_id)
 		var ground := visual_root.get_node_or_null("Ground") as MeshInstance3D
-		_check(ground.material_override.albedo_color.is_equal_approx(chunk.ground_color), "%s ground palette should be applied to the terrain mesh" % chunk.chunk_id)
+		_check(ground.mesh is ArrayMesh and ground.material_override is ShaderMaterial, "%s terrain uses heightfield geometry and its habitat shader" % chunk.chunk_id)
+		_check(ground.material_override.get_shader_parameter("biome_palette") == preload("res://reserve_ground.gd").palette(), "%s terrain uses the shared biome lookup" % chunk.chunk_id)
 		_check(ground.visibility_range_end > ground.visibility_range_begin, "%s ground mesh should define a bounded visibility range" % chunk.chunk_id)
 		_check(ground.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s ground mesh should cast shadows" % chunk.chunk_id)
 		var ground_shape := visual_root.get_node_or_null("GroundCollision/GroundShape") as CollisionShape3D
-		_check(ground_shape != null and ground_shape.shape is BoxShape3D and (ground_shape.shape as BoxShape3D).size.x >= 60.0 and (ground_shape.shape as BoxShape3D).size.z >= 60.0, "%s ground collision should cover its visible pad" % chunk.chunk_id)
+		_check(ground_shape != null and ground_shape.shape is ConcavePolygonShape3D, "%s collision must follow terrain triangles" % chunk.chunk_id)
+		_check(visual_root.get_node_or_null("ElevationCollision") == null and visual_root.get_node_or_null("Elevation") == null, "%s biome must have no box hill or box hill collider" % chunk.chunk_id)
 		_check(is_equal_approx(float(visual_root.get_meta("fog_density", 0.0)), chunk.fog_density), "%s fog density should be exposed on the visual root" % chunk.chunk_id)
 		var biome_environment := visual_root.get_node_or_null("BiomeEnvironment") as WorldEnvironment
 		_check(biome_environment != null and biome_environment.environment != null and biome_environment.environment.fog_enabled, "%s should create biome fog" % chunk.chunk_id)
 		if biome_environment != null and biome_environment.environment != null:
 			_check(is_equal_approx(biome_environment.environment.fog_density, chunk.fog_density), "%s fog should match its profile" % chunk.chunk_id)
-			_check(biome_environment.environment.ambient_light_energy > 0.0, "%s should provide child-friendly ambient lighting" % chunk.chunk_id)
+			_check(biome_environment.environment.ambient_light_energy > 0.0, "%s should provide ambient illumination" % chunk.chunk_id)
 			_check(biome_environment.environment.background_color != Color.BLACK, "%s should derive a visible background palette" % chunk.chunk_id)
 			_check(biome_environment.environment.background_color.is_equal_approx(chunk.ground_color.lightened(0.45)), "%s environment palette should follow its ground profile" % chunk.chunk_id)
 			_check(biome_environment.environment.fog_light_color.is_equal_approx(chunk.ground_color.lightened(0.3)), "%s fog light color should follow its ground profile" % chunk.chunk_id)
@@ -533,29 +591,49 @@ func _test_world_chunks() -> void:
 		_check(silhouette.mesh != null and silhouette.get_aabb().size.x > 0.0 and silhouette.get_aabb().size.y > 0.0 and silhouette.get_aabb().size.z > 0.0, "%s landmark silhouette should have positive visual dimensions" % chunk.chunk_id)
 		_check(absf(silhouette.position.x) <= 30.0 and absf(silhouette.position.z) <= 30.0, "%s landmark silhouette should remain inside its streamed chunk bounds" % chunk.chunk_id)
 		var vegetation := visual_root.get_node_or_null("Vegetation") as MultiMeshInstance3D
-		_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
+		if preload("res://jungle_habitat.gd").contains(chunk.biome):
+			var batches := visual_root.get_node("AssetPackDressing").get_children()
+			_check(batches.size() > 10, "%s should create spatially divided jungle batches" % chunk.chunk_id)
+			for batch in batches:
+				_check(batch is MultiMeshInstance3D and batch.multimesh.instance_count > 0, "Jungle batches must contain mesh instances")
+				_check(batch.visibility_range_begin == 0.0, "Jungle ground cover must remain visible near the player")
+		else:
+			_check(vegetation != null and vegetation.multimesh != null and vegetation.multimesh.instance_count > 0, "%s should create batched vegetation" % chunk.chunk_id)
 		if vegetation != null:
-			_check(vegetation.visibility_range_begin > 0.0 and vegetation.visibility_range_end > vegetation.visibility_range_begin, "%s vegetation should define a bounded visibility range" % chunk.chunk_id)
+			_check(vegetation.visibility_range_begin == 0.0 and vegetation.visibility_range_end > 0.0, "%s ground cover must be visible beside the player with bounded draw distance" % chunk.chunk_id)
 			_check(vegetation.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s vegetation should cast shadows" % chunk.chunk_id)
 		if vegetation != null and vegetation.multimesh != null:
 			var base_vegetation_count := int(visual_root.get_meta("vegetation_base_count", 0))
 			_check(is_equal_approx(float(visual_root.get_meta("vegetation_density", 0.0)), chunk.vegetation_density), "%s vegetation density should be applied to the visual root" % chunk.chunk_id)
 			_check(vegetation.multimesh.instance_count == maxi(1, int(round(float(base_vegetation_count) * chunk.vegetation_density))), "%s vegetation density should scale batched instances" % chunk.chunk_id)
-			_check(vegetation.multimesh.mesh.material is StandardMaterial3D and vegetation.multimesh.mesh.material.albedo_color.is_equal_approx(chunk.ground_color.lightened(0.12)), "%s vegetation palette should follow its ground profile" % chunk.chunk_id)
-			_check(vegetation.multimesh.mesh.material.roughness >= 0.0 and vegetation.multimesh.mesh.material.roughness <= 1.0, "%s vegetation roughness should remain bounded" % chunk.chunk_id)
-			_check(vegetation.multimesh.mesh.material.metallic >= 0.0 and vegetation.multimesh.mesh.material.metallic <= 1.0, "%s vegetation metallic response should remain bounded" % chunk.chunk_id)
-			_check(vegetation.multimesh.instance_count <= 40, "%s vegetation instance budget should remain bounded" % chunk.chunk_id)
+			_check(vegetation.multimesh.mesh is ArrayMesh and vegetation.multimesh.mesh.get_surface_count()>0,"Ground cover must use normalized imported mesh content, not boxes")
+			var ground_cover_material := vegetation.multimesh.mesh.surface_get_material(0) as ShaderMaterial
+			_check(ground_cover_material!=null and ground_cover_material.get_shader_parameter("albedo_texture")!=null,"Ground cover must retain textured shader materials")
+			_check(vegetation.multimesh.instance_count <= 400, "%s dense ground-cover instance budget should remain bounded" % chunk.chunk_id)
+			for index in vegetation.multimesh.instance_count:
+				var placement: Transform3D = visual_root._ground_cover_transform(index)
+				_check(absf(placement.origin.x)>=4.0 and absf(placement.origin.z)>=4.0,"Dense cover must preserve cardinal routes and the central clearing")
+				_check(is_equal_approx(placement.origin.y,visual_root._ground_height(placement.origin.x,placement.origin.z)),"Dense cover must remain grounded")
+				_check(placement==visual_root._ground_cover_transform(index),"Indexed cover must remain deterministic")
 		var water := visual_root.get_node_or_null("WaterSurface")
 		var has_water: bool = chunk.biome == "River Wetlands" or chunk.biome == "Coastal Marsh" or chunk.biome == "Cypress Basin"
 		_check(has_water == (water != null), "%s water surface should match its biome" % chunk.chunk_id)
-		if water != null:
-			var expected_water_color: Color = chunk.ground_color.lightened(0.18)
-			expected_water_color.a = 0.72
-			_check(water.material_override is StandardMaterial3D and water.material_override.albedo_color.is_equal_approx(expected_water_color), "%s water palette should follow its ground profile" % chunk.chunk_id)
+		if water != null and chunk.biome == "River Wetlands":
+			_check(water.mesh is ArrayMesh and water.material_override is ShaderMaterial, "Jungle wetland must use clipped shoreline geometry and surface shader")
+			_check(visual_root.get_node_or_null("ShorelineFoam") == null, "Jungle wetland must not have a rectangular foam plane")
+		elif water != null:
+			_check(water.material_override is ShaderMaterial and water.material_override.shader==preload("res://assets/environment/reserve_water.gdshader"), "%s water should use the natural wetland ripple shader" % chunk.chunk_id)
 			_check(water.visibility_range_end > water.visibility_range_begin, "%s water surface should define a bounded visibility range" % chunk.chunk_id)
 			_check(water.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "%s water surface should avoid unnecessary shadows" % chunk.chunk_id)
-			_check(water.material_override.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA and water.material_override.albedo_color.a > 0.0 and water.material_override.albedo_color.a < 1.0, "%s water surface should remain visibly translucent" % chunk.chunk_id)
-			_check(water.material_override.roughness >= 0.0 and water.material_override.roughness <= 1.0 and water.material_override.metallic >= 0.0 and water.material_override.metallic <= 1.0, "%s water material channels should remain bounded" % chunk.chunk_id)
+			_check(water.material_override is ShaderMaterial and water.material_override.get_shader_parameter("opacity")>0.0 and water.material_override.get_shader_parameter("opacity")<1.0, "%s water surface should remain visibly translucent" % chunk.chunk_id)
+			_check(water.material_override.get_shader_parameter("roughness")>=0.0 and water.material_override.get_shader_parameter("roughness")<=1.0, "%s water roughness should remain bounded" % chunk.chunk_id)
+			var water_transform: Transform3D = water.transform
+			_check(water.mesh is ArrayMesh and visual_root.get_node_or_null("ShorelineFoam")==null,"Reserve shorelines must not use rectangular water or foam planes")
+			for reduced in [true,false]:
+				EnvironmentQuality.reduced_motion = reduced
+				visual_root._process(1.0)
+				_check(water.transform==water_transform,"Water level and shoreline must remain fixed")
+				_check(water.material_override.get_shader_parameter("motion")== (0.0 if reduced else 1.0),"Reduced Motion must control shader ripples")
 		var particles := visual_root.get_node_or_null("AmbientParticles") as GPUParticles3D
 		_check(particles != null and particles.amount > 0 and particles.lifetime > 0.0, "%s should create ambient particles" % chunk.chunk_id)
 		if particles != null:
@@ -574,30 +652,19 @@ func _test_world_chunks() -> void:
 			_check(is_equal_approx(float(navigation.get_meta("max_slope_degrees", 0.0)), chunk.max_slope_degrees), "%s slope metadata should match its profile" % chunk.chunk_id)
 			_check(is_equal_approx(float(navigation.get_meta("max_climb", 0.0)), chunk.max_climb), "%s climb metadata should match its profile" % chunk.chunk_id)
 			var nav_vertices := navigation.navigation_mesh.vertices
-			_check(nav_vertices.size() == 4, "%s navigation mesh should cover its ground pad" % chunk.chunk_id)
-			if nav_vertices.size() == 4:
+			_check(nav_vertices.size() > 4 and navigation.navigation_mesh.has_meta("terrain_fingerprint"), "%s navigation must be generated from the shared heightfield" % chunk.chunk_id)
+			if nav_vertices.size() > 4:
 				var nav_bounds := Rect2(nav_vertices[0].x, nav_vertices[0].z, 0.0, 0.0)
 				for vertex in nav_vertices:
 					nav_bounds = nav_bounds.expand(Vector2(vertex.x, vertex.z))
 				_check(nav_bounds.size.x >= 58.0 and nav_bounds.size.y >= 58.0, "%s navigation mesh should span the visible terrain pad" % chunk.chunk_id)
 				var ground_shape_for_nav := visual_root.get_node_or_null("GroundCollision/GroundShape") as CollisionShape3D
-				var ground_top := -0.12
-				if ground_shape_for_nav != null and ground_shape_for_nav.shape is BoxShape3D:
-					ground_top = ground_shape_for_nav.position.y + (ground_shape_for_nav.shape as BoxShape3D).size.y * 0.5
-				_check(absf(nav_vertices[0].y - ground_top) <= 0.03, "%s navigation surface should align with ground collision height" % chunk.chunk_id)
-		if chunk.biome != "Nest Basin":
-			var elevation := visual_root.get_node_or_null("Elevation") as MeshInstance3D
-			_check(elevation != null, "%s should create an elevated terrain feature" % chunk.chunk_id)
-			_check(elevation.visibility_range_end > elevation.visibility_range_begin, "%s elevated terrain should define a bounded visibility range" % chunk.chunk_id)
-			_check(elevation.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "%s elevated terrain should cast shadows" % chunk.chunk_id)
-			_check(elevation.mesh is BoxMesh and (elevation.mesh as BoxMesh).size.x > 0.0 and (elevation.mesh as BoxMesh).size.y > 0.0 and (elevation.mesh as BoxMesh).size.z > 0.0, "%s elevated terrain should have positive visual dimensions" % chunk.chunk_id)
-			_check(elevation.material_override is StandardMaterial3D and elevation.material_override.albedo_color.is_equal_approx(chunk.ground_color), "%s elevated terrain palette should match its ground profile" % chunk.chunk_id)
-			_check(elevation.material_override.roughness >= 0.0 and elevation.material_override.roughness <= 1.0, "%s elevated terrain roughness should remain bounded" % chunk.chunk_id)
-			_check(elevation.material_override.metallic >= 0.0 and elevation.material_override.metallic <= 1.0, "%s elevated terrain metallic response should remain bounded" % chunk.chunk_id)
-			var elevation_collision := visual_root.get_node_or_null("ElevationCollision/ElevationShape") as CollisionShape3D
-			_check(elevation_collision != null and elevation_collision.shape is BoxShape3D and (elevation_collision.shape as BoxShape3D).size.is_equal_approx((elevation.mesh as BoxMesh).size), "%s elevation collision should match its visible dimensions" % chunk.chunk_id)
-			_check(elevation_collision != null and elevation_collision.position.is_equal_approx(elevation.position), "%s elevation collision should align with its visible mound" % chunk.chunk_id)
-			_check(visual_root.get_node_or_null("ElevationCollision") != null, "%s should create elevated terrain collision" % chunk.chunk_id)
+				_check(ground_shape_for_nav != null and ground_shape_for_nav.shape is ConcavePolygonShape3D, "%s ground collision should use the shared terrain faces" % chunk.chunk_id)
+				if ground_shape_for_nav != null and ground_shape_for_nav.shape is ConcavePolygonShape3D:
+					var origin := Vector2(chunk.grid_position.x * 60.0, chunk.grid_position.y * 60.0)
+					_check(navigation.navigation_mesh.get_meta("terrain_fingerprint", 0) == hash(TERRAIN.collision_faces(origin)), "%s navigation fingerprint should match its terrain collision" % chunk.chunk_id)
+		_check(visual_root.get_node_or_null("Elevation") == null, "%s must not create box-shaped elevation walls" % chunk.chunk_id)
+		_check(visual_root.get_node_or_null("ElevationCollision") == null, "%s must not create box-shaped elevation collision" % chunk.chunk_id)
 		var has_labelled_landmark := false
 		var landmark_label_matches := false
 		for child in visual_root.get_children():
@@ -1107,14 +1174,16 @@ func _test_hud_contrast() -> void:
 func _test_gameplay_integration() -> void:
 	var main_scene: Variant = load("res://Main.tscn").instantiate()
 	root.add_child(main_scene)
-	_check(main_scene.animated_trees.size() == 10, "The valley should include animated trees")
+	_check(main_scene.animated_trees.is_empty(), "Jungle trees must use shared shader wind, not per-tree callbacks")
+	_check(main_scene.chunk_instances["nest_basin"].get_node("JungleTrunks").get_child_count() > 0, "The jungle must provide substantial tree trunks")
 	for tree in main_scene.animated_trees:
 		_check(tree.visibility_range_end > tree.visibility_range_begin, "Animated tree trunks should define a bounded visibility range")
 		_check(tree.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Animated tree trunks should cast shadows")
 		var crown := tree.get_child(0) as MeshInstance3D
 		_check(crown != null and crown.visibility_range_end > crown.visibility_range_begin, "Animated tree crowns should define a bounded visibility range")
 		_check(crown != null and crown.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Animated tree crowns should cast shadows")
-	_check(main_scene.waterfall_layers.size() == 3, "The waterfall should use layered animated water")
+	_check(main_scene.waterfall_layers.is_empty(), "Prototype water boxes must be replaced by stable wetland geometry")
+	_check(main_scene.chunk_instances["river_wetlands"].get_node("WaterSurface").mesh is ArrayMesh, "The starting region must contain the irregular pond and creek")
 	for waterfall in main_scene.waterfall_layers:
 		_check(waterfall.visibility_range_end > waterfall.visibility_range_begin, "Waterfall layers should define a bounded visibility range")
 		_check(waterfall.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Waterfall layers should avoid unnecessary shadows")
@@ -1131,13 +1200,15 @@ func _test_gameplay_integration() -> void:
 			_check(child.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Habitat landmark markers should cast shadows")
 	_check(main_scene._terrain_height_at(0.0, -18.0) > 4.0, "Roaring Overlook should be elevated")
 	_check(main_scene._terrain_height_at(19.0, -4.0) < main_scene._terrain_height_at(14.0, -12.0), "The waterfall pool should sit below Sunstone Ridge")
-	_check(main_scene.get_node_or_null("ValleyNavigation") != null, "The valley should expose a navigation region")
-	_check(main_scene.get_node_or_null("TerrainSafetyCollision") != null, "The valley should have terrain safety collision")
-	var legacy_ground := main_scene.get_node_or_null("LegacyValleyGround") as MeshInstance3D
-	_check(legacy_ground != null and legacy_ground.visibility_range_end > legacy_ground.visibility_range_begin, "Legacy valley ground should define a bounded visibility range")
-	_check(legacy_ground != null and legacy_ground.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Legacy valley ground should cast shadows")
+	var nest_terrain: Node3D = main_scene.chunk_instances["nest_basin"]
+	_check(nest_terrain.get_node_or_null("NavigationRegion") != null, "The streamed valley should expose navigation")
+	_check(nest_terrain.get_node_or_null("GroundCollision") != null, "The streamed valley should have terrain collision")
+	var basin_ground := nest_terrain.get_node("Ground") as MeshInstance3D
+	_check(basin_ground.visibility_range_end > basin_ground.visibility_range_begin, "Valley terrain should define a bounded visibility range")
+	_check(basin_ground.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, "Valley terrain should cast shadows")
+	_check(main_scene.get_node_or_null("LegacyValleyGround") == null, "Legacy terrain must not overlap the streamed valley")
 	var main_environment := main_scene.get_node_or_null("LegacyEnvironment") as WorldEnvironment
-	_check(main_environment != null and main_environment.environment != null and main_environment.environment.fog_enabled, "Legacy valley should provide global child-friendly fog")
+	_check(main_environment != null and main_environment.environment != null and main_environment.environment.fog_enabled, "Legacy valley should provide global atmospheric fog")
 	if main_environment != null and main_environment.environment != null:
 		_check(main_environment.environment.fog_density > 0.0 and main_environment.environment.fog_density <= 1.0, "Legacy valley fog density should remain bounded")
 		_check(main_environment.environment.background_color != Color.BLACK and main_environment.environment.fog_light_color != Color.BLACK, "Legacy valley fog and background colors should remain visible")

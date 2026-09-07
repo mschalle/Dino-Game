@@ -1,6 +1,8 @@
 # Roar & Rise
 
-A colorful, all-ages 3D dinosaur growth adventure made with Godot 4.
+A naturalistic 3D dinosaur growth and survival adventure made with Godot 4.
+
+The creative direction is realistic dinosaurs, fluid movement and an immersive prehistoric environment, without a child-friendly constraint. Accessibility and readable gameplay remain priorities. Optional restrained gore with an Off default is planned separately; it is not required for environmental or anatomical realism and is not yet a shipped setting.
 
 ## Core game loop
 
@@ -26,7 +28,7 @@ Keyboard, mouse, and gamepad are supported. Controls can be remapped from the se
 
 ## Run it
 
-Open `project.godot` in Godot 4 and press **F6** or **F5**. The game uses imported child-friendly GLB dinosaur models when available and falls back to procedural shapes if an asset is missing.
+Open `project.godot` in Godot 4 and press **F6** or **F5**. The game uses imported GLB dinosaur models when available and falls back to procedural shapes if an asset is missing.
 
 ## Validate
 
@@ -41,4 +43,4 @@ For a release-candidate gate that requires templates to be installed, run `.\too
 ## Next milestones
 
 1. Playtest and tune each Adventure toward the target 25–35 minute session.
-2. Continue replacing fallback procedural pieces with authored child-friendly low-poly models and animation polish.
+2. Replace prototype models with researched anatomy, specimen-based scale, realistic surfaces and fluid skeletal animation; validate visual quality in motion as well as functionality.

@@ -2,9 +2,9 @@ class_name EnvironmentQuality
 extends RefCounted
 
 const PRESETS := {
-	"low": {"foliage": 0.55, "effects": 0.45, "shadow_distance": 55.0, "fog": 0.75},
-	"medium": {"foliage": 1.0, "effects": 1.0, "shadow_distance": 90.0, "fog": 1.0},
-	"high": {"foliage": 1.35, "effects": 1.35, "shadow_distance": 140.0, "fog": 1.15}
+	"low": {"foliage": 0.55, "effects": 0.45, "shadow_distance": 20.0, "fog": 0.75},
+	"medium": {"foliage": 1.0, "effects": 1.0, "shadow_distance": 45.0, "fog": 1.0},
+	"high": {"foliage": 1.35, "effects": 1.35, "shadow_distance": 70.0, "fog": 1.15}
 }
 
 static var active_id: String = "medium"

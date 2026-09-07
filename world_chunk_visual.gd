@@ -1,25 +1,48 @@
 extends Node3D
 
 const ENVIRONMENT_QUALITY = preload("res://environment_quality.gd")
+const TERRAIN = preload("res://valley_terrain.gd")
+const JUNGLE = preload("res://jungle_habitat.gd")
 
 var chunk_state: Dictionary = {}
 var visual_time := 0.0
+var uses_heightfield := false
+var decoration_steps: Array[Callable] = []
+static var clearance_white_texture: ImageTexture
+
+func apply_visual_tier(tier: String, force: bool = false) -> void:
+	if not force and get_meta("stream_tier","")==tier:
+		return
+	set_meta("stream_tier",tier)
+	preload("res://reserve_water.gd").apply_bank_quality(self)
+	if JUNGLE.contains(str(get_meta("biome",""))):
+		if has_node("AssetPackDressing"):
+			preload("res://jungle_dressing.gd").apply_quality(self)
+	else:
+		var vegetation := get_node_or_null("Vegetation") as MultiMeshInstance3D
+		if vegetation != null:
+			vegetation.multimesh.visible_instance_count = vegetation.multimesh.instance_count if tier=="full" else maxi(1,floori(vegetation.multimesh.instance_count*0.55))
+
+func build_next_decoration() -> void:
+	if not decoration_steps.is_empty():
+		var step: Callable = decoration_steps.pop_front()
+		step.call()
+
+func _ground_height(x: float, z: float) -> float:
+	return TERRAIN.height_at(position.x + x, position.z + z) if uses_heightfield else 0.0
 
 func _process(delta: float) -> void:
+	if JUNGLE.contains(str(get_meta("biome", ""))):
+		return # Shared shader wind; water levels never bob.
+	var water := get_node_or_null("WaterSurface") as MeshInstance3D
+	if water != null and water.material_override is ShaderMaterial:
+		water.material_override.set_shader_parameter("motion",0.0 if ENVIRONMENT_QUALITY.reduced_motion else 1.0)
 	if ENVIRONMENT_QUALITY.reduced_motion:
 		return
 	visual_time += delta
-	var water := get_node_or_null("WaterSurface") as MeshInstance3D
-	var foam := get_node_or_null("ShorelineFoam") as MeshInstance3D
-	if water != null:
-		water.position.y = 0.08 + sin(visual_time * 1.4) * 0.018
-		water.rotation.y = sin(visual_time * 0.22) * 0.008
-	if foam != null:
-		foam.position.y = 0.045 + sin(visual_time * 1.1 + 0.8) * 0.012
-		foam.scale = Vector3.ONE * (1.0 + sin(visual_time * 1.6) * 0.018)
 	var dressing := get_node_or_null("AssetPackDressing") as Node3D
 	if dressing != null:
-		var wind_amount := 0.018 * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0))
+		var wind_amount := 0.018 * float(ENVIRONMENT_QUALITY.preset({}).get("effects", 1.0)) * preload("res://jungle_dressing.gd").wind_multiplier
 		for prop in dressing.get_children():
 			if not prop.has_meta("wind_sway"):
 				continue
@@ -53,15 +76,10 @@ func apply_chunk_profile(profile: RefCounted) -> void:
 		var base_count := int(get_meta("vegetation_base_count", vegetation.multimesh.instance_count))
 		set_meta("vegetation_base_count", base_count)
 		vegetation.multimesh.instance_count = maxi(1, int(round(float(base_count) * profile.vegetation_density)))
-		if vegetation.multimesh.mesh != null and vegetation.multimesh.mesh.material is StandardMaterial3D:
-			(vegetation.multimesh.mesh.material as StandardMaterial3D).albedo_color = profile.ground_color.lightened(0.12)
 		for index in vegetation.multimesh.instance_count:
-			var x := float((index * 13) % 29) - 14.0
-			var z := float((index * 17) % 29) - 14.0
-			var height_scale := 0.8 + float(index % 3) * 0.15
-			vegetation.multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
+			vegetation.multimesh.set_instance_transform(index,_ground_cover_transform(index))
 	var ground := get_node_or_null("Ground") as MeshInstance3D
-	if ground != null and ground.material_override is StandardMaterial3D:
+	if not uses_heightfield and ground != null and ground.material_override is StandardMaterial3D:
 		(ground.material_override as StandardMaterial3D).albedo_color = profile.ground_color
 	var elevation := get_node_or_null("Elevation") as MeshInstance3D
 	if elevation != null and elevation.material_override is StandardMaterial3D:
@@ -85,15 +103,30 @@ func apply_chunk_state(state: Dictionary) -> void:
 
 func _ready() -> void:
 	var biome := str(get_meta("biome", "Biome"))
+	uses_heightfield = TERRAIN.is_heightfield_biome(biome)
 	var landmark := str(get_meta("landmark", biome))
+	var phase_started := Time.get_ticks_usec()
 	_create_ground(biome)
+	var ground_ms := float(Time.get_ticks_usec()-phase_started)/1000.0
 	_create_environment(biome)
-	_create_elevation(biome)
-	_create_vegetation(biome)
-	_create_asset_pack_dressing(biome)
-	_create_water(biome)
-	_create_ambient_particles(biome)
+	if JUNGLE.contains(biome):
+		preload("res://jungle_dressing.gd").build_trunks(self,biome)
+		for kind in JUNGLE.BUDGETS:
+			decoration_steps.append(preload("res://jungle_dressing.gd").build.bind(self,biome,false,[kind]))
+		(get_node("Ground") as MeshInstance3D).material_override = preload("res://jungle_water.gd").ground_material()
+		if biome == "River Wetlands":
+			decoration_steps.append(preload("res://jungle_water.gd").build.bind(self))
+	else:
+		decoration_steps.append(_create_vegetation.bind(biome))
+		decoration_steps.append(_create_asset_pack_dressing.bind(biome))
+		decoration_steps.append(_create_water.bind(biome))
+	decoration_steps.append(_create_ambient_particles.bind(biome))
+	if not bool(get_meta("defer_decoration",false)):
+		while not decoration_steps.is_empty():
+			build_next_decoration()
+	phase_started = Time.get_ticks_usec()
 	_create_navigation()
+	set_meta("core_timings",{"ground_ms":ground_ms,"navigation_ms":float(Time.get_ticks_usec()-phase_started)/1000.0})
 	_create_landmark_silhouette(biome)
 	var marker := MeshInstance3D.new()
 	var pillar := CylinderMesh.new()
@@ -102,7 +135,7 @@ func _ready() -> void:
 	pillar.height = 2.2
 	marker.mesh = pillar
 	marker.material_override = _biome_material(biome)
-	marker.position.y = 1.1
+	marker.position.y = _ground_height(0.0, 0.0) + 1.1
 	add_child(marker)
 	var label := Label3D.new()
 	label.text = landmark
@@ -117,6 +150,8 @@ func _ready() -> void:
 	marker.add_child(label)
 
 func _create_environment(biome: String) -> void:
+	if not get_tree().get_nodes_in_group("world_controller").is_empty():
+		return
 	var environment_node := WorldEnvironment.new()
 	environment_node.name = "BiomeEnvironment"
 	var environment := Environment.new()
@@ -188,7 +223,7 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 		texture_path = "res://Textures/PathRocks_Diffuse.png"
 	elif biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
 		texture_path = "res://Textures/Leaves.png"
-	var albedo := load(texture_path) as Texture2D
+	var albedo := load(texture_path) as Texture2D if ResourceLoader.exists(texture_path) else null
 	if albedo != null:
 		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 		material.albedo_texture = albedo
@@ -198,6 +233,24 @@ func _biome_material(biome: String) -> StandardMaterial3D:
 	return material
 
 func _create_ground(biome: String) -> void:
+	if uses_heightfield:
+		var origin := Vector2(position.x, position.z)
+		var terrain := MeshInstance3D.new()
+		terrain.name = "Ground"
+		terrain.mesh = TERRAIN.build_mesh(origin)
+		terrain.material_override = preload("res://reserve_ground.gd").material(biome,origin)
+		terrain.visibility_range_end = 260.0
+		add_child(terrain)
+		var terrain_body := StaticBody3D.new()
+		terrain_body.name = "GroundCollision"
+		var terrain_collider := CollisionShape3D.new()
+		terrain_collider.name = "GroundShape"
+		var terrain_shape := ConcavePolygonShape3D.new()
+		terrain_shape.data = TERRAIN.collision_faces(origin)
+		terrain_collider.shape = terrain_shape
+		terrain_body.add_child(terrain_collider)
+		add_child(terrain_body)
+		return
 	var ground := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(60.0, 60.0)
@@ -207,7 +260,7 @@ func _create_ground(biome: String) -> void:
 	ground.visibility_range_end = 220.0
 	ground.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	ground.material_override = _biome_material(biome)
-	ground.position.y = -0.12
+	ground.position.y = 0.0
 	ground.name = "Ground"
 	add_child(ground)
 	var body := StaticBody3D.new()
@@ -217,7 +270,7 @@ func _create_ground(biome: String) -> void:
 	var shape := BoxShape3D.new()
 	shape.size = Vector3(60.0, 0.25, 60.0)
 	collider.shape = shape
-	collider.position.y = -0.12
+	collider.position.y = -0.125
 	body.add_child(collider)
 	add_child(body)
 
@@ -318,35 +371,43 @@ func _create_vegetation(biome: String) -> void:
 	var foliage := MultiMeshInstance3D.new()
 	foliage.name = "Vegetation"
 	foliage.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	foliage.visibility_range_begin = 24.0
-	foliage.visibility_range_end = 120.0
+	foliage.visibility_range_begin = 0.0
+	foliage.visibility_range_end = 65.0
 	foliage.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
 	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
-	var foliage_count := int(16.0 * float(quality["foliage"]))
+	var foliage_count := int(180.0 * float(quality["foliage"]))
 	if biome == "River Wetlands" or biome == "Coastal Marsh":
-		foliage_count = int(10.0 * float(quality["foliage"]))
+		foliage_count = int(140.0 * float(quality["foliage"]))
 	elif biome == "Volcanic Foothills" or biome == "Highland Plateau" or biome == "Glacier Valley" or biome == "Saltwind Dunes":
-		foliage_count = int(6.0 * float(quality["foliage"]))
+		foliage_count = int(40.0 * float(quality["foliage"]))
 	elif biome == "Cypress Basin" or biome == "Redwood Canyon":
-		foliage_count = int(22.0 * float(quality["foliage"]))
+		foliage_count = int(220.0 * float(quality["foliage"]))
 	batch.instance_count = foliage_count
 	set_meta("vegetation_base_count", foliage_count)
-	var blade := BoxMesh.new()
-	blade.size = Vector3(0.22, 0.7, 0.22)
-	blade.material = _biome_material(biome)
-	batch.mesh = blade
+	var barren := biome in ["Glacier Valley","Volcanic Foothills","Saltwind Dunes"]
+	batch.mesh = preload("res://jungle_dressing.gd").mesh_for("res://glTF/Rock_Medium_1.gltf" if barren else "res://glTF/Grass_Wispy_Short.gltf","rock" if barren else "grass")
 	for index in batch.instance_count:
-		var x := float((index * 13) % 29) - 14.0
-		var z := float((index * 17) % 29) - 14.0
-		var height_scale := 0.8 + float(index % 3) * 0.15
-		if biome == "Redwood Canyon" or biome == "Cypress Basin":
-			height_scale *= 1.35
-		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * height_scale), Vector3(x, 0.35, z)))
+		batch.set_instance_transform(index,_ground_cover_transform(index))
 	foliage.multimesh = batch
 	add_child(foliage)
-	_create_ground_debris(biome, foliage_count)
+	_create_ground_debris(biome, mini(foliage_count,24))
+
+func _ground_cover_transform(index: int) -> Transform3D:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(Vector3(position.x,float(index),position.z))
+	# Each indexed sample is independent, so density changes retain existing positions.
+	var x := rng.randf_range(4.0,28.0)*(1.0 if rng.randf()>0.5 else -1.0)
+	var z := rng.randf_range(4.0,28.0)*(1.0 if rng.randf()>0.5 else -1.0)
+	var biome := str(get_meta("biome",""))
+	if biome in ["Coastal Marsh","Cypress Basin"]:
+		var water = preload("res://reserve_water.gd")
+		# Move wet samples to the dry opposite side, outside the pond footprint.
+		if water.shore_distance(Vector2(x,z),Vector2(-4,6))<2.0:
+			x = rng.randf_range(17.0,28.0)
+	var height_scale := rng.randf_range(0.32,0.65)
+	return Transform3D(Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*height_scale),Vector3(x,_ground_height(x,z),z))
 
 func _create_ground_debris(biome: String, foliage_count: int) -> void:
 	var debris := MultiMeshInstance3D.new()
@@ -372,7 +433,7 @@ func _create_ground_debris(biome: String, foliage_count: int) -> void:
 		var x := float((index * 19) % 31) - 15.0
 		var z := float((index * 23) % 31) - 15.0
 		var scale := 0.55 + float(index % 4) * 0.16
-		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3(scale, 0.65 * scale, scale)), Vector3(x, 0.12, z)))
+		batch.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3(scale, 0.65 * scale, scale)), Vector3(x, _ground_height(x, z) + 0.12, z)))
 	debris.multimesh = batch
 	add_child(debris)
 
@@ -402,7 +463,7 @@ func _create_asset_pack_dressing(biome: String) -> void:
 	var prop_count := mini(paths.size(), maxi(3, int(ceil(paths.size() * foliage_scale))))
 	for index in prop_count:
 		var path_index := index % paths.size()
-		var packed := load(paths[path_index]) as PackedScene
+		var packed := load(paths[path_index]) as PackedScene if ResourceLoader.exists(paths[path_index]) else null
 		if packed == null:
 			continue
 		var prop := packed.instantiate() as Node3D
@@ -410,16 +471,39 @@ func _create_asset_pack_dressing(biome: String) -> void:
 			continue
 		prop.name = "PackProp_%d" % index
 		prop.position = Vector3(float((index * 11) % 23) - 11.0, 0.0, float((index * 17) % 23) - 11.0)
+		prop.position.y = _ground_height(prop.position.x, prop.position.z)
 		prop.rotation.y = float(index) * 1.4
 		prop.scale = Vector3.ONE * (0.65 + float(index % 2) * 0.18)
 		prop.set_meta("environment_lod", "hero" if index == 0 else "detail")
 		prop.set_meta("biome", biome)
 		var prop_path := paths[path_index].to_lower()
+		if prop_path.contains("tree") or prop_path.contains("pine"):
+			_apply_tree_camera_clearance(prop)
 		if prop_path.find("tree") >= 0 or prop_path.find("fern") >= 0 or prop_path.find("flower") >= 0 or prop_path.find("bush") >= 0 or prop_path.find("pine") >= 0:
 			prop.set_meta("wind_sway", float(index) * 0.8 + float(biome.hash() % 17))
 		_apply_prop_visibility(prop, quality)
 		dressing.add_child(prop)
 	add_child(dressing)
+
+func _apply_tree_camera_clearance(prop: Node3D) -> void:
+	if clearance_white_texture == null:
+		var image := Image.create(1,1,false,Image.FORMAT_RGBA8)
+		image.fill(Color.WHITE)
+		clearance_white_texture = ImageTexture.create_from_image(image)
+	# Imported scenes may nest meshes below several transform nodes.
+	for node in prop.find_children("*","MeshInstance3D",true,false):
+		var visual := node as MeshInstance3D
+		for surface in visual.mesh.get_surface_count():
+			var original := visual.get_active_material(surface) as StandardMaterial3D
+			if original == null:
+				continue
+			var material := ShaderMaterial.new()
+			material.shader = preload("res://assets/environment/jungle_foliage.gdshader")
+			material.set_shader_parameter("albedo_texture",original.albedo_texture if original.albedo_texture != null else clearance_white_texture)
+			material.set_shader_parameter("tint",original.albedo_color)
+			material.set_shader_parameter("wind",0.0)
+			material.set_shader_parameter("camera_clearance",3.0)
+			visual.set_surface_override_material(surface,material)
 
 func _apply_prop_visibility(prop: Node3D, quality: Dictionary) -> void:
 	var end_distance := 95.0 * float(quality.get("foliage", 1.0))
@@ -440,33 +524,15 @@ func _create_water(biome: String) -> void:
 	water.visibility_range_begin = 0.0
 	water.visibility_range_end = 140.0
 	water.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-	var surface := PlaneMesh.new()
-	surface.size = Vector2(24.0, 18.0) if biome == "River Wetlands" else Vector2(20.0, 14.0)
-	water.mesh = surface
-	water.position = Vector3(6.0, 0.08, 5.0) if biome == "River Wetlands" else Vector3(-4.0, 0.08, 6.0)
-	var material := StandardMaterial3D.new()
-	var quality: Dictionary = ENVIRONMENT_QUALITY.preset({})
-	var effects_scale := float(quality.get("effects", 1.0))
-	material.albedo_color = Color("#55b9d1") if biome != "Cypress Basin" else Color("#4f9f8b")
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color.a = 0.58 + effects_scale * 0.12
-	material.roughness = 0.2 - effects_scale * 0.05
-	material.metallic = 0.05
+	water.mesh = preload("res://reserve_water.gd").mesh(Vector2(position.x,position.z))
+	var material := ShaderMaterial.new()
+	material.shader = preload("res://assets/environment/reserve_water.gdshader")
+	material.set_shader_parameter("opacity",0.72)
+	material.set_shader_parameter("roughness",0.32)
+	material.set_shader_parameter("motion",0.0 if ENVIRONMENT_QUALITY.reduced_motion else 1.0)
 	water.material_override = material
 	add_child(water)
-	var shoreline := MeshInstance3D.new()
-	shoreline.name = "ShorelineFoam"
-	var shoreline_mesh := PlaneMesh.new()
-	shoreline_mesh.size = surface.size + Vector2(1.4, 1.4)
-	shoreline.mesh = shoreline_mesh
-	shoreline.position = water.position + Vector3(0.0, -0.035, 0.0)
-	var shore_material := StandardMaterial3D.new()
-	shore_material.albedo_color = Color(0.74, 0.82, 0.69, 0.28)
-	shore_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	shore_material.roughness = 0.95
-	shoreline.material_override = shore_material
-	shoreline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(shoreline)
+	preload("res://reserve_water.gd").build_bank_reeds(self)
 
 func _create_ambient_particles(biome: String) -> void:
 	if not ENVIRONMENT_QUALITY.weather_enabled:
@@ -515,6 +581,8 @@ func _create_ambient_particles(biome: String) -> void:
 	_create_weather_particles(biome, effects_scale)
 
 func _create_weather_particles(biome: String, effects_scale: float) -> void:
+	if not get_tree().get_nodes_in_group("world_controller").is_empty():
+		return # The live reserve uses one player-centered weather emitter.
 	var weather_kind := ""
 	if biome == "River Wetlands" or biome == "Coastal Marsh" or biome == "Cypress Basin":
 		weather_kind = "mist"
@@ -551,6 +619,12 @@ func _create_weather_particles(biome: String, effects_scale: float) -> void:
 func _create_navigation() -> void:
 	var region := NavigationRegion3D.new()
 	region.name = "NavigationRegion"
+	if uses_heightfield:
+		var biome := str(get_meta("biome", ""))
+		var path := "res://assets/environment/jungle_%s_navigation.tres" % JUNGLE.IDS[JUNGLE.BIOMES.find(biome)] if JUNGLE.contains(biome) else ""
+		region.navigation_mesh = load(path) as NavigationMesh if not path.is_empty() and ResourceLoader.exists(path) else _build_heightfield_navigation_mesh(Vector2(position.x, position.z))
+		add_child(region)
+		return
 	var nav_mesh := NavigationMesh.new()
 	nav_mesh.vertices = PackedVector3Array([
 		Vector3(-29.0, 0.02, -29.0), Vector3(29.0, 0.02, -29.0),
@@ -561,6 +635,31 @@ func _create_navigation() -> void:
 	nav_mesh.agent_height = 1.8
 	region.navigation_mesh = nav_mesh
 	add_child(region)
+
+func _build_heightfield_navigation_mesh(origin: Vector2) -> NavigationMesh:
+	var nav_mesh := NavigationMesh.new()
+	var vertices := PackedVector3Array()
+	var spacing := TERRAIN.CHUNK_SIZE / float(TERRAIN.COLLISION_CELLS)
+	for row in TERRAIN.COLLISION_CELLS + 1:
+		for column in TERRAIN.COLLISION_CELLS + 1:
+			var x := -TERRAIN.HALF_SIZE + float(column) * spacing
+			var z := -TERRAIN.HALF_SIZE + float(row) * spacing
+			vertices.append(Vector3(x, TERRAIN.height_at(origin.x + x, origin.y + z), z))
+	nav_mesh.vertices = vertices
+	for row in TERRAIN.COLLISION_CELLS:
+		for column in TERRAIN.COLLISION_CELLS:
+			var a := row * (TERRAIN.COLLISION_CELLS + 1) + column
+			var b := a + 1
+			var c := a + TERRAIN.COLLISION_CELLS + 2
+			var d := a + TERRAIN.COLLISION_CELLS + 1
+			nav_mesh.add_polygon(PackedInt32Array([a, b, c]))
+			nav_mesh.add_polygon(PackedInt32Array([a, c, d]))
+	nav_mesh.agent_radius = float(get_meta("agent_radius", 0.8))
+	nav_mesh.agent_height = 1.8
+	nav_mesh.agent_max_slope = float(get_meta("max_slope_degrees", 35.0))
+	nav_mesh.agent_max_climb = float(get_meta("max_climb", 0.5))
+	nav_mesh.set_meta("terrain_fingerprint", hash(TERRAIN.collision_faces(origin)))
+	return nav_mesh
 
 func _create_landmark_silhouette(biome: String) -> void:
 	var silhouette := MeshInstance3D.new()
@@ -617,6 +716,7 @@ func _create_landmark_silhouette(biome: String) -> void:
 	silhouette.visibility_range_begin = 2.0
 	silhouette.visibility_range_end = 180.0
 	silhouette.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+	landmark_position.y = _ground_height(landmark_position.x, landmark_position.z)
 	silhouette.position = landmark_position + Vector3(0.0, silhouette_height * 0.5, 0.0)
 	silhouette.material_override = _biome_material(biome)
 	silhouette.set_meta("landmark_kind", landmark_kind)

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Roar & Rise Dinosaur Modeler"
+  short_description: "Research realistic dinosaurs, scale and fluid animation"
+  default_prompt: "Use $roar-rise-dinosaur-modeler to research and build an evidence-based dinosaur with real-world scale and fluid skeletal animation for Roar & Rise."

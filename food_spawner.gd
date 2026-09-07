@@ -10,6 +10,7 @@ var player: PlayerDino
 var respawn_timer := 0.0
 var endless_mode := false
 var allowed_prey_tiers: Array[int] = [1, 2, 3]
+var habitat_plan: Array[Dictionary] = []
 var population_caps: Dictionary = {1: 5, 2: 3, 3: 2}
 var persisted_population_budget := 0
 var habitat_respawn_cooldown := 0.0
@@ -31,6 +32,7 @@ func set_player(new_player: PlayerDino) -> void:
 			prey.set_player(player)
 
 func set_spawn_plan(plan: Array[Dictionary]) -> void:
+	habitat_plan = plan
 	var tiers: Array[int] = []
 	var counts: Dictionary = {}
 	for entry in plan:
@@ -196,6 +198,27 @@ func _spawn_plant() -> void:
 	_place_on_terrain(plant)
 
 func _random_position(tier: int = 0) -> Vector3:
+	var jungle = preload("res://jungle_habitat.gd")
+	var best := -1
+	var lowest := 100000
+	for entry in habitat_plan:
+		var index: int = jungle.BIOMES.find(str(entry.get("biome", "")))
+		if index < 0 or entry.get("role", "") != "prey" or int(entry.get("tier", 0)) != tier:
+			continue
+		var count := 0
+		for child in get_children():
+			if child is PreyDino and child.nutrition == tier and child.habitat_origin == jungle.ORIGINS[index]:
+				count += 1
+		# Keep three easy prey in the starting basin before spreading the herd.
+		if index == 0 and tier == 1 and count < 3:
+			best = 0
+			break
+		if count < lowest:
+			lowest = count
+			best = index
+	if best >= 0:
+		var point: Vector2 = jungle.PREY_CLEARINGS[best] + Vector2(randf_range(-2.0,2.0),randf_range(-2.0,2.0))
+		return Vector3(point.x,0,point.y)
 	# Keep creatures in readable habitat bands: basin, meadow, then ridge.
 	var center := Vector2.ZERO
 	var radius := 10.0
